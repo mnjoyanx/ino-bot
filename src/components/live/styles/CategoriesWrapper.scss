@@ -1,0 +1,38 @@
+.parent-categories {
+    width: 26.7rem;
+    height: 54.6rem;
+    background-color: rgba(3, 3, 3, 0.4);
+    border-radius: 1.5rem;
+    padding: 1rem;
+    .title {
+        font-size: 2rem;
+        font-weight: 500;
+        color: white;
+        padding: 1rem 0 0 1rem;
+    }
+    .categories-wrapper {
+        .list-category {
+            margin-top: 1rem;
+            .card-category {
+                display: flex;
+                justify-content: space-between;
+                padding:1.2rem 1rem;
+                &.active{
+                    background-color: rgba(255, 255, 255, 0.05);
+                    border-radius: 1rem;
+                }
+                .name{
+                    width: 17rem;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                p {
+                    color: #bababa;
+                    font-size: 1.7rem;
+                    font-weight: 400;
+                }
+            }
+        }
+    }
+}

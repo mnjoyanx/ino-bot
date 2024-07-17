@@ -1,0 +1,13 @@
+.button{
+    outline: none;
+    border: none;
+    background-color: transparent;
+    box-shadow: 0 0 0 .1rem #fff;
+    font-size: 2rem;
+    padding: .8rem 2rem;
+    color: white;
+    border-radius: 3.5rem;
+    &.active{
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+}

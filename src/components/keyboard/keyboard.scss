@@ -1,0 +1,88 @@
+@import "../../assets/styles/variables.scss";
+
+.parent_keyboard.show {
+    pointer-events: all;
+    transition: 0.2s;
+    .keyboard {
+        transform: translateY(0);
+        transition: 0.2s;
+    }
+}
+
+.parent_keyboard {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 1rem;
+    z-index: 2;
+    pointer-events: none;
+
+    .keyboard.uppercase{
+        .letter_keyboard{
+            p{
+                text-transform: uppercase;
+            }
+        }
+    }
+
+    .keyboard {
+        width: 81rem;
+        // height: 26rem;
+        background-color: rgba(0, 0, 0, 0.5);
+        transform: translateY(120%);
+        transition: 0.2s linear;
+        .keyboard_row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            .letter_keyboard.large {
+                width: 12.5rem;
+                background-repeat: no-repeat;
+                background-size: auto 60%;
+                background-position: center;
+            }
+
+            .letter_keyboard.space {
+                background-image: url("../keyboard/images/space.png");
+                background-size: 40% auto;
+            }
+            .letter_keyboard.backspace {
+                background-image: url("../keyboard/images/back.png");
+            }
+            .letter_keyboard.enter {
+                background-image: url("../keyboard/images/enter.png");
+            }
+            .letter_keyboard.shift {
+                background-image: url("../keyboard/images/shift.png");
+            }
+
+            .letter_keyboard {
+                background-color: #1f2125;
+                width: 6rem;
+                height: 6rem;
+                border-radius: 0.5rem;
+                margin: 0.25rem;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: pointer;
+                p {
+                    font-size: 3rem;
+                    font-weight: 700;
+                }
+            }
+            .letter_keyboard.active {
+         
+                box-shadow:
+                    0 0 0 0.2rem $active-color,
+                    0 0 1rem $active-color inset;
+            }
+        }
+    }
+}

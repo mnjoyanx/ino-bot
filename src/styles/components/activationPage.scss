@@ -1,0 +1,38 @@
+.activation-page-container {
+    width: 100%;
+    height: 100%;
+    background-image: url("../../assets/images/splashscreen.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+        padding: 10rem 0;
+
+    .logo{
+         width: 26rem;
+        height: 12rem;
+        margin: 0 auto;
+       img{
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+       }
+    }
+    h3{
+        font-size: 4.8rem;
+        color: white;
+        margin-top: 10rem;
+        text-align: center;
+    }
+    p{
+        font-size: 3.5rem;
+        text-align: center;
+        padding: 6rem 0;
+
+    }
+    button{
+        margin:  0 auto;
+        display: block;
+    }
+}

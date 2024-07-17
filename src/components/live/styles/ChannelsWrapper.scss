@@ -1,0 +1,70 @@
+.parent-channels {
+    width: 31.5rem;
+    height: 54.6rem;
+    border-radius: 1.5rem;
+    background-color: rgba(3, 3, 3, 0.4);
+    padding: 1rem;
+
+    .title {
+        font-size: 2rem;
+        font-weight: 500;
+        color: white;
+        padding: 1rem 0 0 1rem;
+    }
+    .channels-wrapper {
+        .list-channels {
+            margin-top: 1rem;
+            .card-channel {
+                display: flex;
+                justify-content: space-between;
+                padding: 1.2rem 1rem;
+                display: flex;
+                align-items: center;
+
+                &.active {
+                    background-color: rgba(255, 255, 255, 0.05);
+                    border-radius: 1rem;
+                }
+                .name {
+                    font-size: 1.2rem;
+                    color: white;
+                    width: 12rem;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                .number {
+                    color: white;
+                    width: 3rem;
+                    font-size: 1.5rem;
+                }
+                .icon {
+                    width: 4rem;
+                    height: 4rem;
+                    object-fit: contain;
+                    object-position: center;
+                    background-color: white;
+                    border-radius: 0.5rem;
+                }
+
+                .icons {
+                    width: 7rem;
+                    display: flex;
+                    justify-content: flex-end;
+                    img {
+                        width: 2.2rem;
+                        height: 2.2rem;
+                        object-fit: cover;
+                        object-position: center;
+                        margin-left: 0.5rem;
+                    }
+                }
+                p {
+                    color: #bababa;
+                    font-size: 1.7rem;
+                    font-weight: 400;
+                }
+            }
+        }
+    }
+}

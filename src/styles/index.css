@@ -1,0 +1,46 @@
+body {
+    margin: 0;
+    width: 128rem;
+    height: 72rem;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    font-size: 15px;
+    box-sizing: border-box;
+    appearance: none;
+    font-family: "Montserrat", sans-serif;
+    outline:none;
+}
+
+@media only screen and (max-width: 1280px) {
+    * {
+        font-size: 10px;
+    }
+}
+
+/* @media only screen and (min-width: 3840px) {
+    * {
+        font-size: 20px;
+    }
+} */
+
+#root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: black;
+    width: 128rem;
+    height: 72rem;
+}
+
+.android #root{
+    background-color: transparent !important;
+}
+
+p {
+    color: white;
+    font-size: 1.6rem;
+    letter-spacing: 0.1rem;
+}

@@ -1,0 +1,13 @@
+{
+    "bgColor": "#ffffff",
+    "vendor": "testapp",
+    "largeIcon": "logo.png",
+    "icon": "logo.png",
+    "main": "index.html",
+    "requiredMemory": 50,
+    "id": "com.testapp.app",
+    "title": "testapp",
+    "type": "web",
+    "version": "1.0.0",
+    "disableBackHistoryAPI": true
+}
