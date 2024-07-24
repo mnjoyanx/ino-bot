@@ -19,6 +19,7 @@ export default memo(function ResultSearch({
   setUrl,
   refInp,
   setPipMode,
+  empty,
 }) {
   const dispatch = useDispatch();
 
@@ -43,6 +44,13 @@ export default memo(function ResultSearch({
       if (active === result.length - 1) return;
       setActive(active + 1);
     },
+    ok: () => {
+      if (!empty) {
+        selectChannel(result[active].id, active);
+      } else {
+        refInp.current.focus();
+      }
+    },
   });
 
   useEffect(() => {
@@ -66,32 +74,38 @@ export default memo(function ResultSearch({
 
   return (
     <div className="parent-result">
-      <div className="main-result" ref={refResult}>
-        {result.map((item, index) => {
-          return type === "live" ? (
-            <CardChannel
-              key={item.id}
-              item={item}
-              isActive={index === active}
-              onClick={selectChannel}
-              index={index}
-              className={
-                index >= active && index < active + 5 ? "visible" : "opacity"
-              }
-            />
-          ) : (
-            <CardContnet
-              key={item.id}
-              item={item}
-              isActive={index === active}
-              onClick={() => {}}
-              className={
-                index >= active && index < active + 5 ? "visible" : "opacity"
-              }
-            />
-          );
-        })}
-      </div>
+      {empty ? (
+        <div className="empty-result">
+          <p>No result found</p>
+        </div>
+      ) : (
+        <div className="main-result" ref={refResult}>
+          {result.map((item, index) => {
+            return type === "live" ? (
+              <CardChannel
+                key={item.id}
+                item={item}
+                isActive={index === active}
+                onClick={selectChannel}
+                index={index}
+                className={
+                  index >= active && index < active + 5 ? "visible" : "opacity"
+                }
+              />
+            ) : (
+              <CardContnet
+                key={item.id}
+                item={item}
+                isActive={index === active}
+                onClick={() => {}}
+                className={
+                  index >= active && index < active + 5 ? "visible" : "opacity"
+                }
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 });

@@ -15,10 +15,13 @@ export default memo(function Search({ type, setShow, setUrl, setPipMode }) {
   const [control, setControl] = useState("keyboard"); // result | keyboard
   const [valueSearch, setValueSearch] = useState("");
   const [result, setResult] = useState([]);
+  const [empty, setEmpty] = useState(false);
 
   const resultSearch = useMemo(() => result.map((item) => item), [result]);
 
   const getResultChannels = async () => {
+    setEmpty(false);
+
     const response = await getChannels({
       query: JSON.stringify({
         pagination: false,
@@ -29,9 +32,10 @@ export default memo(function Search({ type, setShow, setUrl, setPipMode }) {
     const { error, message } = parsedResponse;
 
     if (!error) {
-      setResult(message.slice(0, 10));
+      if (message.length > 0) setResult(message.slice(0, 10));
+      else setEmpty(true);
     } else {
-      console.log("empty");
+      setEmpty(true);
     }
   };
 
@@ -80,6 +84,7 @@ export default memo(function Search({ type, setShow, setUrl, setPipMode }) {
         onFocus={() => setControl("keyboard")}
       />
       <ResultSearch
+        empty={empty}
         refInp={refInp}
         setShow={setShow}
         result={resultSearch}

@@ -50,6 +50,14 @@
     .parent-result {
         width: 112rem;
         margin: 5rem auto 0;
+        .empty-result{
+            width: 100%;
+            padding-top: 10rem;
+            p{
+            font-size: 4rem;
+            text-align: center;
+            }
+        }
         .main-result {
             width: calc(22rem * 10);
             display: flex;
