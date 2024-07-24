@@ -110,7 +110,14 @@ export default memo(function PipModeLive({ setUrl, setPipMode }) {
 
   return (
     <>
-      {showSearch ? <Search type={"live"} setShow={setShowSearch} /> : null}
+      {showSearch ? (
+        <Search
+          type={"live"}
+          setUrl={setUrl}
+          setShow={setShowSearch}
+          setPipMode={setPipMode}
+        />
+      ) : null}
       <div className="parent-pip_mode">
         <div className="head-pip_mode">
           <SearchHandler

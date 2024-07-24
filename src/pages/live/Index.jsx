@@ -27,7 +27,7 @@ export default function LivePage() {
   const categoriesChannels = useSelector(selectChannels);
   const currentChannel = useSelector(selectCurrentChannel);
 
-  const [pipMode, setPipMode] = useState(true);
+  const [pipMode, setPipMode] = useState(false);
   const [url, setUrl] = useState(null);
 
   const [selectedChannel, setSelectedChannel] = useState(null);

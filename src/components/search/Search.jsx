@@ -9,7 +9,7 @@ import ResultSearch from "./components/ResultSearch";
 
 import "./styles/Search.scss";
 
-export default memo(function Search({ type, setShow }) {
+export default memo(function Search({ type, setShow, setUrl, setPipMode }) {
   const refInp = useRef(null);
 
   const [control, setControl] = useState("keyboard"); // result | keyboard
@@ -58,7 +58,6 @@ export default memo(function Search({ type, setShow }) {
     setValueSearch(e.target.value);
   };
 
-
   useKeydown({
     isActive: control === "keyboard",
 
@@ -84,7 +83,9 @@ export default memo(function Search({ type, setShow }) {
         refInp={refInp}
         setShow={setShow}
         result={resultSearch}
+        setPipMode={setPipMode}
         type={type}
+        setUrl={setUrl}
         setControl={setControl}
         control={control === "result"}
       />

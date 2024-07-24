@@ -1,8 +1,12 @@
-import { memo, useState, useRef, useEffect } from "react";
-
+import { memo, useState, useRef, useEffect, useCallback } from "react";
+import { useDispatch } from "react-redux";
+import { setCurrentChannel } from "@app/channels/channelsSlice";
+import { channelInfo } from "@server/requests";
 import { scrollElement } from "@utils/util";
 
 import useKeydown from "@hooks/useKeydown";
+
+import LOCAL_STORAGE from "@utils/localStorage";
 
 import CardContnet from "../../cards/CardContnet";
 import CardChannel from "../../cards/CardChannel";
@@ -12,9 +16,12 @@ export default memo(function ResultSearch({
   type,
   control,
   setShow,
-  setControl,
+  setUrl,
   refInp,
+  setPipMode,
 }) {
+  const dispatch = useDispatch();
+
   const refResult = useRef(null);
 
   const [active, setActive] = useState(0);
@@ -42,6 +49,21 @@ export default memo(function ResultSearch({
     scrollElement(refResult.current, "X", active * -21 + "rem", 0);
   }, [active]);
 
+  const selectChannel = async (id, index) => {
+    const response = await channelInfo({ id: id });
+    const parsedResponse = JSON.parse(response);
+    const { error, message } = parsedResponse;
+
+    if (error) {
+    } else {
+      LOCAL_STORAGE.LAST_CHANNEL_ID.SET(id);
+      dispatch(setCurrentChannel(message));
+      setUrl(message.url);
+      setShow(false);
+      setPipMode(false);
+    }
+  };
+
   return (
     <div className="parent-result">
       <div className="main-result" ref={refResult}>
@@ -51,7 +73,8 @@ export default memo(function ResultSearch({
               key={item.id}
               item={item}
               isActive={index === active}
-              onClick={() => {}}
+              onClick={selectChannel}
+              index={index}
               className={
                 index >= active && index < active + 5 ? "visible" : "opacity"
               }
