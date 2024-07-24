@@ -34,7 +34,7 @@ const twoDigitPad = (num) => {
 export const formatDate = (date, patternStr) => {
   if (!patternStr) patternStr = "M/d/yyyy";
 
-  var day = date.getDate(),
+  let day = date.getDate(),
     month = date.getMonth(),
     year = date.getFullYear(),
     hour = date.getHours(),
@@ -46,7 +46,7 @@ export const formatDate = (date, patternStr) => {
     HH = twoDigitPad(hour),
     mm = twoDigitPad(minute),
     ss = twoDigitPad(second),
-    aaa = hour < 12 ? "AM" : "PM",
+    aaa = hour < 12 ? "am" : "pm",
     EEEE = dayOfWeekNames[date.getDay()],
     EEE = EEEE.substr(0, 3),
     dd = twoDigitPad(day),
@@ -172,7 +172,7 @@ export const generateMacAddress = (str) => {
 export const formatTime = (seconds) => {
   if (!seconds) return "00:00";
 
-  var hh = Math.floor(seconds / 3600),
+  let hh = Math.floor(seconds / 3600),
     mm = Math.floor(seconds / 60) % 60,
     ss = Math.floor(seconds) % 60;
 
@@ -190,4 +190,15 @@ export const formatTime = (seconds) => {
   } else {
     return (mm < 10 ? "0" : "") + mm + ":" + (ss < 10 ? "0" : "") + ss;
   }
+};
+
+export const scrollElement = (
+  element,
+  type = "X",
+  size = "0rem",
+  duration = 0
+) => {
+  if (!element) return;
+
+  element.style.transform = `translate${type.toUpperCase()}(${size})`;
 };

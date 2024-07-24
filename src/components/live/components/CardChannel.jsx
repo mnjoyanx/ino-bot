@@ -10,7 +10,7 @@ export default memo(function CardChannel({ isActive, elem, onClick, index }) {
   return (
     <div
       className={`card-channel${isActive ? " active" : ""}`}
-      onClick={() => onClick(index)}
+      onClick={() => onClick(index, elem.id)}
     >
       <div className="number">#{elem.position}</div>
       <img
@@ -25,9 +25,9 @@ export default memo(function CardChannel({ isActive, elem, onClick, index }) {
       />
       <p className="name">{elem.name}</p>
       <div className="icons">
-        <img src={iconFavorite} alt="" />
-        <img src={iconLock} alt="" />
-        <img src={iconPremium} alt="" />
+        {elem.is_favorite ? <img src={iconFavorite} alt="" /> : null}
+        {elem.is_protected ? <img src={iconLock} alt="" /> : null}
+        {!elem.canWatch ? <img src={iconPremium} alt="" /> : null}
       </div>
     </div>
   );

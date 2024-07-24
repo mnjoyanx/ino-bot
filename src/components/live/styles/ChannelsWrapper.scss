@@ -1,17 +1,21 @@
 .parent-channels {
-    width: 31.5rem;
+    width: 32.5rem;
     height: 54.6rem;
     border-radius: 1.5rem;
     background-color: rgba(3, 3, 3, 0.4);
-    padding: 1rem;
 
     .title {
         font-size: 2rem;
         font-weight: 500;
         color: white;
-        padding: 1rem 0 0 1rem;
+        padding: 2rem 0 0 2rem;
     }
     .channels-wrapper {
+        height: 50rem;
+        overflow: hidden;
+        padding: 1rem;
+        position: relative;
+
         .list-channels {
             margin-top: 1rem;
             .card-channel {

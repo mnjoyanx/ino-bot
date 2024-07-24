@@ -1,0 +1,24 @@
+.card-content{
+
+}
+
+.main-card-channel{
+   width: 17rem;
+   height: 17rem;
+   border-radius: 1.5rem;
+   overflow: hidden;
+   background-color: black;
+   margin-right: 4rem;
+   &.active{
+   box-shadow: 0 0 0 0.2rem white;
+   }
+   &.opacity{
+      opacity: .3;
+   }
+   img{
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+   }
+}

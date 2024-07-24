@@ -3,25 +3,29 @@
     height: 54.6rem;
     background-color: rgba(3, 3, 3, 0.4);
     border-radius: 1.5rem;
-    padding: 1rem;
     .title {
         font-size: 2rem;
         font-weight: 500;
         color: white;
-        padding: 1rem 0 0 1rem;
+        padding: 2rem 0 0 2rem;
     }
     .categories-wrapper {
+        height: 50rem;
+        overflow: hidden;
+        padding: 1rem;
+        position: relative;
+
         .list-category {
             margin-top: 1rem;
             .card-category {
                 display: flex;
                 justify-content: space-between;
-                padding:1.2rem 1rem;
-                &.active{
+                padding: 1.2rem 1rem;
+                &.active {
                     background-color: rgba(255, 255, 255, 0.05);
                     border-radius: 1rem;
                 }
-                .name{
+                .name {
                     width: 17rem;
                     white-space: nowrap;
                     overflow: hidden;
