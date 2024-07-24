@@ -1,26 +1,77 @@
 .live-control {
-    width: 118rem;
+    width: 128rem;
     display: flex;
     align-items: center;
     position: absolute;
-    left: 5rem;
-    bottom: 2rem;
-    padding-top: 20rem;
-    .number-channel {
+    left: 0;
+    bottom: 0;
+    padding: 20rem 5rem 2rem 5rem;
+    background-image: linear-gradient(to top, #000000, transparent);
+    .live-icon {
+        color: white;
+        background-color: #9e0b0b;
+        position: absolute;
+        right: 0;
+        top: 1rem;
+        font-size: 1.3rem;
+        padding: 0.2rem 1rem 0.2rem 2rem;
+        border-radius: .2rem;
+        &.timeshift{
+            background-color:grey;
+        }
+        &::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0.5rem;
+            width: 1rem;
+            height: 1rem;
+            background-color: white;
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+    }
+    .parent-number-channel {
         width: 5rem;
-        height: 5rem;
-        background-color: red;
+        height: 6rem;
         margin-right: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+
+        .arrow {
+            width: 1.5rem;
+            height: 1.5rem;
+            display: block;
+            svg {
+                width: 100%;
+                height: 100%;
+            }
+        }
+        .arrow-up {
+            svg {
+                transform: rotate(180deg);
+                transform-origin: center;
+            }
+        }
+        .number-channel {
+            font-size: 2rem;
+            text-align: center;
+        }
     }
     .logo {
         width: 6rem;
         height: 6rem;
         margin-right: 2rem;
+        border-radius: 0.5rem;
+        overflow: hidden;
         img {
             width: 100%;
             height: 100%;
             object-fit: contain;
             object-position: center;
+            background-color: white;
         }
     }
     .name-channel {

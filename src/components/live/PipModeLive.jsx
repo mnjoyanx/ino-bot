@@ -1,6 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectConfigs } from "@app/configs/configsSlice";
+import { useNavigate } from "react-router-dom";
 import {
   selectChannels,
   selectAllChannels,
@@ -9,22 +10,29 @@ import {
 import { getChannelCategories } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
 
+import useKeydown from "@hooks/useKeydown";
+
 import TimeWrapper from "@components/splash-screen/TimeWrapper.jsx";
-import CategoriesWrapper from "./CategoriesWrapper";
-import ChannelsWrapper from "./ChannelsWrapper";
-import EpgListWrapper from "./EpgListWrapper";
+import CategoriesWrapper from "./components/CategoriesWrapper";
+import ChannelsWrapper from "./components/ChannelsWrapper";
+import EpgListWrapper from "./components/EpgListWrapper";
+import SearchHandler from "./components/SearchHandler";
 
-import "../styles/PipModeLive.scss";
+import "./styles/PipModeLive.scss";
+import Search from "../search/Search";
 
-export default memo(function PipModeLive() {
+export default memo(function PipModeLive({ setUrl, setPipMode }) {
   const dispatch = useDispatch();
 
   const configs = useSelector(selectConfigs);
   const channelCategories = useSelector(selectChannels);
   const allChannels = useSelector(selectAllChannels);
 
-  const [activeControl, setActiveControl] = useState("categorie"); // categorie, channel,epg
+  const navigate = useNavigate();
+
+  const [activeControl, setActiveControl] = useState("category"); // category, channel,epg,search
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     if (allChannels.length) {
@@ -94,29 +102,58 @@ export default memo(function PipModeLive() {
     dispatch(setChannels({ ...obj_categories }));
   };
 
+  useKeydown({
+    isActive: !showSearch,
+
+    back: () => navigate("/menu"),
+  });
+
   return (
-    <div className="parent-pip_mode">
-      <div className="head-pip_mode">
-        <div className="search-handler"></div>
-        <div className="logo">
-          <img
-            src={configs?.basics?.logo || LOCAL_STORAGE.LOGO.GET()}
-            alt="logo"
+    <>
+      {showSearch ? (
+        <Search
+          type={"live"}
+          setUrl={setUrl}
+          setShow={setShowSearch}
+          setPipMode={setPipMode}
+        />
+      ) : null}
+      <div className="parent-pip_mode">
+        <div className="head-pip_mode">
+          <SearchHandler
+            isActive={activeControl === "search" && !showSearch}
+            control={activeControl === "search" && !showSearch}
+            setControl={setActiveControl}
+            onClick={() => setShowSearch(true)}
+          />
+
+          <div className="logo">
+            <img
+              src={configs?.basics?.logo || LOCAL_STORAGE.LOGO.GET()}
+              alt="logo"
+            />
+          </div>
+          <TimeWrapper />
+        </div>
+        <div className="main-pip_mode">
+          <CategoriesWrapper
+            setCategory={setSelectedCategory}
+            setControl={setActiveControl}
+            control={activeControl === "category" && !showSearch}
+          />
+          <ChannelsWrapper
+            setUrl={setUrl}
+            setControl={setActiveControl}
+            selectedCategory={selectedCategory}
+            control={activeControl === "channel" && !showSearch}
+            setPipMode={setPipMode}
+          />
+          <EpgListWrapper
+            setControl={setActiveControl}
+            control={activeControl === "epg" && !showSearch}
           />
         </div>
-        <TimeWrapper />
       </div>
-      <div className="main-pip_mode">
-        <CategoriesWrapper
-          setCategory={setSelectedCategory}
-          control={activeControl === "categorie"}
-        />
-        <ChannelsWrapper
-          selectedCategory={selectedCategory}
-          control={activeControl === "channel"}
-        />
-        <EpgListWrapper />
-      </div>
-    </div>
+    </>
   );
 });

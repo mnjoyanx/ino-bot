@@ -69,6 +69,15 @@ export const loginUser = (body) => {
   );
 };
 
+export const getEpgList = (body) => {
+  return request(
+    "post",
+    CONFIG.EPG_LIST, // -> endpoint
+    "",
+    body
+  );
+};
+
 // export const singIn = body => {
 //   return request(
 //     "post",

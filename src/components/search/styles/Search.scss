@@ -1,0 +1,67 @@
+.parent-search {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 128rem;
+    height: 72rem;
+    z-index: 5001;
+    background-image: url("../../../assets//images/splashscreen.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    .head-search {
+        width: 118rem;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 5rem;
+        padding-bottom: 12rem;
+        .logo {
+            width: 12.5rem;
+            height: 5.6rem;
+            object-fit: contain;
+            object-position: left;
+        }
+
+        svg {
+            width: 2.2rem;
+            height: 2.2rem;
+            object-fit: contain;
+            object-position: center;
+        }
+    }
+    .search-inp {
+        width: 112rem;
+        display: block;
+        margin: 0 auto;
+        outline: none;
+        border: none;
+        font-size: 10rem;
+        background-color: transparent;
+        color: white;
+
+        &::placeholder {
+            color: white;
+            opacity: 0.2;
+            font-weight: 100;
+        }
+    }
+    .parent-result {
+        width: 112rem;
+        margin: 5rem auto 0;
+        .empty-result{
+            width: 100%;
+            padding-top: 10rem;
+            p{
+            font-size: 4rem;
+            text-align: center;
+            }
+        }
+        .main-result {
+            width: calc(22rem * 10);
+            display: flex;
+            
+        }
+    }
+}

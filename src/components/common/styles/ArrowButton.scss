@@ -1,0 +1,36 @@
+.arrow-button {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    opacity: .7;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    &.up {
+        padding-top: 1rem;
+        padding-bottom: 3rem;
+        top: 0rem;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.3) 30%,rgba(0, 0, 0, 0) 100%);
+        svg {
+            transform: rotate(180deg);
+        }
+    }
+
+    &.down {
+        padding-top: 3rem;
+        padding-bottom: 1rem;
+        bottom: 0rem;
+        border-bottom-left-radius: 1rem;
+        border-bottom-right-radius: 1rem;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, .5) 100%);
+    }
+
+    svg {
+        width: 2rem;
+        height: 2rem;
+        margin: 0 auto;
+        display: block;
+    }
+}

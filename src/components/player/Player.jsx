@@ -1,12 +1,12 @@
 import { memo, useRef } from "react";
 import LOCAL_STORAGE from "@utils/localStorage";
 import HlsPlayer from "./components/HlsPlayer";
-import LiveControls from "@components/live/components/LiveControls.jsx";
+import LiveControls from "@components/live/LiveControls.jsx";
 import AndroidPlayer from "./components/AndroidPlayer";
 
 import "./styles/player.scss";
 
-export default memo(function Player({ type, url, pipMode }) {
+export default memo(function Player({ type, url, pipMode, setUrl }) {
   const refVideo = useRef(null);
 
   const handleTimeUpdate = (currentTime) => {
@@ -15,7 +15,7 @@ export default memo(function Player({ type, url, pipMode }) {
   return (
     <>
       <div id="controls_player">
-        {type == "live" && !pipMode ? <LiveControls /> : null}
+        {type == "live" && !pipMode ? <LiveControls setUrl={setUrl} /> : null}
       </div>
       {/* <HlsPlayer refVideo={refVideo} /> */}
       {url ? (

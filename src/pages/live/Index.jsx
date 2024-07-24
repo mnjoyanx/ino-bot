@@ -10,10 +10,12 @@ import {
   setCurrentChannel,
 } from "@app/channels/channelsSlice";
 import { getChannels, channelInfo } from "@server/requests";
+
+import useKeydown from "@hooks/useKeydown";
 import LOCAL_STORAGE from "@utils/localStorage";
 
 import Player from "@components/player/Player.jsx";
-import PipModeLive from "@components/live/components/PipModeLive.jsx";
+import PipModeLive from "@components/live/PipModeLive.jsx";
 
 import "@styles/components/livePage.scss";
 
@@ -25,7 +27,7 @@ export default function LivePage() {
   const categoriesChannels = useSelector(selectChannels);
   const currentChannel = useSelector(selectCurrentChannel);
 
-  const [pipMode, setPipMode] = useState(true);
+  const [pipMode, setPipMode] = useState(false);
   const [url, setUrl] = useState(null);
 
   const [selectedChannel, setSelectedChannel] = useState(null);
@@ -82,10 +84,15 @@ export default function LivePage() {
     }
   };
 
+  useKeydown({
+    isActive: !pipMode,
+    back: () => setPipMode(true),
+  });
+
   return (
     <div className={`parent-live-page${pipMode ? " pip-mode" : ""}`}>
-      <Player type="live" url={url} pipMode={pipMode} />
-      {pipMode ? <PipModeLive /> : null}
+      <Player type="live" url={url} pipMode={pipMode} setUrl={setUrl} />
+      {pipMode ? <PipModeLive setUrl={setUrl} setPipMode={setPipMode} /> : null}
     </div>
   );
 }

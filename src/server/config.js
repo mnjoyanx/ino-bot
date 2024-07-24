@@ -7,4 +7,5 @@ export const CONFIG = {
   GET_CHANNELS: "v2/api/channels",
   CHANNEL_INFO: "v2/api/channels/info",
   CATEGORIES_CHANNEL: "v2/api/category",
+  EPG_LIST: "user/epg/getByDate",
 };
