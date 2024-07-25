@@ -26,6 +26,7 @@ export default memo(function Search({ type, setShow, setUrl, setPipMode }) {
       query: JSON.stringify({
         pagination: false,
         search_and: { name: valueSearch },
+        sort: ["position", "ASC"],
       }),
     });
     const parsedResponse = JSON.parse(response);

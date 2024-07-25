@@ -1,3 +1,12 @@
+.num-change-channel{
+    background-color: rgba(0,0,0,0.5);
+    position: absolute;
+    top: 3rem;
+    right: 3rem;
+    font-size: 2rem;
+    padding: 0.2rem 1rem;
+    border-radius: .5rem;
+}
 .live-control {
     width: 128rem;
     display: flex;
