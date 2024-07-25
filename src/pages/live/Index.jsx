@@ -43,7 +43,7 @@ export default function LivePage() {
 
   const getAllChannels = async () => {
     const response = await getChannels({
-      query: JSON.stringify({ pagination: false }),
+      query: JSON.stringify({ pagination: false, sort: ["position", "ASC"] }),
     });
     const parsedResponse = JSON.parse(response);
     const { error, message } = parsedResponse;

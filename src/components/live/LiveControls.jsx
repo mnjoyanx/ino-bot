@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectCurrentChannel,
@@ -16,9 +16,8 @@ import Duration from "../player/components/Duration";
 import Progress from "../player/components/Progress";
 import LiveIcon from "./components/LiveIcon";
 
-import SvgArrow from "../../assets/images/live/SvgArrow";
-
 import "./styles/LiveControl.scss";
+import InfoLiveControl from "./components/InfoLiveControl";
 
 export default memo(function LiveControls({ durationRef, setUrl }) {
   const dispatch = useDispatch();
@@ -29,6 +28,9 @@ export default memo(function LiveControls({ durationRef, setUrl }) {
 
   const refNextChannel = useRef(null);
   const refPrevChannel = useRef(null);
+  const timeOutNumber = useRef(null);
+
+  const [number, setNumber] = useState("");
 
   const findChannel = () => {
     for (let i = 0; i < allChannels.length; i++) {
@@ -65,8 +67,49 @@ export default memo(function LiveControls({ durationRef, setUrl }) {
     }
   };
 
+  const numberChangeChannel = (num) => {
+    let _number = Number(number + num.toString());
+
+    if ((number + num.toString()).length <= 4) {
+      setNumber(_number);
+    } else return;
+
+    clearTimeout(timeOutNumber.current);
+
+    timeOutNumber.current = setTimeout(() => {
+      findChannelByNumber(_number);
+      setNumber("");
+    }, 3000);
+  };
+
+  const findChannelByNumber = (num) => {
+    let _channel = null;
+    for (let i = 0; i < allChannels.length; i++) {
+      if (allChannels[i].position === num) {
+        getChannelInfo(allChannels[i].id);
+        _channel = allChannels[i];
+        break;
+      } else if (
+        num > allChannels[i].position &&
+        allChannels[i + 1] &&
+        num < allChannels[i + 1].position
+      ) {
+        _channel = allChannels[i];
+        break;
+      }
+    }
+
+    if (!_channel) _channel = allChannels[allChannels.length - 1];
+
+    getChannelInfo(_channel.id);
+  };
+
   useKeydown({
     isActive: true,
+
+    number: (e) => {
+      numberChangeChannel(e.key);
+    },
 
     up: () => {
       if (refNextChannel.current) {
@@ -82,34 +125,20 @@ export default memo(function LiveControls({ durationRef, setUrl }) {
   });
 
   return (
-    <div className="live-control">
-      <div className="parent-number-channel">
-        <span className="arrow arrow-up">
-          <SvgArrow />
-        </span>
-        <p className="number-channel">{currentChannel?.position}</p>
-        <span className="arrow arrow-down">
-          <SvgArrow />
-        </span>
+    <>
+      {number ? <p className="num-change-channel">{number}</p> : null}
+      <div className="live-control">
+        <InfoLiveControl currentChannel={currentChannel} />
+
+        <div className="progress-field">
+          <Progress percent={playerType === "live" ? 100 : 0} color="#FFFFFF" />
+          {playerType === "live" ? (
+            <LiveIcon />
+          ) : (
+            <Duration durationRef={durationRef} />
+          )}
+        </div>
       </div>
-      <div className="logo">
-        <img
-          src={currentChannel?.image}
-          onError={(e) => (e.target.src = LOCAL_STORAGE.LOGO.GET())}
-          alt=""
-        />
-      </div>
-      <div className="name-channel">
-        <p>{currentChannel?.name}</p>
-      </div>
-      <div className="progress-field">
-        <Progress percent={playerType === "live" ? 100 : 0} color="#FFFFFF" />
-        {playerType === "live" ? (
-          <LiveIcon />
-        ) : (
-          <Duration durationRef={durationRef} />
-        )}
-      </div>
-    </div>
+    </>
   );
 });
