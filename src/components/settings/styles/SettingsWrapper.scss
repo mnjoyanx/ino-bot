@@ -1,0 +1,35 @@
+.settings-wrapper{
+    width: 108rem;
+    margin: 0 auto;
+    padding-top: 12rem;
+    display: flex;
+    .list-settings{
+        .item-settings{
+            width: 30rem;
+            font-size: 2.7rem;
+            padding-bottom: 3rem;
+            color:#6E6D6D;
+            &.active{
+                color: white;
+            }
+        }
+    }
+    .parent-info-settings{
+        width: 78rem;
+        .info-settings{
+            width:80%;
+            p{
+                font-size: 2.7rem;
+                padding-bottom: 3rem;
+                font-weight: 400;
+
+            }
+            span{
+                font-size: 2.5rem;
+                line-height: 3rem;
+                font-weight: 200;
+                color: white;
+            }
+        }
+    }
+}
