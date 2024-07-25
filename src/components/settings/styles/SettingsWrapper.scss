@@ -1,0 +1,19 @@
+.settings-wrapper{
+    width: 108rem;
+    margin: 0 auto;
+    padding-top: 12rem;
+    .list-settings{
+        .item-settings{
+            width: 30rem;
+            font-size: 2.7rem;
+            padding-bottom: 3rem;
+            color:#6E6D6D;
+            &.active{
+                color: white;
+            }
+        }
+    }
+    .info-settings{
+        
+    }
+}
