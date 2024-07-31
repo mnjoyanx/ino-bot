@@ -5,6 +5,7 @@ import {
   selectPlayerType,
   selectAllChannels,
   setCurrentChannel,
+  setPlayerType,
 } from "@app/channels/channelsSlice";
 import { channelInfo } from "@server/requests";
 
@@ -18,8 +19,15 @@ import LiveIcon from "./components/LiveIcon";
 
 import "./styles/LiveControl.scss";
 import InfoLiveControl from "./components/InfoLiveControl";
+import ArchiveButtons from "./components/ArchiveButtons";
 
-export default memo(function LiveControls({ durationRef, setUrl }) {
+export default memo(function LiveControls({
+  durationRef,
+  currentTimeRef,
+  setPipMode,
+  setUrl,
+  refProgress,
+}) {
   const dispatch = useDispatch();
 
   const allChannels = useSelector(selectAllChannels);
@@ -31,8 +39,10 @@ export default memo(function LiveControls({ durationRef, setUrl }) {
   const timeOutNumber = useRef(null);
 
   const [number, setNumber] = useState("");
+  const [active, setActive] = useState(0);
 
   const findChannel = () => {
+    if (allChannels.length <= 1) return;
     for (let i = 0; i < allChannels.length; i++) {
       if (allChannels[i].id === currentChannel.id) {
         if (i === 0) {
@@ -105,21 +115,87 @@ export default memo(function LiveControls({ durationRef, setUrl }) {
   };
 
   useKeydown({
-    isActive: true,
+    isActive: playerType === "live",
 
     number: (e) => {
       numberChangeChannel(e.key);
     },
 
+    left: () => {
+      setActive(0);
+    },
+
+    right: () => {
+      setActive(1);
+    },
+
     up: () => {
       if (refNextChannel.current) {
+        setActive(0);
         getChannelInfo(refNextChannel.current.id);
       }
     },
 
     down: () => {
       if (refPrevChannel.current) {
+        setActive(0);
         getChannelInfo(refPrevChannel.current.id);
+      }
+    },
+
+    ok: () => {
+      if (active === 0) {
+        setPipMode(true);
+      } else if (active === 1) {
+        // show timeshift
+        setUrl(
+          "http://playertest.longtailvideo.com/adaptive/wowzaid3/playlist.m3u8"
+        );
+        setActive(2);
+        dispatch(setPlayerType("timeshift"));
+      }
+    },
+  });
+
+  useKeydown({
+    isActive: playerType === "timeshift" || playerType === "archive",
+
+    number: (e) => {
+      numberChangeChannel(e.key);
+    },
+
+    left: () => {
+      if (active === 0) return;
+
+      setActive(active - 1);
+    },
+
+    right: () => {
+      if (playerType === "archive" && active === 3) return;
+      if (active === 4) return;
+      setActive(active + 1);
+    },
+
+    up: () => {
+      if (refNextChannel.current && active === 0) {
+        dispatch(setPlayerType("live"));
+        getChannelInfo(refNextChannel.current.id);
+      }
+    },
+
+    down: () => {
+      if (refPrevChannel.current && active === 0) {
+        dispatch(setPlayerType("live"));
+        getChannelInfo(refPrevChannel.current.id);
+      }
+    },
+
+    ok: () => {
+      if (active === 0) {
+        setPipMode(true);
+      } else if (active === 4) {
+        setActive(0);
+        dispatch(setPlayerType("live"));
       }
     },
   });
@@ -128,14 +204,38 @@ export default memo(function LiveControls({ durationRef, setUrl }) {
     <>
       {number ? <p className="num-change-channel">{number}</p> : null}
       <div className="live-control">
-        <InfoLiveControl currentChannel={currentChannel} />
+        <InfoLiveControl
+          playerType={playerType}
+          currentChannel={currentChannel}
+          active={active}
+        />
 
         <div className="progress-field">
-          <Progress percent={playerType === "live" ? 100 : 0} color="#FFFFFF" />
+          <Progress
+            playerType={playerType}
+            color="#FFFFFF"
+            refProgress={refProgress}
+          />
           {playerType === "live" ? (
-            <LiveIcon />
+            <LiveIcon type={playerType} />
+          ) : playerType === "timeshift" ? (
+            <>
+              <ArchiveButtons type={playerType} active={active} />
+              <LiveIcon type={playerType} isActive={active === 4} />
+              <Duration
+                _ref={currentTimeRef}
+                className={"timeshift-duration"}
+              />
+            </>
           ) : (
-            <Duration durationRef={durationRef} />
+            <>
+              <ArchiveButtons type={playerType} active={active} />
+              <Duration _ref={durationRef} className={"archive-duration"} />
+              <Duration
+                _ref={currentTimeRef}
+                className={"archive-current_time"}
+              />
+            </>
           )}
         </div>
       </div>

@@ -3,6 +3,29 @@
     height: 54.8rem;
     // background-color: green;
     position: relative;
+    .rec_video{
+        position: absolute;
+        top: 2rem;
+        left: 4rem;
+        z-index: 5000;
+        background-color: #9e0b0b;
+        color: white;
+        font-size: 1.2rem;
+        padding: .2rem .5rem .2rem 1.7rem;
+        border-radius: .2rem;
+        box-shadow: 0 0 0.5rem #9e0b0b;
+        &::after{
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0.5rem;
+            width: .7rem;
+            height: .7rem;
+            background-color: white;
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+    }
     .logo-currnet_channel {
         width: 3rem;
         height: 3rem;

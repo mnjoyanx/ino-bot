@@ -3,11 +3,12 @@ import { formatTime } from "@utils/util";
 export default function Duration({
   duration = 0,
   color = "white",
-  className = "duration",
+  className = "",
+  _ref,
 }) {
   return (
-    <div className={className}>
-      <p>{formatTime(duration)}</p>
+    <div className={`duration ${className}`}>
+      <p ref={_ref}>{formatTime(duration)}</p>
     </div>
   );
 }

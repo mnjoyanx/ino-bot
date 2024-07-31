@@ -7,7 +7,6 @@ export default memo(function MenuItem({
   onClick,
   onMouseEnter,
 }) {
-  console.log("asndj");
   return (
     <div
       className={`menu-item${isActive ? " active" : ""}`}

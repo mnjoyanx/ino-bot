@@ -147,6 +147,14 @@ export default function os(callback) {
     LOCAL_STORAGE.DEVICE_MODEL.SET(device_model);
     LOCAL_STORAGE.DEVICE_NAME.SET(device_name);
 
+    window.keydown = ({ keyName }) => {
+      if (keyName == "back") {
+        let data = { bubbles: true, cancelable: true, keyCode: 8 };
+        document.dispatchEvent(new KeyboardEvent("keydown", data));
+        // document.dispatchEvent(new KeyboardEvent("keyup", data));
+      }
+    };
+
     callback();
   } else {
     LOCAL_STORAGE.DEVICE_OS.SET("Webos");

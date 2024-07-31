@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 export default memo(function HlsPlayer({
   refVideo,
@@ -10,6 +10,7 @@ export default memo(function HlsPlayer({
   pause = () => {},
   error = () => {},
 }) {
+  const currentTime = useRef(0);
 
   useEffect(() => {
     let hls = null;
@@ -69,9 +70,12 @@ export default memo(function HlsPlayer({
 
   return (
     <video
-      onTimeUpdate={() =>
-        timeUpdate(refVideo.current.currentTime, refVideo.current.duration)
-      }
+      onTimeUpdate={() => {
+        if (currentTime.current !== Math.floor(refVideo.current.currentTime)) {
+          currentTime.current = Math.floor(refVideo.current.currentTime);
+          timeUpdate(refVideo.current.currentTime, refVideo.current.duration);
+        }
+      }}
       onLoadedMetadata={loadVideo}
       onError={error}
       onWaiting={waiting}

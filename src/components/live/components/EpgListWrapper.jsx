@@ -1,6 +1,10 @@
-import { memo, useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
-import { selectCurrentChannel } from "@app/channels/channelsSlice";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  setPlayerType,
+  selectCurrentChannel,
+  selectPlayerType,
+} from "@app/channels/channelsSlice";
 import { getEpgList } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
 
@@ -11,8 +15,15 @@ import CardEpg from "./CardEpg";
 import "../styles/EpgListWrapper.scss";
 import ArrowButton from "../../common/ArrowButton";
 
-export default memo(function EpgListWrapper({ control, setControl }) {
+export default memo(function EpgListWrapper({
+  control,
+  setControl,
+  setPipMode,
+  setUrl,
+}) {
+  const dispatch = useDispatch();
   const currentChannel = useSelector(selectCurrentChannel);
+  const playerType = useSelector(selectPlayerType);
 
   const [emptyList, setEmptyList] = useState(false);
   const [epgList, setEpgList] = useState([]);
@@ -73,6 +84,14 @@ export default memo(function EpgListWrapper({ control, setControl }) {
     if (active > 0 && active < epgList.length - 2) setStart(start + 1);
   };
 
+  const handleClickEpg = useCallback((item) => {
+    setUrl(
+      "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
+    );
+    dispatch(setPlayerType("archive"));
+    setPipMode(false);
+  }, []);
+
   useKeydown({
     isActive: control,
 
@@ -91,6 +110,8 @@ export default memo(function EpgListWrapper({ control, setControl }) {
         alt=""
         onError={(e) => (e.target.src = LOCAL_STORAGE.LOGO.GET())}
       />
+
+      {playerType !== "live" ? <div className="rec_video">REC</div> : null}
 
       <div className="epg-list-wrapper">
         {!emptyList && active !== 0 ? (
@@ -119,7 +140,7 @@ export default memo(function EpgListWrapper({ control, setControl }) {
                   isActive={index === active && control}
                   type={type}
                   hasArchive={currentChannel?.has_archive}
-                  onClick={() => console.log("card")}
+                  onClick={handleClickEpg}
                 />
               ) : null;
             })}

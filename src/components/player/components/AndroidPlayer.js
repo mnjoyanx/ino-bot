@@ -14,6 +14,12 @@ window.PLAYER = {
       })
     );
   },
+
+  isPlayingChanged: () => {},
+
+  vout: () => {},
+
+  getAndroidTracks: () => {},
 };
 
 export default function AndroidPlayer({ url, timeUpdate, time = 0 }) {

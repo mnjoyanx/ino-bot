@@ -105,7 +105,7 @@ export default memo(function PipModeLive({ setUrl, setPipMode }) {
   useKeydown({
     isActive: !showSearch,
 
-    back: () => navigate("/menu"),
+    back: () => setPipMode(false),
   });
 
   return (
@@ -149,6 +149,8 @@ export default memo(function PipModeLive({ setUrl, setPipMode }) {
             setPipMode={setPipMode}
           />
           <EpgListWrapper
+            setUrl={setUrl}
+            setPipMode={setPipMode}
             setControl={setActiveControl}
             control={activeControl === "epg" && !showSearch}
           />

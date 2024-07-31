@@ -3,11 +3,16 @@ import { memo } from "react";
 import LOCAL_STORAGE from "@utils/localStorage";
 
 import SvgArrow from "@assets/images/live/SvgArrow";
+import SvgBackward from "../../../assets/images/live/backward";
 
-export default memo(function InfoLiveControl({ currentChannel }) {
+export default memo(function InfoLiveControl({
+  currentChannel,
+  active,
+  playerType,
+}) {
   return (
     <>
-      <div className="parent-number-channel">
+      <div className={`parent-number-channel${active === 0 ? " active" : ""}`}>
         <span className="arrow arrow-up">
           <SvgArrow />
         </span>
@@ -26,6 +31,11 @@ export default memo(function InfoLiveControl({ currentChannel }) {
       <div className="name-channel">
         <p>{currentChannel?.name}</p>
       </div>
+      {playerType === "live" ? (
+        <div className={`timeshift-btn${active === 1 ? " active" : ""}`}>
+          <SvgBackward />
+        </div>
+      ) : null}
     </>
   );
 });
