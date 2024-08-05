@@ -89,7 +89,10 @@ export default function LivePage() {
 
   useKeydown({
     isActive: !pipMode,
-    back: () => navigate(PATH.MENU),
+    back: () => {
+      window.PLAYER.destroyPlayer()
+      navigate(PATH.MENU);
+    },
   });
 
   return (

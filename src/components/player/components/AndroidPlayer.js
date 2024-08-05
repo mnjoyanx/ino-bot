@@ -23,6 +23,11 @@ window.PLAYER = {
 
   playerError: () => {},
 
+  destroyPlayer: () => {
+    if (!window.Android) return;
+    window.Android.destroyPlayer();
+  },
+
   setPositionPlayer: (
     width = window.innerWidth,
     height = window.innerHeight,

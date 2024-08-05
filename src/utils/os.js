@@ -139,7 +139,7 @@ export default function os(callback) {
   } else if (window.Android) {
     document.body.classList.add("android");
     LOCAL_STORAGE.DEVICE_OS.SET("android");
-    let device_name = "android";
+    let device_name = "Android Tv";
     let device_model = window.Android.getModel();
     let deviceId = window.Android.getDeviceId();
 

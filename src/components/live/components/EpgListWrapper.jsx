@@ -101,6 +101,10 @@ export default memo(function EpgListWrapper({
     down: handleDown,
 
     left: () => setControl("channel"),
+
+    ok: () => {
+      handleClickEpg(epgList[active]);
+    },
   });
 
   return (
