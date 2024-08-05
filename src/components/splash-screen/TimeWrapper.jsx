@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { formatDate } from "@utils/util";
 
-import "./styles/TimeWrapper.scss";
+import "./styles/timeWrapper.scss";
 
 export default function TimeWrapper() {
   const [time, setTime] = useState(new Date().getTime());
