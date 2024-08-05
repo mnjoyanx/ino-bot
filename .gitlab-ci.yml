@@ -1,0 +1,27 @@
+stages:
+    - CREATE_DOCKER_IMAGE
+    - PUSHING_DOCKER_IMAGE
+  
+BUILDING IMAGE:
+    stage: CREATE_DOCKER_IMAGE
+    only:
+       - master
+    script:
+        - docker build -t "$CI_DOCKER_IMAGE" .
+    tags:
+        - ott-tctv-app
+
+PUSHING IMAGE:
+    stage: PUSHING_DOCKER_IMAGE
+    only:
+       - master
+    before_script:
+      - docker login -u "$CI_REGISTERY_USER" -p "$CI_REGISTERY_PASSWORD"
+    script:
+        - docker push "$CI_DOCKER_IMAGE"
+    after_script:
+        - docker logout
+        - docker rmi "$CI_DOCKER_IMAGE"
+
+    tags:
+        - ott-tctv-app
