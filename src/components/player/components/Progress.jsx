@@ -6,6 +6,7 @@ export default memo(function Progress({
   refProgress,
   playerType = "",
 }) {
+  
   const styleProgress = {
     backgroundColor: placeholderColor,
   };
