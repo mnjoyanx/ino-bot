@@ -90,6 +90,7 @@ export default memo(function EpgListWrapper({
     );
     dispatch(setPlayerType("archive"));
     setPipMode(false);
+    window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
   }, []);
 
   useKeydown({

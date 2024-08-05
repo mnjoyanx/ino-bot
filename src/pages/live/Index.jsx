@@ -34,6 +34,8 @@ export default function LivePage() {
   const [selectedChannel, setSelectedChannel] = useState(null);
 
   useEffect(() => {
+    window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
+
     if (allChannels.length === 0) {
       // localStorage.removeItem("TOKEN");
       getAllChannels();
@@ -92,7 +94,13 @@ export default function LivePage() {
 
   return (
     <div className={`parent-live-page${pipMode ? " pip-mode" : ""}`}>
-      <Player type="live" url={url} pipMode={pipMode} setPipMode={setPipMode} setUrl={setUrl} />
+      <Player
+        type="live"
+        url={url}
+        pipMode={pipMode}
+        setPipMode={setPipMode}
+        setUrl={setUrl}
+      />
       {pipMode ? <PipModeLive setUrl={setUrl} setPipMode={setPipMode} /> : null}
     </div>
   );

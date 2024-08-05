@@ -20,6 +20,38 @@ window.PLAYER = {
   vout: () => {},
 
   getAndroidTracks: () => {},
+
+  playerError: () => {},
+
+  setPositionPlayer: (
+    width = window.innerWidth,
+    height = window.innerHeight,
+    left = 0,
+    top = 0
+  ) => {
+    if (!window.Android) return;
+
+    let size = 1;
+
+    if (window.innerWidth === 1280) size = 1.5;
+
+    let screenWidth = window.innerWidth;
+    let screenHeight = window.innerHeight;
+
+    let _block_width = width / size;
+    let _block_height = height / size;
+    let _offset_left = left / size;
+    let _offset_top = top / size;
+
+    window.Android.setPlayerPositions(
+      _block_width,
+      _block_height,
+      _offset_left,
+      _offset_top,
+      screenWidth,
+      screenHeight
+    );
+  },
 };
 
 export default function AndroidPlayer({ url, timeUpdate, time = 0 }) {

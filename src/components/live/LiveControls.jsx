@@ -146,6 +146,7 @@ export default memo(function LiveControls({
     ok: () => {
       if (active === 0) {
         setPipMode(true);
+        window.PLAYER.setPositionPlayer(720, 402, 1061, 224);
       } else if (active === 1) {
         // show timeshift
         setUrl(
@@ -193,6 +194,7 @@ export default memo(function LiveControls({
     ok: () => {
       if (active === 0) {
         setPipMode(true);
+        window.PLAYER.setPositionPlayer(720, 402, 1061, 224);
       } else if (active === 4) {
         setActive(0);
         dispatch(setPlayerType("live"));

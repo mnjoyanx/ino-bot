@@ -105,7 +105,10 @@ export default memo(function PipModeLive({ setUrl, setPipMode }) {
   useKeydown({
     isActive: !showSearch,
 
-    back: () => setPipMode(false),
+    back: () => {
+      setPipMode(false);
+      window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
+    },
   });
 
   return (

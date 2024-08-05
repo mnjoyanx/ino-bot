@@ -61,6 +61,7 @@ export default memo(function ChannelsWrapper({
   const getChannelInfo = async (id) => {
     if (id === currentChannel?.id) {
       setPipMode(false);
+       window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
       return;
     }
     const response = await channelInfo({ id: id });
