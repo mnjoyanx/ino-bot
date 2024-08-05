@@ -1,12 +1,9 @@
-FROM node:18 AS builder
+FROM node:16 AS builder
 
 WORKDIR app
 
 COPY . .
-
-RUN apt-get install                              
-                  
-
+                
 RUN npm install
 
 RUN npm run build
