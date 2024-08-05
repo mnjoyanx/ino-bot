@@ -11,7 +11,10 @@ export default memo(function CardEpg({
   type,
 }) {
   return (
-    <div className={`card-epg${isActive ? " active" : ""}`} onClick={onClick}>
+    <div
+      className={`card-epg${isActive ? " active" : ""}`}
+      onClick={() => onClick(item)}
+    >
       <div className={`square ${type} ${hasArchive}${nextEpg ? " next" : ""}`}>
         {type == "past" ? (
           hasArchive ? (

@@ -105,7 +105,10 @@ export default memo(function PipModeLive({ setUrl, setPipMode }) {
   useKeydown({
     isActive: !showSearch,
 
-    back: () => navigate("/menu"),
+    back: () => {
+      setPipMode(false);
+      window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
+    },
   });
 
   return (
@@ -149,6 +152,8 @@ export default memo(function PipModeLive({ setUrl, setPipMode }) {
             setPipMode={setPipMode}
           />
           <EpgListWrapper
+            setUrl={setUrl}
+            setPipMode={setPipMode}
             setControl={setActiveControl}
             control={activeControl === "epg" && !showSearch}
           />

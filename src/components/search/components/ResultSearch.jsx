@@ -69,6 +69,7 @@ export default memo(function ResultSearch({
       setUrl(message.url);
       setShow(false);
       setPipMode(false);
+      window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
     }
   };
 

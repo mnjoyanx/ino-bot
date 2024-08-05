@@ -1,11 +1,12 @@
-.num-change-channel{
-    background-color: rgba(0,0,0,0.5);
+@import "@styles/variables.scss";
+.num-change-channel {
+    background-color: rgba(0, 0, 0, 0.5);
     position: absolute;
     top: 3rem;
     right: 3rem;
     font-size: 2rem;
     padding: 0.2rem 1rem;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
 }
 .live-control {
     width: 128rem;
@@ -14,19 +15,24 @@
     position: absolute;
     left: 0;
     bottom: 0;
-    padding: 20rem 5rem 2rem 5rem;
+    padding: 20rem 5rem 5rem 5rem;
     background-image: linear-gradient(to top, #000000, transparent);
+
     .live-icon {
         color: white;
         background-color: #9e0b0b;
         position: absolute;
         right: 0;
-        top: 1rem;
+        top: 1.5rem;
         font-size: 1.3rem;
         padding: 0.2rem 1rem 0.2rem 2rem;
-        border-radius: .2rem;
-        &.timeshift{
-            background-color:grey;
+        border-radius: 0.2rem;
+
+        &.active{
+            box-shadow: 0 0 0 .1rem black, 0 0 0 .2rem white;
+        }
+        &.timeshift {
+            background-color: grey;
         }
         &::before {
             content: "";
@@ -48,6 +54,20 @@
         flex-direction: column;
         justify-content: space-between;
         align-items: center;
+
+        &.active {
+            transition: 0.1s linear;
+            transform: scale(1.2);
+
+            path {
+                transition: 0.1s linear;
+                stroke: $active-color;
+            }
+            .number-channel {
+                transition: 0.1s linear;
+                color: $active-color;
+            }
+        }
 
         .arrow {
             width: 1.5rem;
@@ -84,8 +104,8 @@
         }
     }
     .name-channel {
-        width: 15rem;
-        margin-right: 2rem;
+        width: 12rem;
+        margin-right: 1rem;
         p {
             font-size: 1.5rem;
             display: -webkit-box;
@@ -94,13 +114,49 @@
             overflow: hidden;
         }
     }
-    .progress-field {
-        width: 90rem;
+    .timeshift-btn {
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
         position: relative;
+
+        &.active {
+            transform: scale(1.2);
+
+            transition: 0.1s linear;
+            path {
+                fill: $active-color;
+                transition: 0.1s linear;
+            }
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 1;
+        }
+    }
+    .progress-field {
+        width: 87rem;
+        position: relative;
+        .archive-duration{
+            right: 0rem;    
+        }
+        .archive-current_time{
+            right: unset;
+            left: 0rem;
+        }
         .duration {
             position: absolute;
-            top: 1rem;
+            top: 1.5rem;
             right: 0rem;
+        }
+        .timeshift-duration {
+            right: unset;
+            left: 0rem;
         }
         .progress {
         }

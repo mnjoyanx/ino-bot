@@ -13,6 +13,7 @@ import { getChannels, channelInfo } from "@server/requests";
 
 import useKeydown from "@hooks/useKeydown";
 import LOCAL_STORAGE from "@utils/localStorage";
+import PATH from "@utils/paths";
 
 import Player from "@components/player/Player.jsx";
 import PipModeLive from "@components/live/PipModeLive.jsx";
@@ -33,6 +34,8 @@ export default function LivePage() {
   const [selectedChannel, setSelectedChannel] = useState(null);
 
   useEffect(() => {
+    window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
+
     if (allChannels.length === 0) {
       // localStorage.removeItem("TOKEN");
       getAllChannels();
@@ -86,12 +89,18 @@ export default function LivePage() {
 
   useKeydown({
     isActive: !pipMode,
-    back: () => setPipMode(true),
+    back: () => navigate(PATH.MENU),
   });
 
   return (
     <div className={`parent-live-page${pipMode ? " pip-mode" : ""}`}>
-      <Player type="live" url={url} pipMode={pipMode} setUrl={setUrl} />
+      <Player
+        type="live"
+        url={url}
+        pipMode={pipMode}
+        setPipMode={setPipMode}
+        setUrl={setUrl}
+      />
       {pipMode ? <PipModeLive setUrl={setUrl} setPipMode={setPipMode} /> : null}
     </div>
   );
