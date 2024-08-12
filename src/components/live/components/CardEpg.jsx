@@ -13,7 +13,7 @@ export default memo(function CardEpg({
   return (
     <div
       className={`card-epg${isActive ? " active" : ""}`}
-      onClick={() => onClick(item)}
+      onClick={hasArchive && type == "past" ? () => onClick(item) : () => {}}
     >
       <div className={`square ${type} ${hasArchive}${nextEpg ? " next" : ""}`}>
         {type == "past" ? (
@@ -33,6 +33,7 @@ export default memo(function CardEpg({
         ) : null}
       </div>
       <p className="date_time">
+        {formatDate(new Date(item.start_ut * 1000), "dd/MM")} |{" "}
         {formatDate(new Date(item.start_ut * 1000), "hh:mm")} {" - "}
         {formatDate(new Date(item.stop_ut * 1000), "hh:mm")}
       </p>

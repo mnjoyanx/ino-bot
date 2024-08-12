@@ -126,7 +126,7 @@ export default memo(function LiveControls({
     },
 
     right: () => {
-      setActive(1);
+      if (currentChannel?.has_archive) setActive(1);
     },
 
     up: () => {
