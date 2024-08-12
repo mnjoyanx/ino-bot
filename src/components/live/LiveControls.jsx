@@ -146,17 +146,46 @@ export default memo(function LiveControls({
     ok: () => {
       if (active === 0) {
         setPipMode(true);
-        window.PLAYER.setPositionPlayer(720, 402, 1061, 224);
+        window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
       } else if (active === 1) {
         // show timeshift
-        setUrl(
-          "http://playertest.longtailvideo.com/adaptive/wowzaid3/playlist.m3u8"
-        );
+        setUrlTimeshift();
+        // setUrl(
+        //   "http://playertest.longtailvideo.com/adaptive/wowzaid3/playlist.m3u8"
+        // );
         setActive(2);
         dispatch(setPlayerType("timeshift"));
       }
     },
   });
+
+  const setUrlTimeshift = () => {
+    if (currentChannel.cdn_url) {
+      let _url =
+        currentChannel.cdn_url +
+        "/timeshift/" +
+        currentChannel.id +
+        "/index.m3u8";
+
+      setUrl(_url);
+    } else if (currentChannel.archived_channel_host) {
+      let _url = "";
+      if (currentChannel.archived_channel_host.indexOf("http") == -1)
+        _url =
+          "http://" +
+          currentChannel.archived_channel_host +
+          "/timeshift/" +
+          currentChannel.id +
+          "/index.m3u8";
+      else
+        _url =
+          currentChannel.archived_channel_host +
+          "/timeshift/" +
+          currentChannel.id +
+          "/index.m3u8";
+      setUrl(_url);
+    }
+  };
 
   useKeydown({
     isActive: playerType === "timeshift" || playerType === "archive",
@@ -194,7 +223,7 @@ export default memo(function LiveControls({
     ok: () => {
       if (active === 0) {
         setPipMode(true);
-        window.PLAYER.setPositionPlayer(720, 402, 1061, 224);
+        window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
       } else if (active === 4) {
         setActive(0);
         dispatch(setPlayerType("live"));

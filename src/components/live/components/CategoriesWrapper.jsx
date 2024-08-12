@@ -13,6 +13,7 @@ export default memo(function CategoriesWrapper({
   control,
   setCategory,
   setControl,
+  category,
 }) {
   const categories = useSelector(selectChannels);
 

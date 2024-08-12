@@ -30,9 +30,11 @@ export default memo(function PipModeLive({ setUrl, setPipMode }) {
 
   const navigate = useNavigate();
 
-  const [activeControl, setActiveControl] = useState("category"); // category, channel,epg,search
+  const [activeControl, setActiveControl] = useState("channel"); // category, channel,epg,search
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showSearch, setShowSearch] = useState(false);
+
+  useEffect(() => {}, [activeControl]);
 
   useEffect(() => {
     if (allChannels.length) {
@@ -109,6 +111,7 @@ export default memo(function PipModeLive({ setUrl, setPipMode }) {
       setPipMode(false);
       window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
     },
+    ok: () => {},
   });
 
   return (
@@ -127,7 +130,9 @@ export default memo(function PipModeLive({ setUrl, setPipMode }) {
             isActive={activeControl === "search" && !showSearch}
             control={activeControl === "search" && !showSearch}
             setControl={setActiveControl}
-            onClick={() => setShowSearch(true)}
+            onClick={
+              activeControl === "search" ? () => setShowSearch(true) : null
+            }
           />
 
           <div className="logo">
@@ -143,6 +148,7 @@ export default memo(function PipModeLive({ setUrl, setPipMode }) {
             setCategory={setSelectedCategory}
             setControl={setActiveControl}
             control={activeControl === "category" && !showSearch}
+            category={selectedCategory}
           />
           <ChannelsWrapper
             setUrl={setUrl}
