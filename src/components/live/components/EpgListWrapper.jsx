@@ -84,14 +84,27 @@ export default memo(function EpgListWrapper({
     if (active > 0 && active < epgList.length - 2) setStart(start + 1);
   };
 
-  const handleClickEpg = useCallback((item) => {
-    setUrl(
-      "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
-    );
-    dispatch(setPlayerType("archive"));
-    setPipMode(false);
-    window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
-  }, []);
+  const handleClickEpg = useCallback(
+    (item) => {
+      let type =
+        item.start_ut * 1000 < currnetDate.current &&
+        item.stop_ut * 1000 > currnetDate.current
+          ? "now"
+          : currnetDate.current < item.start_ut * 1000
+            ? "future"
+            : "past";
+
+      if (type == "past" && currentChannel?.has_archive) {
+        setUrl(
+          "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
+        );
+        dispatch(setPlayerType("archive"));
+        setPipMode(false);
+        window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
+      }
+    },
+    [currentChannel]
+  );
 
   useKeydown({
     isActive: control,
