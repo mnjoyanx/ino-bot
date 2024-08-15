@@ -8,6 +8,12 @@
     padding: 0.2rem 1rem;
     border-radius: 0.5rem;
 }
+
+.live-control.hide {
+    opacity: 0;
+    transform: translateY(10rem);
+    transition:  0.1s linear;
+}
 .live-control {
     width: 128rem;
     display: flex;
@@ -17,6 +23,7 @@
     bottom: 0;
     padding: 20rem 5rem 5rem 5rem;
     background-image: linear-gradient(to top, #000000, transparent);
+    opacity: 1;
 
     .live-icon {
         color: white;

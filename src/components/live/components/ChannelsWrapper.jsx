@@ -4,6 +4,8 @@ import {
   selectChannels,
   selectCurrentChannel,
   setCurrentChannel,
+  playerType,
+  setPlayerType,
 } from "@app/channels/channelsSlice";
 
 import { channelInfo } from "@server/requests";
@@ -34,8 +36,9 @@ export default memo(function ChannelsWrapper({
   const handleClick = useCallback(
     (index, id) => {
       getChannelInfo(id);
+      dispatch(setPlayerType("live"));
     },
-    []
+    [currentChannel]
   );
 
   const handleUp = () => {

@@ -64,6 +64,7 @@ export default function MenuItems() {
       if (activeIndex === 0 || activeIndex === 2) return;
       setActiveIndex(activeIndex - 1);
     },
+
     right: () => {
       if (activeIndex === 1 || activeIndex === 3) return;
       setActiveIndex(activeIndex + 1);
@@ -80,6 +81,7 @@ export default function MenuItems() {
     ok: () => {
       onClick(list[activeIndex].path);
     },
+    
   });
 
   return (

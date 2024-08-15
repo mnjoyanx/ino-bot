@@ -20,9 +20,12 @@ export default memo(function CategoriesWrapper({
   const [active, setActive] = useState(0);
   const [start, setStart] = useState(0);
 
-  const handleClick = useCallback((name) => {
-    setCategory(name);
-  }, []);
+  const handleClick = useCallback(
+    (name) => {
+      setCategory(name);
+    },
+    [category]
+  );
 
   const handleUp = () => {
     if (active === 0) {

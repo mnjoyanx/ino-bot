@@ -18,6 +18,7 @@ export default memo(function Player({
   const refDuration = useRef(null);
   const refCurrentTime = useRef(null);
   const refProgress = useRef(null);
+  const refUrlLive = useRef(null);
 
   const handleTimeUpdate = (currentTime, duration) => {
     if (refDuration.current) {
@@ -36,6 +37,8 @@ export default memo(function Player({
         {type == "live" && !pipMode ? (
           <LiveControls
             setUrl={setUrl}
+            url={url}
+            refUrlLive={refUrlLive}
             durationRef={refDuration}
             currentTimeRef={refCurrentTime}
             setPipMode={setPipMode}
