@@ -1,9 +1,11 @@
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectChannels,
   selectCurrentChannel,
   setCurrentChannel,
+  playerType,
+  setPlayerType,
 } from "@app/channels/channelsSlice";
 
 import { channelInfo } from "@server/requests";
@@ -34,8 +36,9 @@ export default memo(function ChannelsWrapper({
   const handleClick = useCallback(
     (index, id) => {
       getChannelInfo(id);
+      dispatch(setPlayerType("live"));
     },
-    [currentChannel, active]
+    [currentChannel]
   );
 
   const handleUp = () => {
@@ -58,10 +61,24 @@ export default memo(function ChannelsWrapper({
       setStart(start + 1);
   };
 
+  useEffect(() => {
+    if (currentChannel || selectedCategory === "All") {
+      for (var i = 0; i < categories[selectedCategory]?.content?.length; i++) {
+        if (
+          categories[selectedCategory]?.content[i].id === currentChannel?.id
+        ) {
+          setActive(i);
+          if (i > 2 && i < categories[selectedCategory]?.total - 4) setStart(i);
+          break;
+        }
+      }
+    }
+  }, [categories, currentChannel]);
+
   const getChannelInfo = async (id) => {
     if (id === currentChannel?.id) {
       setPipMode(false);
-       window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
+      window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
       return;
     }
     const response = await channelInfo({ id: id });

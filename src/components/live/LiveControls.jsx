@@ -26,7 +26,9 @@ export default memo(function LiveControls({
   currentTimeRef,
   setPipMode,
   setUrl,
+  url,
   refProgress,
+  refUrlLive,
 }) {
   const dispatch = useDispatch();
 
@@ -40,6 +42,7 @@ export default memo(function LiveControls({
 
   const [number, setNumber] = useState("");
   const [active, setActive] = useState(0);
+  const [hideControls, setHideControls] = useState(false);
 
   const findChannel = () => {
     if (allChannels.length <= 1) return;
@@ -59,10 +62,6 @@ export default memo(function LiveControls({
       }
     }
   };
-
-  useEffect(() => {
-    findChannel();
-  }, [currentChannel]);
 
   const getChannelInfo = async (id) => {
     const response = await channelInfo({ id: id });
@@ -114,22 +113,85 @@ export default memo(function LiveControls({
     getChannelInfo(_channel.id);
   };
 
+  const setUrlTimeshift = () => {
+    if (currentChannel.cdn_url) {
+      let _url =
+        currentChannel.cdn_url +
+        "/timeshift/" +
+        currentChannel.id +
+        "/index.m3u8";
+
+      setUrl(_url);
+    } else if (currentChannel.archived_channel_host) {
+      let _url = "";
+      if (currentChannel.archived_channel_host.indexOf("http") == -1)
+        _url =
+          "http://" +
+          currentChannel.archived_channel_host +
+          "/timeshift/" +
+          currentChannel.id +
+          "/index.m3u8";
+      else
+        _url =
+          currentChannel.archived_channel_host +
+          "/timeshift/" +
+          currentChannel.id +
+          "/index.m3u8";
+      refUrlLive.current = url;
+      setUrl(_url);
+    }
+  };
+
+  useEffect(() => {
+    findChannel();
+  }, [currentChannel]);
+
+  useEffect(() => {
+    let hideControlsTimer = null;
+
+    if (!hideControls) {
+      hideControlsTimer = setTimeout(() => {
+        setHideControls(true);
+      }, 3000);
+    }
+
+    return () => {
+      clearTimeout(hideControlsTimer);
+    };
+  }, [hideControls]);
+
   useKeydown({
     isActive: playerType === "live",
 
     number: (e) => {
+      if (hideControls) {
+        setHideControls(false);
+        return;
+      }
       numberChangeChannel(e.key);
     },
 
     left: () => {
+      if (hideControls) {
+        setHideControls(false);
+        return;
+      }
       setActive(0);
     },
 
     right: () => {
+      if (hideControls) {
+        setHideControls(false);
+        return;
+      }
       if (currentChannel?.has_archive) setActive(1);
     },
 
     up: () => {
+      if (hideControls) {
+        setHideControls(false);
+        return;
+      }
       if (refNextChannel.current) {
         setActive(0);
         getChannelInfo(refNextChannel.current.id);
@@ -137,6 +199,10 @@ export default memo(function LiveControls({
     },
 
     down: () => {
+      if (hideControls) {
+        setHideControls(false);
+        return;
+      }
       if (refPrevChannel.current) {
         setActive(0);
         getChannelInfo(refPrevChannel.current.id);
@@ -144,14 +210,19 @@ export default memo(function LiveControls({
     },
 
     ok: () => {
+      if (hideControls) {
+        setHideControls(false);
+        return;
+      }
       if (active === 0) {
         setPipMode(true);
-        window.PLAYER.setPositionPlayer(720, 402, 1061, 224);
+        window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
       } else if (active === 1) {
         // show timeshift
-        setUrl(
-          "http://playertest.longtailvideo.com/adaptive/wowzaid3/playlist.m3u8"
-        );
+        setUrlTimeshift();
+        // setUrl(
+        //   "http://playertest.longtailvideo.com/adaptive/wowzaid3/playlist.m3u8"
+        // );
         setActive(2);
         dispatch(setPlayerType("timeshift"));
       }
@@ -162,22 +233,38 @@ export default memo(function LiveControls({
     isActive: playerType === "timeshift" || playerType === "archive",
 
     number: (e) => {
+      if (hideControls) {
+        setHideControls(false);
+        return;
+      }
       numberChangeChannel(e.key);
     },
 
     left: () => {
+      if (hideControls) {
+        setHideControls(false);
+        return;
+      }
       if (active === 0) return;
 
       setActive(active - 1);
     },
 
     right: () => {
+      if (hideControls) {
+        setHideControls(false);
+        return;
+      }
       if (playerType === "archive" && active === 3) return;
       if (active === 4) return;
       setActive(active + 1);
     },
 
     up: () => {
+      if (hideControls) {
+        setHideControls(false);
+        return;
+      }
       if (refNextChannel.current && active === 0) {
         dispatch(setPlayerType("live"));
         getChannelInfo(refNextChannel.current.id);
@@ -185,6 +272,10 @@ export default memo(function LiveControls({
     },
 
     down: () => {
+      if (hideControls) {
+        setHideControls(false);
+        return;
+      }
       if (refPrevChannel.current && active === 0) {
         dispatch(setPlayerType("live"));
         getChannelInfo(refPrevChannel.current.id);
@@ -192,11 +283,16 @@ export default memo(function LiveControls({
     },
 
     ok: () => {
+      if (hideControls) {
+        setHideControls(false);
+        return;
+      }
       if (active === 0) {
         setPipMode(true);
-        window.PLAYER.setPositionPlayer(720, 402, 1061, 224);
+        window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
       } else if (active === 4) {
         setActive(0);
+        setUrl(refUrlLive.current);
         dispatch(setPlayerType("live"));
       }
     },
@@ -205,7 +301,7 @@ export default memo(function LiveControls({
   return (
     <>
       {number ? <p className="num-change-channel">{number}</p> : null}
-      <div className="live-control">
+      <div className={`live-control${hideControls ? " hide" : ""}`}>
         <InfoLiveControl
           playerType={playerType}
           currentChannel={currentChannel}

@@ -95,9 +95,10 @@ export default memo(function EpgListWrapper({
             : "past";
 
       if (type == "past" && currentChannel?.has_archive) {
-        setUrl(
-          "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
-        );
+        // setUrl(
+        //   "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
+        // );
+        setUrlArchive(item);
         dispatch(setPlayerType("archive"));
         setPipMode(false);
         window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
@@ -105,6 +106,33 @@ export default memo(function EpgListWrapper({
     },
     [currentChannel]
   );
+
+  const setUrlArchive = (item) => {
+    const { start_ut, stop_ut } = item;
+
+    if (currentChannel?.archived_channel?.archiver) {
+      let __host = "";
+      let _url = "";
+      let ip = currentChannel.archived_channel.archiver.ip;
+
+      if (ip.indexOf("http") == -1) ip = "http://" + ip;
+
+      if (ip.indexOf("https") > -1) __host = ip;
+      else __host = ip + ":" + currentChannel.archived_channel.archiver.port;
+
+      _url =
+        __host +
+        "/archive/" +
+        currentChannel.archived_channel.channelId +
+        "/index.m3u8" +
+        "?start=" +
+        start_ut +
+        "&duration=" +
+        (stop_ut - start_ut);
+
+      setUrl(_url);
+    }
+  };
 
   useKeydown({
     isActive: control,
