@@ -29,6 +29,8 @@ export default memo(function Player({
   const play = () => {
     if (!window.Android) {
       refVideo.current.play();
+    }else{
+       window.Android.play();
     }
     dispatch(setPaused(false));
   };
@@ -36,6 +38,8 @@ export default memo(function Player({
   const pause = () => {
     if (!window.Android) {
       refVideo.current.pause();
+    }else{
+      window.Android.pause();
     }
     dispatch(setPaused(true));
   };

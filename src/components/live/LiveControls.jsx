@@ -164,6 +164,7 @@ export default memo(function LiveControls({
     if (secCurrentTime.current === 0) return;
     if (playerType !== "live") {
       if (!window.Android) refVideo.current.pause();
+      else window.Android.pause();
       currentTimeSeekto.current = Math.floor(secCurrentTime.current);
       refVal.current.innerText = formatTime(currentTimeSeekto.current);
       dispatch(setShowPreviewImages(true));
@@ -197,6 +198,8 @@ export default memo(function LiveControls({
     back: () => {
       if (!window.Android) {
         if (!isPaused) refVideo.current.play();
+      }else{
+        window.Android.play();
       }
       dispatch(setShowPreviewImages(false));
       if (!isPaused) secCurrentTime.current = 0;
@@ -204,6 +207,7 @@ export default memo(function LiveControls({
 
     left: () => {
       if (!window.Android) refVideo.current.pause();
+      else window.Android.pause();
 
       if (currentTimeSeekto.current - 10 >= 0) {
         currentTimeSeekto.current = currentTimeSeekto.current - 10;
@@ -214,6 +218,7 @@ export default memo(function LiveControls({
 
     right: () => {
       if (!window.Android) refVideo.current.pause();
+      else window.Android.pause();
 
       if (currentTimeSeekto.current + 10 <= secDuration.current) {
         currentTimeSeekto.current = currentTimeSeekto.current + 10;
@@ -226,6 +231,9 @@ export default memo(function LiveControls({
       if (!window.Android) {
         refVideo.current.currentTime = currentTimeSeekto.current;
         if (!isPaused) refVideo.current.play();
+      } else {
+        window.Android.seekTo(currentTimeSeekto.current);
+        if (!isPaused) window.Android.play();
       }
       dispatch(setShowPreviewImages(false));
       if (!isPaused) secCurrentTime.current = 0;
