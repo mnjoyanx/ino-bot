@@ -10,6 +10,7 @@ import {
 import {
   setShowPreviewImages,
   selectShowPreviewImages,
+  selectIsPaused,
 } from "@app/player/playerSlice";
 import { channelInfo } from "@server/requests";
 import { formatTime } from "@utils/util";
@@ -39,6 +40,8 @@ export default memo(function LiveControls({
   secCurrentTime,
   secDuration,
   refVideo,
+  play,
+  pause,
 }) {
   const dispatch = useDispatch();
 
@@ -46,6 +49,7 @@ export default memo(function LiveControls({
   const currentChannel = useSelector(selectCurrentChannel);
   const playerType = useSelector(selectPlayerType);
   const showPreviewImages = useSelector(selectShowPreviewImages);
+  const isPaused = useSelector(selectIsPaused);
 
   const refNextChannel = useRef(null);
   const refPrevChannel = useRef(null);
@@ -336,6 +340,9 @@ export default memo(function LiveControls({
       if (active === 0) {
         setPipMode(true);
         window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
+      } else if (active === 2) {
+        if (isPaused) play();
+        else pause();
       } else if (active === 1 || active === 3) {
         clickFrwdRewd();
       } else if (active === 4) {
@@ -368,7 +375,12 @@ export default memo(function LiveControls({
             <LiveIcon type={playerType} />
           ) : playerType === "timeshift" ? (
             <>
-              <ArchiveButtons type={playerType} active={active} />
+              <ArchiveButtons
+                play={play}
+                pause={pause}
+                type={playerType}
+                active={active}
+              />
               <LiveIcon type={playerType} isActive={active === 4} />
               <Duration
                 _ref={currentTimeRef}
@@ -377,7 +389,12 @@ export default memo(function LiveControls({
             </>
           ) : (
             <>
-              <ArchiveButtons type={playerType} active={active} />
+              <ArchiveButtons
+                play={play}
+                pause={pause}
+                type={playerType}
+                active={active}
+              />
               <Duration _ref={durationRef} className={"archive-duration"} />
               <Duration
                 _ref={currentTimeRef}
