@@ -53,7 +53,17 @@ export default function MenuItems() {
 
   const listMenu = useMemo(() => list.map((item) => item), []);
 
-  const onClick = useCallback((path) => navigate(path), []);
+  const onClick = useCallback((path) => {
+    if (path != "/movies") {
+      if (path == "/apps") {
+        if (window.Android) {
+          window.Android.launchApp("org.cyanogenmod.appdrawer");
+        }
+      } else {
+        navigate(path);
+      }
+    }
+  }, []);
 
   const onMouseEnter = useCallback((index) => setActiveIndex(index), []);
 
@@ -81,7 +91,6 @@ export default function MenuItems() {
     ok: () => {
       onClick(list[activeIndex].path);
     },
-    
   });
 
   return (
