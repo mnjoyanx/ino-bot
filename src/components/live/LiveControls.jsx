@@ -173,7 +173,7 @@ export default memo(function LiveControls({
   useEffect(() => {
     return () => {
       dispatch(setShowPreviewImages(false));
-      secCurrentTime.current = 0;
+      if (!isPaused) secCurrentTime.current = 0;
     };
   }, []);
 
@@ -196,10 +196,10 @@ export default memo(function LiveControls({
 
     back: () => {
       if (!window.Android) {
-        refVideo.current.play();
+        if (!isPaused) refVideo.current.play();
       }
       dispatch(setShowPreviewImages(false));
-      secCurrentTime.current = 0;
+      if (!isPaused) secCurrentTime.current = 0;
     },
 
     left: () => {
@@ -225,10 +225,10 @@ export default memo(function LiveControls({
     ok: () => {
       if (!window.Android) {
         refVideo.current.currentTime = currentTimeSeekto.current;
-        refVideo.current.play();
+        if (!isPaused) refVideo.current.play();
       }
       dispatch(setShowPreviewImages(false));
-      secCurrentTime.current = 0;
+      if (!isPaused) secCurrentTime.current = 0;
     },
   });
 
@@ -341,6 +341,7 @@ export default memo(function LiveControls({
         setPipMode(true);
         window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
       } else if (active === 2) {
+        secCurrentTime.current = 0;
         if (isPaused) play();
         else pause();
       } else if (active === 1 || active === 3) {
