@@ -1,4 +1,5 @@
 @import "@styles/variables.scss";
+
 .num-change-channel {
     background-color: rgba(0, 0, 0, 0.5);
     position: absolute;
@@ -9,10 +10,28 @@
     border-radius: 0.5rem;
 }
 
-.live-control.hide {
+.live-control.hide:not(.preview) {
     opacity: 0;
     transform: translateY(10rem);
-    transition:  0.1s linear;
+    transition: 0.1s linear;
+}
+.preview.live-control {
+    .buttons-group-live,
+    .duration {
+        opacity: 0;
+    }
+
+    .progress-bar::after{
+        content: '';
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        background-color: white;
+        position: absolute;
+        right: -0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
 }
 .live-control {
     width: 128rem;
@@ -35,8 +54,10 @@
         padding: 0.2rem 1rem 0.2rem 2rem;
         border-radius: 0.2rem;
 
-        &.active{
-            box-shadow: 0 0 0 .1rem black, 0 0 0 .2rem white;
+        &.active {
+            box-shadow:
+                0 0 0 0.1rem black,
+                0 0 0 0.2rem white;
         }
         &.timeshift {
             background-color: grey;
@@ -149,10 +170,10 @@
     .progress-field {
         width: 87rem;
         position: relative;
-        .archive-duration{
-            right: 0rem;    
+        .archive-duration {
+            right: 0rem;
         }
-        .archive-current_time{
+        .archive-current_time {
             right: unset;
             left: 0rem;
         }

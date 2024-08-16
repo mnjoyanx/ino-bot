@@ -7,7 +7,13 @@ import {
   setCurrentChannel,
   setPlayerType,
 } from "@app/channels/channelsSlice";
+import {
+  setShowPreviewImages,
+  selectShowPreviewImages,
+  selectIsPaused,
+} from "@app/player/playerSlice";
 import { channelInfo } from "@server/requests";
+import { formatTime } from "@utils/util";
 
 import useKeydown from "@hooks/useKeydown";
 
@@ -16,10 +22,12 @@ import LOCAL_STORAGE from "@utils/localStorage";
 import Duration from "../player/components/Duration";
 import Progress from "../player/components/Progress";
 import LiveIcon from "./components/LiveIcon";
-
-import "./styles/LiveControl.scss";
 import InfoLiveControl from "./components/InfoLiveControl";
 import ArchiveButtons from "./components/ArchiveButtons";
+
+import "./styles/LiveControl.scss";
+
+let hideControlsTimer = null;
 
 export default memo(function LiveControls({
   durationRef,
@@ -29,16 +37,26 @@ export default memo(function LiveControls({
   url,
   refProgress,
   refUrlLive,
+  secCurrentTime,
+  secDuration,
+  refVideo,
+  play,
+  pause,
 }) {
   const dispatch = useDispatch();
 
   const allChannels = useSelector(selectAllChannels);
   const currentChannel = useSelector(selectCurrentChannel);
   const playerType = useSelector(selectPlayerType);
+  const showPreviewImages = useSelector(selectShowPreviewImages);
+  const isPaused = useSelector(selectIsPaused);
 
   const refNextChannel = useRef(null);
   const refPrevChannel = useRef(null);
   const timeOutNumber = useRef(null);
+  const refVal = useRef(null);
+
+  const currentTimeSeekto = useRef(0);
 
   const [number, setNumber] = useState("");
   const [active, setActive] = useState(0);
@@ -142,56 +160,110 @@ export default memo(function LiveControls({
     }
   };
 
+  const clickFrwdRewd = () => {
+    if (secCurrentTime.current === 0) return;
+    if (playerType !== "live") {
+      if (!window.Android) refVideo.current.pause();
+      else window.Android.pause();
+      currentTimeSeekto.current = Math.floor(secCurrentTime.current);
+      refVal.current.innerText = formatTime(currentTimeSeekto.current);
+      dispatch(setShowPreviewImages(true));
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      dispatch(setShowPreviewImages(false));
+      if (!isPaused) secCurrentTime.current = 0;
+    };
+  }, []);
+
+  const showControl = () => {
+    if (hideControls) setHideControls(false);
+
+    clearTimeout(hideControlsTimer);
+
+    hideControlsTimer = setTimeout(() => {
+      setHideControls(true);
+    }, 3000);
+  };
+
   useEffect(() => {
     findChannel();
   }, [currentChannel]);
 
-  useEffect(() => {
-    let hideControlsTimer = null;
+  useKeydown({
+    isActive: showPreviewImages,
 
-    if (!hideControls) {
-      hideControlsTimer = setTimeout(() => {
-        setHideControls(true);
-      }, 3000);
-    }
+    back: () => {
+      if (!window.Android) {
+        if (!isPaused) refVideo.current.play();
+      }else{
+        window.Android.play();
+      }
+      dispatch(setShowPreviewImages(false));
+      if (!isPaused) secCurrentTime.current = 0;
+    },
 
-    return () => {
-      clearTimeout(hideControlsTimer);
-    };
-  }, [hideControls]);
+    left: () => {
+      if (!window.Android) refVideo.current.pause();
+      else window.Android.pause();
+
+      if (currentTimeSeekto.current - 10 >= 0) {
+        currentTimeSeekto.current = currentTimeSeekto.current - 10;
+        refVal.current.innerText = formatTime(currentTimeSeekto.current);
+        refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration.current) * 100}%`;
+      }
+    },
+
+    right: () => {
+      if (!window.Android) refVideo.current.pause();
+      else window.Android.pause();
+
+      if (currentTimeSeekto.current + 10 <= secDuration.current) {
+        currentTimeSeekto.current = currentTimeSeekto.current + 10;
+        refVal.current.innerText = formatTime(currentTimeSeekto.current);
+        refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration.current) * 100}%`;
+      }
+    },
+
+    ok: () => {
+      if (!window.Android) {
+        refVideo.current.currentTime = currentTimeSeekto.current;
+        if (!isPaused) refVideo.current.play();
+      } else {
+        window.Android.seekTo(currentTimeSeekto.current);
+        if (!isPaused) window.Android.play();
+      }
+      dispatch(setShowPreviewImages(false));
+      if (!isPaused) secCurrentTime.current = 0;
+    },
+  });
 
   useKeydown({
-    isActive: playerType === "live",
+    isActive: playerType === "live" && !showPreviewImages,
 
     number: (e) => {
-      if (hideControls) {
-        setHideControls(false);
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       numberChangeChannel(e.key);
     },
 
     left: () => {
-      if (hideControls) {
-        setHideControls(false);
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       setActive(0);
     },
 
     right: () => {
-      if (hideControls) {
-        setHideControls(false);
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (currentChannel?.has_archive) setActive(1);
     },
 
     up: () => {
-      if (hideControls) {
-        setHideControls(false);
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (refNextChannel.current) {
         setActive(0);
         getChannelInfo(refNextChannel.current.id);
@@ -199,10 +271,8 @@ export default memo(function LiveControls({
     },
 
     down: () => {
-      if (hideControls) {
-        setHideControls(false);
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (refPrevChannel.current) {
         setActive(0);
         getChannelInfo(refPrevChannel.current.id);
@@ -210,10 +280,8 @@ export default memo(function LiveControls({
     },
 
     ok: () => {
-      if (hideControls) {
-        setHideControls(false);
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (active === 0) {
         setPipMode(true);
         window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
@@ -230,41 +298,35 @@ export default memo(function LiveControls({
   });
 
   useKeydown({
-    isActive: playerType === "timeshift" || playerType === "archive",
+    isActive:
+      (playerType === "timeshift" || playerType === "archive") &&
+      !showPreviewImages,
 
     number: (e) => {
-      if (hideControls) {
-        setHideControls(false);
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       numberChangeChannel(e.key);
     },
 
     left: () => {
-      if (hideControls) {
-        setHideControls(false);
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (active === 0) return;
 
       setActive(active - 1);
     },
 
     right: () => {
-      if (hideControls) {
-        setHideControls(false);
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (playerType === "archive" && active === 3) return;
       if (active === 4) return;
       setActive(active + 1);
     },
 
     up: () => {
-      if (hideControls) {
-        setHideControls(false);
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (refNextChannel.current && active === 0) {
         dispatch(setPlayerType("live"));
         getChannelInfo(refNextChannel.current.id);
@@ -272,10 +334,8 @@ export default memo(function LiveControls({
     },
 
     down: () => {
-      if (hideControls) {
-        setHideControls(false);
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (refPrevChannel.current && active === 0) {
         dispatch(setPlayerType("live"));
         getChannelInfo(refPrevChannel.current.id);
@@ -283,13 +343,17 @@ export default memo(function LiveControls({
     },
 
     ok: () => {
-      if (hideControls) {
-        setHideControls(false);
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (active === 0) {
         setPipMode(true);
         window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
+      } else if (active === 2) {
+        secCurrentTime.current = 0;
+        if (isPaused) play();
+        else pause();
+      } else if (active === 1 || active === 3) {
+        clickFrwdRewd();
       } else if (active === 4) {
         setActive(0);
         setUrl(refUrlLive.current);
@@ -301,24 +365,31 @@ export default memo(function LiveControls({
   return (
     <>
       {number ? <p className="num-change-channel">{number}</p> : null}
-      <div className={`live-control${hideControls ? " hide" : ""}`}>
+      <div
+        className={`live-control${hideControls ? " hide" : ""}${showPreviewImages ? " preview" : ""}`}
+      >
         <InfoLiveControl
           playerType={playerType}
           currentChannel={currentChannel}
           active={active}
         />
-
         <div className="progress-field">
           <Progress
             playerType={playerType}
             color="#FFFFFF"
             refProgress={refProgress}
+            refVal={refVal}
           />
           {playerType === "live" ? (
             <LiveIcon type={playerType} />
           ) : playerType === "timeshift" ? (
             <>
-              <ArchiveButtons type={playerType} active={active} />
+              <ArchiveButtons
+                play={play}
+                pause={pause}
+                type={playerType}
+                active={active}
+              />
               <LiveIcon type={playerType} isActive={active === 4} />
               <Duration
                 _ref={currentTimeRef}
@@ -327,7 +398,12 @@ export default memo(function LiveControls({
             </>
           ) : (
             <>
-              <ArchiveButtons type={playerType} active={active} />
+              <ArchiveButtons
+                play={play}
+                pause={pause}
+                type={playerType}
+                active={active}
+              />
               <Duration _ref={durationRef} className={"archive-duration"} />
               <Duration
                 _ref={currentTimeRef}

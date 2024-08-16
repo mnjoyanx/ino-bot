@@ -1,5 +1,7 @@
 import { memo, useRef } from "react";
+import { useDispatch } from "react-redux";
 import { formatTime } from "@utils/util";
+import { setPaused } from "@app/player/playerSlice";
 import LOCAL_STORAGE from "@utils/localStorage";
 import HlsPlayer from "./components/HlsPlayer";
 import LiveControls from "@components/live/LiveControls.jsx";
@@ -14,13 +16,37 @@ export default memo(function Player({
   setUrl,
   setPipMode,
 }) {
+  const dispatch = useDispatch();
   const refVideo = useRef(null);
   const refDuration = useRef(null);
   const refCurrentTime = useRef(null);
   const refProgress = useRef(null);
   const refUrlLive = useRef(null);
 
+  const secCurrentTime = useRef(0);
+  const secDuration = useRef(0);
+
+  const play = () => {
+    if (!window.Android) {
+      refVideo.current.play();
+    }else{
+       window.Android.play();
+    }
+    dispatch(setPaused(false));
+  };
+
+  const pause = () => {
+    if (!window.Android) {
+      refVideo.current.pause();
+    }else{
+      window.Android.pause();
+    }
+    dispatch(setPaused(true));
+  };
+
   const handleTimeUpdate = (currentTime, duration) => {
+    secCurrentTime.current = currentTime;
+    secDuration.current = duration;
     if (refDuration.current) {
       refDuration.current.innerHTML = formatTime(duration);
     }
@@ -43,6 +69,11 @@ export default memo(function Player({
             currentTimeRef={refCurrentTime}
             setPipMode={setPipMode}
             refProgress={refProgress}
+            secCurrentTime={secCurrentTime}
+            secDuration={secDuration}
+            refVideo={refVideo}
+            play={play}
+            pause={pause}
           />
         ) : null}
       </div>

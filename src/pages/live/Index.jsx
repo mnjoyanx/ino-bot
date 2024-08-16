@@ -9,6 +9,7 @@ import {
   setAllChannels,
   setCurrentChannel,
 } from "@app/channels/channelsSlice";
+import { selectShowPreviewImages } from "@app/player/playerSlice";
 import { getChannels, channelInfo } from "@server/requests";
 
 import useKeydown from "@hooks/useKeydown";
@@ -27,6 +28,7 @@ export default function LivePage() {
   const allChannels = useSelector(selectAllChannels);
   const categoriesChannels = useSelector(selectChannels);
   const currentChannel = useSelector(selectCurrentChannel);
+  const showPreviewImages = useSelector(selectShowPreviewImages);
 
   const [pipMode, setPipMode] = useState(false);
   const [url, setUrl] = useState(null);
@@ -88,9 +90,9 @@ export default function LivePage() {
   };
 
   useKeydown({
-    isActive: !pipMode,
+    isActive: !pipMode && !showPreviewImages,
     back: () => {
-      window.PLAYER.destroyPlayer()
+      window.PLAYER.destroyPlayer();
       navigate(PATH.MENU);
     },
   });
