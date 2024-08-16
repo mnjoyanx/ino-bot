@@ -5,8 +5,8 @@ export default memo(function Progress({
   placeholderColor = "#242424",
   refProgress,
   playerType = "",
+  refVal = null,
 }) {
-  
   const styleProgress = {
     backgroundColor: placeholderColor,
   };
@@ -21,7 +21,10 @@ export default memo(function Progress({
         className={`progress-bar ${playerType}`}
         style={styleProgressBar}
         ref={refProgress}
-      ></div>
+      >
+        <div className="seekto-current_time" ref={refVal}>
+        </div>
+      </div>
     </div>
   );
 });

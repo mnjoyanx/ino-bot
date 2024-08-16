@@ -4,7 +4,7 @@ let controlTimeout = null;
 
 const initialState = {
   paused: false,
-  showPrevieImages: false,
+  showPreviewImages: false,
   showControls: true,
 };
 
@@ -16,7 +16,7 @@ const playerSlice = createSlice({
       state.paused = action.payload;
     },
     setShowPreviewImages: (state, action) => {
-      state.showPrevieImages = action.payload;
+      state.showPreviewImages = action.payload;
     },
     setShowControls: (state, action) => {
       state.showControls = action.payload;
@@ -34,8 +34,9 @@ export const { setPaused } = playerSlice.actions;
 export const { setShowPreviewImages } = playerSlice.actions;
 export const { setShowControls } = playerSlice.actions;
 
-export const selectIsPaused = (state) => state.plater.paused;
-export const selectShowPreviewImages = (state) => state.plater.showPrevieImages;
-export const selectShowControls = (state) => state.plater.showControls;
+export const selectIsPaused = (state) => state.player.paused;
+export const selectShowPreviewImages = (state) =>
+  state.player.showPreviewImages;
+export const selectShowControls = (state) => state.player.showControls;
 
 export default playerSlice.reducer;

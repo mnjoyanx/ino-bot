@@ -20,7 +20,12 @@ export default memo(function Player({
   const refProgress = useRef(null);
   const refUrlLive = useRef(null);
 
+  const secCurrentTime = useRef(0);
+  const secDuration = useRef(0);
+
   const handleTimeUpdate = (currentTime, duration) => {
+    secCurrentTime.current = currentTime;
+    secDuration.current = duration;
     if (refDuration.current) {
       refDuration.current.innerHTML = formatTime(duration);
     }
@@ -43,6 +48,9 @@ export default memo(function Player({
             currentTimeRef={refCurrentTime}
             setPipMode={setPipMode}
             refProgress={refProgress}
+            secCurrentTime={secCurrentTime}
+            secDuration={secDuration}
+            refVideo={refVideo}
           />
         ) : null}
       </div>
