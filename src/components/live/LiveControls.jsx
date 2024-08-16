@@ -232,34 +232,26 @@ export default memo(function LiveControls({
     isActive: playerType === "live" && !showPreviewImages,
 
     number: (e) => {
-      if (hideControls) {
-        showControl();
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       numberChangeChannel(e.key);
     },
 
     left: () => {
-      if (hideControls) {
-        showControl();
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       setActive(0);
     },
 
     right: () => {
-      if (hideControls) {
-        showControl();
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (currentChannel?.has_archive) setActive(1);
     },
 
     up: () => {
-      if (hideControls) {
-        showControl();
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (refNextChannel.current) {
         setActive(0);
         getChannelInfo(refNextChannel.current.id);
@@ -267,10 +259,8 @@ export default memo(function LiveControls({
     },
 
     down: () => {
-      if (hideControls) {
-        showControl();
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (refPrevChannel.current) {
         setActive(0);
         getChannelInfo(refPrevChannel.current.id);
@@ -278,10 +268,8 @@ export default memo(function LiveControls({
     },
 
     ok: () => {
-      if (hideControls) {
-        showControl();
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (active === 0) {
         setPipMode(true);
         window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
@@ -303,38 +291,30 @@ export default memo(function LiveControls({
       !showPreviewImages,
 
     number: (e) => {
-      if (hideControls) {
-        showControl();
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       numberChangeChannel(e.key);
     },
 
     left: () => {
-      if (hideControls) {
-        showControl();
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (active === 0) return;
 
       setActive(active - 1);
     },
 
     right: () => {
-      if (hideControls) {
-        showControl();
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (playerType === "archive" && active === 3) return;
       if (active === 4) return;
       setActive(active + 1);
     },
 
     up: () => {
-      if (hideControls) {
-        showControl();
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (refNextChannel.current && active === 0) {
         dispatch(setPlayerType("live"));
         getChannelInfo(refNextChannel.current.id);
@@ -342,10 +322,8 @@ export default memo(function LiveControls({
     },
 
     down: () => {
-      if (hideControls) {
-        showControl();
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (refPrevChannel.current && active === 0) {
         dispatch(setPlayerType("live"));
         getChannelInfo(refPrevChannel.current.id);
@@ -353,10 +331,8 @@ export default memo(function LiveControls({
     },
 
     ok: () => {
-      if (hideControls) {
-        showControl();
-        return;
-      }
+      showControl();
+      if (hideControls) return;
       if (active === 0) {
         setPipMode(true);
         window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
