@@ -84,8 +84,14 @@ export default function LivePage() {
     if (error) {
       if (message === "Forbidden") navigate("/");
     } else {
+      let _url = message.url;
+
+      if (message.stream_type === "internal" && LOCAL_STORAGE.TOKEN.GET()) {
+        _url += "?token=" + LOCAL_STORAGE.TOKEN.GET();
+      }
+
       dispatch(setCurrentChannel(message));
-      setUrl(message.url);
+      setUrl(_url);
     }
   };
 

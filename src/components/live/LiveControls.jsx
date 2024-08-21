@@ -88,9 +88,15 @@ export default memo(function LiveControls({
 
     if (error) {
     } else {
+      let _url = message.url;
+
+      if (message.stream_type === "internal" && LOCAL_STORAGE.TOKEN.GET()) {
+        _url += "?token=" + LOCAL_STORAGE.TOKEN.GET();
+      }
+
       LOCAL_STORAGE.LAST_CHANNEL_ID.SET(id);
       dispatch(setCurrentChannel(message));
-      setUrl(message.url);
+      setUrl(_url);
     }
   };
 
@@ -198,7 +204,7 @@ export default memo(function LiveControls({
     back: () => {
       if (!window.Android) {
         if (!isPaused) refVideo.current.play();
-      }else{
+      } else {
         window.Android.play();
       }
       dispatch(setShowPreviewImages(false));
