@@ -87,9 +87,15 @@ export default memo(function ChannelsWrapper({
 
     if (error) {
     } else {
+      let _url = message.url;
+
+      if (message.stream_type === "internal" && LOCAL_STORAGE.TOKEN.GET()) {
+        _url += "?token=" + LOCAL_STORAGE.TOKEN.GET();
+      }
+
       LOCAL_STORAGE.LAST_CHANNEL_ID.SET(id);
       dispatch(setCurrentChannel(message));
-      setUrl(message.url);
+      setUrl(_url);
     }
   };
 
