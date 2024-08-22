@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -32,6 +32,8 @@ export default function LivePage() {
 
   const [pipMode, setPipMode] = useState(false);
   const [url, setUrl] = useState(null);
+
+  const refUrlLive = useRef(null);
 
   const [selectedChannel, setSelectedChannel] = useState(null);
 
@@ -91,6 +93,7 @@ export default function LivePage() {
       }
 
       dispatch(setCurrentChannel(message));
+
       setUrl(_url);
     }
   };
@@ -111,8 +114,16 @@ export default function LivePage() {
         pipMode={pipMode}
         setPipMode={setPipMode}
         setUrl={setUrl}
+        refUrlLive={refUrlLive}
       />
-      {pipMode ? <PipModeLive setUrl={setUrl} setPipMode={setPipMode} /> : null}
+      {pipMode ? (
+        <PipModeLive
+          url={url}
+          refUrlLive={refUrlLive}
+          setUrl={setUrl}
+          setPipMode={setPipMode}
+        />
+      ) : null}
     </div>
   );
 }

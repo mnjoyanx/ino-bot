@@ -15,13 +15,13 @@ export default memo(function Player({
   pipMode,
   setUrl,
   setPipMode,
+  refUrlLive,
 }) {
   const dispatch = useDispatch();
   const refVideo = useRef(null);
   const refDuration = useRef(null);
   const refCurrentTime = useRef(null);
   const refProgress = useRef(null);
-  const refUrlLive = useRef(null);
 
   const secCurrentTime = useRef(0);
   const secDuration = useRef(0);
@@ -29,8 +29,8 @@ export default memo(function Player({
   const play = () => {
     if (!window.Android) {
       refVideo.current.play();
-    }else{
-       window.Android.play();
+    } else {
+      window.Android.play();
     }
     dispatch(setPaused(false));
   };
@@ -38,7 +38,7 @@ export default memo(function Player({
   const pause = () => {
     if (!window.Android) {
       refVideo.current.pause();
-    }else{
+    } else {
       window.Android.pause();
     }
     dispatch(setPaused(true));

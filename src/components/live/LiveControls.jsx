@@ -148,20 +148,22 @@ export default memo(function LiveControls({
       setUrl(_url);
     } else if (currentChannel.archived_channel_host) {
       let _url = "";
-      if (currentChannel.archived_channel_host.indexOf("http") == -1)
+
+      if (currentChannel.archived_channel_host.indexOf("http") == -1) {
         _url =
           "http://" +
           currentChannel.archived_channel_host +
           "/timeshift/" +
           currentChannel.id +
           "/index.m3u8";
-      else
+      } else {
         _url =
           currentChannel.archived_channel_host +
           "/timeshift/" +
           currentChannel.id +
           "/index.m3u8";
-      refUrlLive.current = url;
+      }
+
       setUrl(_url);
     }
   };
@@ -293,10 +295,8 @@ export default memo(function LiveControls({
         window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
       } else if (active === 1) {
         // show timeshift
+        if (playerType == "live") refUrlLive.current = url;
         setUrlTimeshift();
-        // setUrl(
-        //   "http://playertest.longtailvideo.com/adaptive/wowzaid3/playlist.m3u8"
-        // );
         setActive(2);
         dispatch(setPlayerType("timeshift"));
       }
@@ -325,7 +325,6 @@ export default memo(function LiveControls({
     right: () => {
       showControl();
       if (hideControls) return;
-      if (playerType === "archive" && active === 3) return;
       if (active === 4) return;
       setActive(active + 1);
     },
@@ -410,6 +409,7 @@ export default memo(function LiveControls({
                 type={playerType}
                 active={active}
               />
+              <LiveIcon type={playerType} isActive={active === 4} />
               <Duration _ref={durationRef} className={"archive-duration"} />
               <Duration
                 _ref={currentTimeRef}

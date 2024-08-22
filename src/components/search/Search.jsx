@@ -69,6 +69,9 @@ export default memo(function Search({ type, setShow, setUrl, setPipMode }) {
     back: () => {
       refInp.current.blur();
     },
+    ok: () => {
+      refInp.current.blur();
+    },
   });
 
   return (

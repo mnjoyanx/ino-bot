@@ -16,11 +16,12 @@
         align-items: center;
         cursor: pointer;
         margin: 1.5rem;
-        transition:transform 0.1s ease-in-out;
+        transition: transform 0.1s ease-in-out;
         box-shadow:
             0.7rem 1.7rem 2rem -0.8rem rgba(0, 0, 0, 0.9),
             1rem 1.9rem 2.2rem -0.6rem rgba(0, 0, 0, 0.5);
         perspective: 250rem;
+        will-change: transform;
 
         &.active {
             border-color: white;

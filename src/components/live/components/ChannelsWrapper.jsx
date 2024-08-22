@@ -24,6 +24,7 @@ export default memo(function ChannelsWrapper({
   setControl,
   setUrl,
   setPipMode,
+  refSetIndex,
 }) {
   const dispatch = useDispatch();
 
@@ -61,20 +62,6 @@ export default memo(function ChannelsWrapper({
       setStart(start + 1);
   };
 
-  useEffect(() => {
-    if (currentChannel || selectedCategory === "All") {
-      for (var i = 0; i < categories[selectedCategory]?.content?.length; i++) {
-        if (
-          categories[selectedCategory]?.content[i].id === currentChannel?.id
-        ) {
-          setActive(i);
-          if (i > 2 && i < categories[selectedCategory]?.total - 4) setStart(i);
-          break;
-        }
-      }
-    }
-  }, [categories, currentChannel]);
-
   const getChannelInfo = async (id) => {
     if (id === currentChannel?.id) {
       setPipMode(false);
@@ -98,6 +85,30 @@ export default memo(function ChannelsWrapper({
       setUrl(_url);
     }
   };
+
+  useEffect(() => {
+    if (currentChannel || selectedCategory === "All") {
+      for (var i = 0; i < categories[selectedCategory]?.content?.length; i++) {
+        if (
+          categories[selectedCategory]?.content[i].id === currentChannel?.id
+        ) {
+          setActive(i);
+          if (i > 2 && i < categories[selectedCategory]?.total - 4) setStart(i);
+          else if (i > categories[selectedCategory]?.total - 4) {
+            setStart(categories[selectedCategory]?.total - 7);
+          }
+          break;
+        }
+      }
+    }
+  }, [categories, currentChannel]);
+
+  useEffect(() => {
+    if (refSetIndex.current) {
+      setActive(0);
+      setStart(0);
+    }
+  }, [selectedCategory]);
 
   useKeydown({
     isActive: control,

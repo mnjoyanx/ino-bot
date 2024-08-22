@@ -59,8 +59,11 @@
                 0 0 0 0.1rem black,
                 0 0 0 0.2rem white;
         }
-        &.timeshift {
+        &.timeshift,&.archive {
             background-color: grey;
+        }
+        &.archive{
+        right: 8rem;
         }
         &::before {
             content: "";
@@ -85,7 +88,6 @@
 
         &.active {
             transition: 0.1s linear;
-            transform: scale(1.2);
 
             path {
                 transition: 0.1s linear;
@@ -152,7 +154,6 @@
         position: relative;
 
         &.active {
-            transform: scale(1.2);
 
             transition: 0.1s linear;
             path {
