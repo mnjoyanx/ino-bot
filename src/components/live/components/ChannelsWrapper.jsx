@@ -6,6 +6,7 @@ import {
   setCurrentChannel,
   playerType,
   setPlayerType,
+  selectPlayerType,
 } from "@app/channels/channelsSlice";
 
 import { channelInfo } from "@server/requests";
@@ -30,6 +31,7 @@ export default memo(function ChannelsWrapper({
 
   const categories = useSelector(selectChannels);
   const currentChannel = useSelector(selectCurrentChannel);
+  const playerType = useSelector(selectPlayerType);
 
   const [active, setActive] = useState(0);
   const [start, setStart] = useState(0);
@@ -39,7 +41,7 @@ export default memo(function ChannelsWrapper({
       getChannelInfo(id);
       dispatch(setPlayerType("live"));
     },
-    [currentChannel]
+    [currentChannel, playerType]
   );
 
   const handleUp = () => {
@@ -63,7 +65,8 @@ export default memo(function ChannelsWrapper({
   };
 
   const getChannelInfo = async (id) => {
-    if (id === currentChannel?.id) {
+    console.log(playerType);
+    if (id === currentChannel?.id && playerType === "live") {
       setPipMode(false);
       window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
       return;
