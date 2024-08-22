@@ -20,6 +20,8 @@ export default memo(function EpgListWrapper({
   setControl,
   setPipMode,
   setUrl,
+  url,
+  refUrlLive,
 }) {
   const dispatch = useDispatch();
   const currentChannel = useSelector(selectCurrentChannel);
@@ -95,10 +97,8 @@ export default memo(function EpgListWrapper({
             : "past";
 
       if (type == "past" && currentChannel?.has_archive) {
-        // setUrl(
-        //   "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
-        // );
         setUrlArchive(item);
+        if (playerType === "live") refUrlLive.current = url;
         dispatch(setPlayerType("archive"));
         setPipMode(false);
         window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);

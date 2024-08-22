@@ -14,6 +14,7 @@ export default memo(function CategoriesWrapper({
   setCategory,
   setControl,
   category,
+  refSetIndex,
 }) {
   const categories = useSelector(selectChannels);
 
@@ -22,9 +23,13 @@ export default memo(function CategoriesWrapper({
 
   const handleClick = useCallback(
     (name) => {
+      if (categories[name].total !== 0) {
+        refSetIndex.current = true;
+        setControl("channel");
+      }
       setCategory(name);
     },
-    [category]
+    [category, control]
   );
 
   const handleUp = () => {

@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectConfigs } from "@app/configs/configsSlice";
 import { useNavigate } from "react-router-dom";
@@ -21,20 +21,30 @@ import SearchHandler from "./components/SearchHandler";
 import "./styles/PipModeLive.scss";
 import Search from "../search/Search";
 
-export default memo(function PipModeLive({ setUrl, setPipMode }) {
+export default memo(function PipModeLive({
+  setUrl,
+  setPipMode,
+  refUrlLive,
+  url,
+}) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const configs = useSelector(selectConfigs);
   const channelCategories = useSelector(selectChannels);
   const allChannels = useSelector(selectAllChannels);
 
-  const navigate = useNavigate();
+  const refSetIndex = useRef(false);
 
   const [activeControl, setActiveControl] = useState("channel"); // category, channel,epg,search
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showSearch, setShowSearch] = useState(false);
 
-  useEffect(() => {}, [activeControl]);
+  useEffect(() => {
+    return () => {
+      refSetIndex.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (allChannels.length) {
@@ -145,12 +155,14 @@ export default memo(function PipModeLive({ setUrl, setPipMode }) {
         </div>
         <div className="main-pip_mode">
           <CategoriesWrapper
+            refSetIndex={refSetIndex}
             setCategory={setSelectedCategory}
             setControl={setActiveControl}
             control={activeControl === "category" && !showSearch}
             category={selectedCategory}
           />
           <ChannelsWrapper
+            refSetIndex={refSetIndex}
             setUrl={setUrl}
             setControl={setActiveControl}
             selectedCategory={selectedCategory}
@@ -158,9 +170,11 @@ export default memo(function PipModeLive({ setUrl, setPipMode }) {
             setPipMode={setPipMode}
           />
           <EpgListWrapper
+            url={url}
             setUrl={setUrl}
             setPipMode={setPipMode}
             setControl={setActiveControl}
+            refUrlLive={refUrlLive}
             control={activeControl === "epg" && !showSearch}
           />
         </div>

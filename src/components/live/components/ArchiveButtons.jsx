@@ -8,7 +8,7 @@ import SvgPause from "@assets/images/player/SvgPause";
 
 import "../styles/ArchiveButtons.scss";
 
-export default memo(function ArchiveButtons({ play, pause, active }) {
+export default memo(function ArchiveButtons({ play, pause, active, }) {
   const isPaused = useSelector(selectIsPaused);
 
   const handleClick = (e) => {
