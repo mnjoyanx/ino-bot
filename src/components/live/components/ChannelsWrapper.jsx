@@ -52,20 +52,26 @@ export default memo(function ChannelsWrapper({
     }
 
     setActive(active - 1);
-    if (active - 1 > 2 && active - 1 < categories[selectedCategory]?.total - 4)
+    if (active - 1 == 0 || active - 1 < 0) {
+      setStart(0);
+      setActive(0);
+      return;
+    }
+    if (active - 1 < categories[selectedCategory]?.total - 6) {
       setStart(start - 1);
+    }
   };
 
   const handleDown = () => {
     if (active === categories[selectedCategory]?.total - 1) return;
 
     setActive(active + 1);
-    if (active > 2 && active < categories[selectedCategory]?.total - 4)
+    if (active + 1 < categories[selectedCategory]?.total - 6) {
       setStart(start + 1);
+    }
   };
 
   const getChannelInfo = async (id) => {
-    console.log(playerType);
     if (id === currentChannel?.id && playerType === "live") {
       setPipMode(false);
       window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
@@ -90,14 +96,15 @@ export default memo(function ChannelsWrapper({
   };
 
   useEffect(() => {
-    if (currentChannel || selectedCategory === "All") {
+    if (currentChannel && selectedCategory === "All") {
       for (var i = 0; i < categories[selectedCategory]?.content?.length; i++) {
         if (
           categories[selectedCategory]?.content[i].id === currentChannel?.id
         ) {
           setActive(i);
-          if (i > 2 && i < categories[selectedCategory]?.total - 4) setStart(i);
-          else if (i > categories[selectedCategory]?.total - 4) {
+          if (i > 2 && i <= categories[selectedCategory]?.total - 6)
+            setStart(i);
+          else if (i > categories[selectedCategory]?.total - 6) {
             setStart(categories[selectedCategory]?.total - 7);
           }
           break;
@@ -142,6 +149,7 @@ export default memo(function ChannelsWrapper({
               <CardChannel
                 key={elem.id}
                 isActive={active === index && control}
+                isSelected={elem.id === currentChannel?.id}
                 elem={elem}
                 onClick={handleClick}
               />

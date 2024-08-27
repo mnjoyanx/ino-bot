@@ -14,20 +14,25 @@ export default function os(callback) {
       let deviceId = null;
       let device_model = null;
       let device_name = null;
+      let deviceIp = null;
 
       try {
         deviceId = webapis.productinfo.getDuid();
         device_model = webapis.productinfo.getModel();
         device_name = "Tizen";
+        deviceIp = webapis.network.getIp();
       } catch (e) {
         deviceId = generateRandomDeviceId(12);
         device_model = generateRandomDeviceId(15);
+        deviceIp = "1:1:1:1";
+
         device_name = "Tizen";
       }
 
       LOCAL_STORAGE.DEVICE_ID.SET(deviceId);
       LOCAL_STORAGE.DEVICE_MODEL.SET(device_model);
       LOCAL_STORAGE.DEVICE_NAME.SET(device_name);
+      LOCAL_STORAGE.DEVICE_IP.SET(deviceIp);
 
       callback();
     };
@@ -100,6 +105,24 @@ export default function os(callback) {
               device_model = inResponse.modelName;
               device_name = "WebOs";
 
+              webOS.service.request("luna://com.palm.connectionmanager", {
+                method: "getStatus",
+                onSuccess: function (data) {
+                  let device_ip = "";
+
+                  if (data.wifi.ipAddress) device_ip = data.wifi.ipAddress;
+                  else if (data.wired.ipAddress)
+                    device_ip = data.wired.ipAddress;
+                  else device_ip = "1.1.1.1";
+
+                  LOCAL_STORAGE.DEVICE_IP.SET(device_ip);
+                },
+                onFailure: function (inError) {
+                  let device_ip = "1.1.1.1";
+                  LOCAL_STORAGE.DEVICE_IP.SET(device_ip);
+                },
+              });
+
               LOCAL_STORAGE.DEVICE_MODEL.SET(device_model);
               LOCAL_STORAGE.DEVICE_NAME.SET(device_name);
 
@@ -142,10 +165,12 @@ export default function os(callback) {
     let device_name = "Android Tv";
     let device_model = window.Android.getModel();
     let deviceId = window.Android.getDeviceId();
+    let deviceIp = window.Android.getIP();
 
     LOCAL_STORAGE.DEVICE_ID.SET(deviceId);
     LOCAL_STORAGE.DEVICE_MODEL.SET(device_model);
     LOCAL_STORAGE.DEVICE_NAME.SET(device_name);
+    LOCAL_STORAGE.DEVICE_IP.SET(deviceIp);
 
     window.keydown = ({ keyName }) => {
       if (keyName == "back") {

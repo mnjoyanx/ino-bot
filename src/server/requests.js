@@ -77,6 +77,14 @@ export const getEpgList = (body) => {
     body
   );
 };
+export const getProfile = (body) => {
+  return request(
+    "post",
+    CONFIG.GET_PROFILE, // -> endpoint
+    "",
+    body
+  );
+};
 
 // export const singIn = body => {
 //   return request(

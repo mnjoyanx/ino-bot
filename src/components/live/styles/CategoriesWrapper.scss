@@ -18,12 +18,42 @@
         .list-category {
             margin-top: 1rem;
             .card-category {
-                display: flex;
+                // display: flex;
+                // justify-content: space-between;
+                // padding: 1.2rem 1rem;
+                //     border-radius: 1rem;
+                //     position: relative;
+                // &.active {
+                //     background-color: rgba(255, 255, 255, 0.05);
+                // }
+                // &::after{
+                //     content: "";
+                //     position: absolute;
+                //     left: 1rem;
+                //     top: 50%;
+                //     transform: translateY(-50%);
+                //     width: .2rem;
+                //     height: 50%;
+                //     border-radius: 1rem;
+                // }
+                // &.selected::after {
+                //     background-color: white;
+                // }
+                //  &.selected{
+                //     .name{
+                //         transform: translateX(1rem);
+                //     }
+                //  }
+                 display: flex;
                 justify-content: space-between;
                 padding: 1.2rem 1rem;
+                    border-radius: 1rem;
+                    border: .1rem solid transparent;
                 &.active {
                     background-color: rgba(255, 255, 255, 0.05);
-                    border-radius: 1rem;
+                }
+                &.selected {
+                    border-color: white;
                 }
                 .name {
                     width: 17rem;

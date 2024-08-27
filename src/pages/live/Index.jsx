@@ -5,9 +5,10 @@ import {
   selectAllChannels,
   selectChannels,
   selectCurrentChannel,
-  setChannels,
   setAllChannels,
   setCurrentChannel,
+  selectPlayerType,
+  setPlayerType,
 } from "@app/channels/channelsSlice";
 import { selectShowPreviewImages } from "@app/player/playerSlice";
 import { getChannels, channelInfo } from "@server/requests";
@@ -23,12 +24,13 @@ import "@styles/components/livePage.scss";
 
 export default function LivePage() {
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
+
   const allChannels = useSelector(selectAllChannels);
   const categoriesChannels = useSelector(selectChannels);
   const currentChannel = useSelector(selectCurrentChannel);
   const showPreviewImages = useSelector(selectShowPreviewImages);
+  const playerType = useSelector(selectPlayerType);
 
   const [pipMode, setPipMode] = useState(false);
   const [url, setUrl] = useState(null);
@@ -98,6 +100,13 @@ export default function LivePage() {
     }
   };
 
+  const endedArchive = () => {
+    if (refUrlLive.current) {
+      setUrl(refUrlLive.current);
+      dispatch(setPlayerType("live"));
+    }
+  };
+
   useKeydown({
     isActive: !pipMode && !showPreviewImages,
     back: () => {
@@ -115,6 +124,7 @@ export default function LivePage() {
         setPipMode={setPipMode}
         setUrl={setUrl}
         refUrlLive={refUrlLive}
+        endedArchive={endedArchive}
       />
       {pipMode ? (
         <PipModeLive

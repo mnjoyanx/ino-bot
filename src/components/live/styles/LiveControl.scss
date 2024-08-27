@@ -78,8 +78,8 @@
         }
     }
     .parent-number-channel {
-        width: 5rem;
-        height: 6rem;
+        width: 8rem;
+        height: 10rem;
         margin-right: 2rem;
         display: flex;
         flex-direction: column;
@@ -100,8 +100,8 @@
         }
 
         .arrow {
-            width: 1.5rem;
-            height: 1.5rem;
+            width: 3rem;
+            height: 3rem;
             display: block;
             svg {
                 width: 100%;
@@ -109,19 +109,24 @@
             }
         }
         .arrow-up {
+            transform: translateY(-1rem);
             svg {
                 transform: rotate(180deg);
                 transform-origin: center;
             }
         }
+        .arrow-down{
+            transform: translateY(1rem);
+
+        }
         .number-channel {
-            font-size: 2rem;
+            font-size: 4rem;
             text-align: center;
         }
     }
     .logo {
-        width: 6rem;
-        height: 6rem;
+        width: 10rem;//6rem;
+        height: 10rem;
         margin-right: 2rem;
         border-radius: 0.5rem;
         overflow: hidden;
@@ -130,14 +135,13 @@
             height: 100%;
             object-fit: contain;
             object-position: center;
-            background-color: white;
         }
     }
     .name-channel {
-        width: 12rem;
+        width: 20.5rem;
         margin-right: 1rem;
         p {
-            font-size: 1.5rem;
+            font-size: 2.5rem;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -145,8 +149,8 @@
         }
     }
     .timeshift-btn {
-        width: 2rem;
-        height: 2rem;
+        width: 3.5rem;
+        height: 3.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -169,7 +173,7 @@
         }
     }
     .progress-field {
-        width: 87rem;
+        width: 70rem;
         position: relative;
         .archive-duration {
             right: 0rem;

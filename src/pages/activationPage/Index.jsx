@@ -4,7 +4,7 @@ import {
   getlLauncherUser,
   loginUser,
 } from "@server/requests.js";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { selectConfigs } from "@app/configs/configsSlice.js";
 
@@ -19,9 +19,9 @@ import Button from "@components/common/Button";
 import "@styles/components/activationPage.scss";
 
 export default function ActivationPage() {
-  const configs = useSelector(selectConfigs);
-
   const navigate = useNavigate();
+
+  const configs = useSelector(selectConfigs);
 
   const [isLoading, setIsLoading] = useState(true);
   const [activationPageState, setActivationPageState] = useState();
@@ -95,7 +95,10 @@ export default function ActivationPage() {
   ) : (
     <div className="activation-page-container">
       <div className="logo">
-        <img src={configs?.basics?.logo|| LOCAL_STORAGE.LOGO.GET()} alt="logo" />
+        <img
+          src={configs?.basics?.logo || LOCAL_STORAGE.LOGO.GET()}
+          alt="logo"
+        />
       </div>
       <h3 className="title">DEVICE IS NOT ACTIVE</h3>
       <p className="device_id">MAC : {LOCAL_STORAGE.MAC_ADDRESS.GET()}</p>

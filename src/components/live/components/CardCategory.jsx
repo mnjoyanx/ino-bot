@@ -6,10 +6,11 @@ export default memo(function CardCategory({
   index,
   total,
   onClick,
+  isSelected,
 }) {
   return (
     <div
-      className={`card-category${isActive ? " active" : ""}`}
+      className={`card-category${isActive ? " active" : ""}${isSelected ? " selected" : ""}`}
       onClick={() => onClick(name)}
     >
       <p className="name">{name}</p>
