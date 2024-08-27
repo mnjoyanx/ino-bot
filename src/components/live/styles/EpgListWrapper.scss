@@ -57,13 +57,13 @@
         .card-epg {
             display: flex;
             background-color: rgba(0, 0, 0, 0.3);
+
             border-radius: 1.2rem;
             padding: 2rem 1rem;
             margin-bottom: 1rem;
             align-items: center;
-            border: 0.1rem solid transparent;
             &.active {
-                border-color: white;
+                    background-color: rgba(255, 255, 255, 0.05);
             }
 
             .square {

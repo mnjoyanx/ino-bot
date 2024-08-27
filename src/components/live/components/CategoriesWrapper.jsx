@@ -65,6 +65,8 @@ export default memo(function CategoriesWrapper({
     },
   });
 
+  console.log(category);
+
   return (
     <div className="parent-categories">
       <h3 className="title">Categories</h3>
@@ -80,6 +82,7 @@ export default memo(function CategoriesWrapper({
               <CardCategory
                 key={elem.id}
                 isActive={active === i && control}
+                isSelected={category === elem.name}
                 total={elem.total}
                 name={elem.name}
                 index={i}

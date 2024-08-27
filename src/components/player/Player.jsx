@@ -1,12 +1,15 @@
 import { memo, useRef } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { formatTime } from "@utils/util";
 import { setPaused } from "@app/player/playerSlice";
 import LOCAL_STORAGE from "@utils/localStorage";
 import HlsPlayer from "./components/HlsPlayer";
 import LiveControls from "@components/live/LiveControls.jsx";
 import AndroidPlayer from "./components/AndroidPlayer";
-
+import {
+  selectPlayerType,
+  setPlayerType,
+} from "@app/channels/channelsSlice";
 import "./styles/player.scss";
 
 export default memo(function Player({
@@ -16,6 +19,7 @@ export default memo(function Player({
   setUrl,
   setPipMode,
   refUrlLive,
+  endedArchive,
 }) {
   const dispatch = useDispatch();
   const refVideo = useRef(null);
@@ -26,6 +30,8 @@ export default memo(function Player({
   const secCurrentTime = useRef(0);
   const secDuration = useRef(0);
 
+  const playerType = useSelector(selectPlayerType);
+  
   const play = () => {
     if (!window.Android) {
       refVideo.current.play();
@@ -57,6 +63,13 @@ export default memo(function Player({
       refProgress.current.style.width = `${(currentTime / duration) * 100}%`;
     }
   };
+  const streamEnd = () => {
+    if (type === "live") {
+      if (playerType !== "live") {
+        endedArchive();
+      }
+    }
+  };
   return (
     <>
       <div id="controls_player">
@@ -80,12 +93,17 @@ export default memo(function Player({
       {/* <HlsPlayer refVideo={refVideo} /> */}
       {url ? (
         LOCAL_STORAGE.DEVICE_OS.GET() === "android" ? (
-          <AndroidPlayer url={url} timeUpdate={handleTimeUpdate} />
+          <AndroidPlayer
+            url={url}
+            timeUpdate={handleTimeUpdate}
+            streamEnd={streamEnd}
+          />
         ) : (
           <HlsPlayer
             refVideo={refVideo}
             url={url}
             timeUpdate={handleTimeUpdate}
+            streamEnd={streamEnd}
           />
         )
       ) : null}

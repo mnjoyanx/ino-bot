@@ -6,10 +6,16 @@ import iconFavorite from "@assets/images/live/favorite.png";
 import iconLock from "@assets/images/live/lock.png";
 import iconPremium from "@assets/images/live/premium.png";
 
-export default memo(function CardChannel({ isActive, elem, onClick, index }) {
+export default memo(function CardChannel({
+  isActive,
+  elem,
+  onClick,
+  index,
+  isSelected,
+}) {
   return (
     <div
-      className={`card-channel${isActive ? " active" : ""}`}
+      className={`card-channel${isActive ? " active" : ""}${isSelected ? " selected" : ""}`}
       onClick={() => onClick(index, elem.id)}
     >
       <div className="number">#{elem.position}</div>

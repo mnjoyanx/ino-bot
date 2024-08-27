@@ -9,6 +9,7 @@ export default memo(function HlsPlayer({
   play = () => {},
   pause = () => {},
   error = () => {},
+  streamEnd = () => {},
 }) {
   const currentTime = useRef(0);
 
@@ -76,6 +77,7 @@ export default memo(function HlsPlayer({
           timeUpdate(refVideo.current.currentTime, refVideo.current.duration);
         }
       }}
+      onEnded={streamEnd}
       onLoadedMetadata={loadVideo}
       onError={error}
       onWaiting={waiting}

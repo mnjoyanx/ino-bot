@@ -138,6 +138,7 @@ export default memo(function LiveControls({
   };
 
   const setUrlTimeshift = () => {
+    console.log(currentChannel);
     if (currentChannel.cdn_url) {
       let _url =
         currentChannel.cdn_url +
@@ -146,23 +147,18 @@ export default memo(function LiveControls({
         "/index.m3u8";
 
       setUrl(_url);
-    } else if (currentChannel.archived_channel_host) {
+    } else if (currentChannel.archived_channel) {
       let _url = "";
 
-      if (currentChannel.archived_channel_host.indexOf("http") == -1) {
+      if (currentChannel.archived_channel?.archiver?.ip) {
         _url =
-          "http://" +
-          currentChannel.archived_channel_host +
-          "/timeshift/" +
-          currentChannel.id +
-          "/index.m3u8";
-      } else {
-        _url =
-          currentChannel.archived_channel_host +
+          currentChannel.archived_channel?.archiver.ip +
           "/timeshift/" +
           currentChannel.id +
           "/index.m3u8";
       }
+
+      console.log(_url);
 
       setUrl(_url);
     }
@@ -200,6 +196,46 @@ export default memo(function LiveControls({
     findChannel();
   }, [currentChannel]);
 
+  const leftKeyPrevImage = () => {
+    if (!window.Android) refVideo.current.pause();
+    else window.Android.pause();
+
+    if (currentTimeSeekto.current - 10 >= 0) {
+      currentTimeSeekto.current = currentTimeSeekto.current - 10;
+      refVal.current.innerText = formatTime(currentTimeSeekto.current);
+      refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration.current) * 100}%`;
+    }
+  };
+
+  const rightKeyNextImage = () => {
+    if (!window.Android) refVideo.current.pause();
+    else window.Android.pause();
+
+    if (currentTimeSeekto.current + 10 <= secDuration.current) {
+      currentTimeSeekto.current = currentTimeSeekto.current + 10;
+      refVal.current.innerText = formatTime(currentTimeSeekto.current);
+      refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration.current) * 100}%`;
+    }
+  };
+
+  const nextChannel = () => {
+    showControl();
+    if (hideControls) return;
+    if (refNextChannel.current) {
+      setActive(0);
+      getChannelInfo(refNextChannel.current.id);
+    }
+  };
+
+  const prevChannel = () => {
+    showControl();
+    if (hideControls) return;
+    if (refPrevChannel.current) {
+      setActive(0);
+      getChannelInfo(refPrevChannel.current.id);
+    }
+  };
+
   useKeydown({
     isActive: showPreviewImages,
 
@@ -213,27 +249,17 @@ export default memo(function LiveControls({
       if (!isPaused) secCurrentTime.current = 0;
     },
 
-    left: () => {
-      if (!window.Android) refVideo.current.pause();
-      else window.Android.pause();
+    fast_prev: leftKeyPrevImage,
 
-      if (currentTimeSeekto.current - 10 >= 0) {
-        currentTimeSeekto.current = currentTimeSeekto.current - 10;
-        refVal.current.innerText = formatTime(currentTimeSeekto.current);
-        refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration.current) * 100}%`;
-      }
-    },
+    fast_next: rightKeyNextImage,
 
-    right: () => {
-      if (!window.Android) refVideo.current.pause();
-      else window.Android.pause();
+    prev: leftKeyPrevImage,
 
-      if (currentTimeSeekto.current + 10 <= secDuration.current) {
-        currentTimeSeekto.current = currentTimeSeekto.current + 10;
-        refVal.current.innerText = formatTime(currentTimeSeekto.current);
-        refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration.current) * 100}%`;
-      }
-    },
+    next: rightKeyNextImage,
+
+    left: leftKeyPrevImage,
+
+    right: rightKeyNextImage,
 
     ok: () => {
       if (!window.Android) {
@@ -269,23 +295,9 @@ export default memo(function LiveControls({
       if (currentChannel?.has_archive) setActive(1);
     },
 
-    up: () => {
-      showControl();
-      if (hideControls) return;
-      if (refNextChannel.current) {
-        setActive(0);
-        getChannelInfo(refNextChannel.current.id);
-      }
-    },
+    up: nextChannel,
 
-    down: () => {
-      showControl();
-      if (hideControls) return;
-      if (refPrevChannel.current) {
-        setActive(0);
-        getChannelInfo(refPrevChannel.current.id);
-      }
-    },
+    down: prevChannel,
 
     ok: () => {
       showControl();
@@ -312,6 +324,42 @@ export default memo(function LiveControls({
       showControl();
       if (hideControls) return;
       numberChangeChannel(e.key);
+    },
+
+    fast_prev: () => {
+      showControl();
+      if (hideControls) return;
+      setShowPreviewImages(true);
+    },
+
+    fast_next: () => {
+      showControl();
+      if (hideControls) return;
+      setShowPreviewImages(true);
+    },
+
+    prev: () => {
+      showControl();
+      if (hideControls) return;
+      setShowPreviewImages(true);
+    },
+
+    next: () => {
+      showControl();
+      if (hideControls) return;
+      setShowPreviewImages(true);
+    },
+
+    pause: () => {
+      secCurrentTime.current = 0;
+      if (isPaused) play();
+      else pause();
+    },
+
+    play: () => {
+      secCurrentTime.current = 0;
+      if (isPaused) play();
+      else pause();
     },
 
     left: () => {

@@ -23,6 +23,10 @@ window.PLAYER = {
 
   playerError: () => {},
 
+  streamEnd: () => {
+    dispatchEvent(new CustomEvent("streamEnded", {}));
+  },
+
   destroyPlayer: () => {
     if (!window.Android) return;
     window.Android.destroyPlayer();
@@ -59,7 +63,15 @@ window.PLAYER = {
   },
 };
 
-export default function AndroidPlayer({ url, timeUpdate, time = 0 }) {
+export default function AndroidPlayer({
+  url,
+  timeUpdate,
+  time = 0,
+  streamEnd,
+}) {
+  const streamEnded = () => {
+    streamEnd();
+  };
   const timeUpdateHandler = () => {
     console.log("time update");
     const currentTime = window.Android.getCurrentTime();
@@ -69,9 +81,11 @@ export default function AndroidPlayer({ url, timeUpdate, time = 0 }) {
 
   useEffect(() => {
     window.addEventListener("playerTimeUpdate", timeUpdateHandler);
+    window.addEventListener("streamEnded", streamEnded);
 
     return () => {
       window.removeEventListener("playerTimeUpdate", timeUpdateHandler);
+      window.removeEventListener("streamEnded", streamEnded);
     };
   }, []);
 

@@ -46,6 +46,10 @@ const LOCAL_STORAGE = {
     GET: () => localStorage.getItem("device_os"),
     SET: (os) => localStorage.setItem("device_os", os),
   },
+  DEVICE_IP: {
+    GET: () => localStorage.getItem("device_ip"),
+    SET: (ip) => localStorage.setItem("device_ip", ip),
+  },
 
   TOKEN: {
     GET: () => localStorage.getItem("TOKEN"),
