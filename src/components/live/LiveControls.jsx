@@ -476,6 +476,7 @@ export default memo(function LiveControls({
             refProgress={refProgress}
             refVal={refVal}
           />
+          
           {playerType === "live" ? (
             <>
               <LiveIcon type={playerType} />
