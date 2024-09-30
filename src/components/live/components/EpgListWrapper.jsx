@@ -167,7 +167,13 @@ export default memo(function EpgListWrapper({
         {emptyList ? (
           <p className="empty">List is empty</p>
         ) : (
-          <div className="main-epg_list">
+          <div
+            className="main-epg_list"
+            onWheel={(e) => {
+              if (e.deltaY < 0) handleUp();
+              else handleDown();
+            }}
+          >
             {epgList.map((item, index) => {
               let type =
                 item.start_ut * 1000 < currnetDate.current &&

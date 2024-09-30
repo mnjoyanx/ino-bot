@@ -1,197 +1,220 @@
 @import "@styles/variables.scss";
 
 .num-change-channel {
-    background-color: rgba(0, 0, 0, 0.5);
-    position: absolute;
-    top: 3rem;
-    right: 3rem;
-    font-size: 2rem;
-    padding: 0.2rem 1rem;
-    border-radius: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  top: 3rem;
+  right: 3rem;
+  font-size: 2rem;
+  padding: 0.2rem 1rem;
+  border-radius: 0.5rem;
 }
 
 .live-control.hide:not(.preview) {
-    opacity: 0;
-    transform: translateY(10rem);
-    transition: 0.1s linear;
+  opacity: 0;
+  transform: translateY(10rem);
+  transition: 0.1s linear;
 }
 .preview.live-control {
-    .buttons-group-live,
-    .duration {
-        opacity: 0;
-    }
+  .buttons-group-live,
+  .duration {
+    opacity: 0;
+  }
 
-    .progress-bar::after{
-        content: '';
-        width: 1rem;
-        height: 1rem;
-        border-radius: 50%;
-        background-color: white;
-        position: absolute;
-        right: -0.5rem;
-        top: 50%;
-        transform: translateY(-50%);
-    }
+  .progress-bar::after {
+    content: "";
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: white;
+    position: absolute;
+    right: -0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }
 .live-control {
-    width: 128rem;
+  width: 128rem;
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: 20rem 5rem 5rem 5rem;
+  background-image: linear-gradient(to top, #000000, transparent);
+  opacity: 1;
+
+  .live-icon {
+    color: white;
+    background-color: #9e0b0b;
+    position: absolute;
+    right: 0;
+    top: 1.5rem;
+    font-size: 1.3rem;
+    padding: 0.2rem 1rem 0.2rem 2rem;
+    border-radius: 0.2rem;
+
+    &.active {
+      box-shadow:
+        0 0 0 0.1rem black,
+        0 0 0 0.2rem white;
+    }
+    &.timeshift,
+    &.archive {
+      background-color: grey;
+    }
+    &.archive {
+      right: 8rem;
+    }
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0.5rem;
+      width: 1rem;
+      height: 1rem;
+      background-color: white;
+      border-radius: 50%;
+      transform: translateY(-50%);
+    }
+  }
+  .parent-number-channel {
+    width: 8rem;
+    height: 10rem;
+    margin-right: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+    &.active {
+      transition: 0.1s linear;
+
+      path {
+        transition: 0.1s linear;
+        stroke: $active-color;
+      }
+      .number-channel {
+        transition: 0.1s linear;
+        color: $active-color;
+      }
+    }
+
+    .arrow {
+      width: 3rem;
+      height: 3rem;
+      display: block;
+      svg {
+        width: 100%;
+        height: 100%;
+      }
+    }
+    .arrow-up {
+      transform: translateY(-1rem);
+      svg {
+        transform: rotate(180deg);
+        transform-origin: center;
+      }
+    }
+    .arrow-down {
+      transform: translateY(1rem);
+    }
+    .number-channel {
+      font-size: 4rem;
+      text-align: center;
+    }
+  }
+  .logo {
+    width: 10rem; //6rem;
+    height: 10rem;
+    margin-right: 2rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+  }
+  .name-channel {
+    width: 16.5rem;
+    margin-right: 1rem;
+    p {
+      font-size: 2.5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+  .timeshift-btn {
+    width: 3.5rem;
+    height: 3.5rem;
     display: flex;
     align-items: center;
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    padding: 20rem 5rem 5rem 5rem;
-    background-image: linear-gradient(to top, #000000, transparent);
-    opacity: 1;
+    justify-content: center;
+    margin-right: 1rem;
+    position: relative;
 
-    .live-icon {
-        color: white;
-        background-color: #9e0b0b;
-        position: absolute;
-        right: 0;
-        top: 1.5rem;
-        font-size: 1.3rem;
-        padding: 0.2rem 1rem 0.2rem 2rem;
-        border-radius: 0.2rem;
-
-        &.active {
-            box-shadow:
-                0 0 0 0.1rem black,
-                0 0 0 0.2rem white;
-        }
-        &.timeshift,&.archive {
-            background-color: grey;
-        }
-        &.archive{
-        right: 8rem;
-        }
-        &::before {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 0.5rem;
-            width: 1rem;
-            height: 1rem;
-            background-color: white;
-            border-radius: 50%;
-            transform: translateY(-50%);
-        }
+    &.active {
+      transition: 0.1s linear;
+      path {
+        fill: $active-color;
+        transition: 0.1s linear;
+      }
     }
-    .parent-number-channel {
-        width: 8rem;
-        height: 10rem;
-        margin-right: 2rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
-
-        &.active {
-            transition: 0.1s linear;
-
-            path {
-                transition: 0.1s linear;
-                stroke: $active-color;
-            }
-            .number-channel {
-                transition: 0.1s linear;
-                color: $active-color;
-            }
-        }
-
-        .arrow {
-            width: 3rem;
-            height: 3rem;
-            display: block;
-            svg {
-                width: 100%;
-                height: 100%;
-            }
-        }
-        .arrow-up {
-            transform: translateY(-1rem);
-            svg {
-                transform: rotate(180deg);
-                transform-origin: center;
-            }
-        }
-        .arrow-down{
-            transform: translateY(1rem);
-
-        }
-        .number-channel {
-            font-size: 4rem;
-            text-align: center;
-        }
+    svg {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      z-index: 1;
     }
-    .logo {
-        width: 10rem;//6rem;
-        height: 10rem;
-        margin-right: 2rem;
-        border-radius: 0.5rem;
-        overflow: hidden;
-        img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            object-position: center;
-        }
+  }
+  .progress-field {
+    width: 70rem;
+    position: relative;
+    .archive-duration {
+      right: 0rem;
     }
-    .name-channel {
-        width: 20.5rem;
-        margin-right: 1rem;
-        p {
-            font-size: 2.5rem;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
+    .archive-current_time {
+      right: unset;
+      left: 0rem;
     }
-    .timeshift-btn {
-        width: 3.5rem;
-        height: 3.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 1rem;
-        position: relative;
+    .duration {
+      position: absolute;
+      top: 1.5rem;
+      right: 0rem;
+    }
+    .timeshift-duration {
+      right: unset;
+      left: 0rem;
+    }
+    .progress {
+    }
+  }
+}
 
-        &.active {
+.live-fav_icon {
+  margin-left: 2rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+}
 
-            transition: 0.1s linear;
-            path {
-                fill: $active-color;
-                transition: 0.1s linear;
-            }
-        }
-        svg {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            z-index: 1;
-        }
+.live-channel_name {
+  &.active {
+    color: $active-color;
+  }
+}
+
+.live-fav_wrapper {
+  .live-fav_text {
+    font-size: 1.5rem;
+    margin-left: 1rem;
+
+    &.active {
+      color: $active-color;
     }
-    .progress-field {
-        width: 70rem;
-        position: relative;
-        .archive-duration {
-            right: 0rem;
-        }
-        .archive-current_time {
-            right: unset;
-            left: 0rem;
-        }
-        .duration {
-            position: absolute;
-            top: 1.5rem;
-            right: 0rem;
-        }
-        .timeshift-duration {
-            right: unset;
-            left: 0rem;
-        }
-        .progress {
-        }
-    }
+  }
 }

@@ -24,8 +24,11 @@ import Progress from "../player/components/Progress";
 import LiveIcon from "./components/LiveIcon";
 import InfoLiveControl from "./components/InfoLiveControl";
 import ArchiveButtons from "./components/ArchiveButtons";
+import favImg from "../../assets/images/live/fav.png";
+import favFill from "../../assets/images/live/favFill.png";
 
 import "./styles/LiveControl.scss";
+import { addLiveFavorite, removeLiveFavorite } from "../../server/requests";
 
 let hideControlsTimer = null;
 
@@ -164,6 +167,31 @@ export default memo(function LiveControls({
     }
   };
 
+  const toggleFavorite = async (isAdd) => {
+    try {
+      if (isAdd) {
+        dispatch(setCurrentChannel({ ...currentChannel, favorite: true }));
+        const res = await addLiveFavorite({ channel_id: currentChannel.id });
+        const parsedRes = JSON.parse(res);
+        console.log(parsedRes, "parsedRes");
+        if (parsedRes.error) {
+          dispatch(setCurrentChannel({ ...currentChannel, favorite: false }));
+        }
+      } else {
+        dispatch(setCurrentChannel({ ...currentChannel, favorite: false }));
+        const res = await removeLiveFavorite({ channel_id: currentChannel.id });
+        const parsedRes = JSON.parse(res);
+        if (parsedRes.error) {
+          dispatch(setCurrentChannel({ ...currentChannel, favorite: true }));
+        }
+        console.log(parsedRes, "parsedRes");
+      }
+    } catch (err) {
+      console.log(err);
+      dispatch(setCurrentChannel({ ...currentChannel, favorite: !isAdd }));
+    }
+  };
+
   const clickFrwdRewd = () => {
     if (secCurrentTime.current === 0) return;
     if (playerType !== "live") {
@@ -194,6 +222,7 @@ export default memo(function LiveControls({
 
   useEffect(() => {
     findChannel();
+    showControl();
   }, [currentChannel]);
 
   const leftKeyPrevImage = () => {
@@ -286,13 +315,25 @@ export default memo(function LiveControls({
     left: () => {
       showControl();
       if (hideControls) return;
-      setActive(0);
+      if (active < 1) return;
+
+      setActive(active - 1);
     },
 
     right: () => {
       showControl();
       if (hideControls) return;
-      if (currentChannel?.has_archive) setActive(1);
+      // if (currentChannel?.has_archive) setActive(1);
+
+      if (currentChannel?.has_archive) {
+        if (active < 2) {
+          setActive(active + 1);
+        } else {
+          if (active < 1) {
+            setActive(active + 1);
+          }
+        }
+      }
     },
 
     up: nextChannel,
@@ -311,6 +352,8 @@ export default memo(function LiveControls({
         setUrlTimeshift();
         setActive(2);
         dispatch(setPlayerType("timeshift"));
+      } else if (active === 2) {
+        toggleFavorite(!currentChannel.favorite);
       }
     },
   });
@@ -434,7 +477,9 @@ export default memo(function LiveControls({
             refVal={refVal}
           />
           {playerType === "live" ? (
-            <LiveIcon type={playerType} />
+            <>
+              <LiveIcon type={playerType} />
+            </>
           ) : playerType === "timeshift" ? (
             <>
               <ArchiveButtons
@@ -466,6 +511,26 @@ export default memo(function LiveControls({
             </>
           )}
         </div>
+        {playerType === "live" ? (
+          <div className={"live-fav_wrapper"}>
+            <p className={`live-fav_text ${active === 2 ? "active" : ""}`}>
+              Favorite
+            </p>
+            {currentChannel?.favorite ? (
+              <img
+                src={favFill}
+                className="live-fav_icon"
+                onClick={() => toggleFavorite(false)}
+              />
+            ) : (
+              <img
+                src={favImg}
+                className="live-fav_icon"
+                onClick={() => toggleFavorite(true)}
+              />
+            )}
+          </div>
+        ) : null}
       </div>
     </>
   );

@@ -65,8 +65,6 @@ export default memo(function CategoriesWrapper({
     },
   });
 
-  console.log(category);
-
   return (
     <div className="parent-categories">
       <h3 className="title">Categories</h3>
@@ -74,7 +72,13 @@ export default memo(function CategoriesWrapper({
         {active > 0 && Object.keys(categories).length > 12 ? (
           <ArrowButton onClick={handleUp} type="up" />
         ) : null}
-        <div className="list-category">
+        <div
+          className="list-category"
+          onWheel={(e) => {
+            if (e.deltaY < 0) handleUp();
+            else handleDown();
+          }}
+        >
           {Object.keys(categories).map((e, i) => {
             const elem = categories[e];
 

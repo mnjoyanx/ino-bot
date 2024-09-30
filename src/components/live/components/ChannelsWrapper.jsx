@@ -57,7 +57,8 @@ export default memo(function ChannelsWrapper({
       setActive(0);
       return;
     }
-    if (active - 1 < categories[selectedCategory]?.total - 6) {
+
+    if (active < categories[selectedCategory]?.total - 6) {
       setStart(start - 1);
     }
   };
@@ -114,6 +115,10 @@ export default memo(function ChannelsWrapper({
   }, [categories, currentChannel]);
 
   useEffect(() => {
+    console.log("ChannelsWrapper", active, start);
+  }, [active, start, selectedCategory]);
+
+  useEffect(() => {
     if (refSetIndex.current) {
       setActive(0);
       setStart(0);
@@ -143,7 +148,13 @@ export default memo(function ChannelsWrapper({
         {active > 0 && categories[selectedCategory]?.content?.length > 12 ? (
           <ArrowButton onClick={handleUp} type="up" />
         ) : null}
-        <div className="list-channels">
+        <div
+          className="list-channels"
+          onWheel={(e) => {
+            if (e.deltaY < 0) handleUp();
+            else handleDown();
+          }}
+        >
           {categories[selectedCategory]?.content?.map((elem, index) => {
             return index >= start && index < start + 12 ? (
               <CardChannel

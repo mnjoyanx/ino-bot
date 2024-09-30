@@ -6,10 +6,7 @@ import LOCAL_STORAGE from "@utils/localStorage";
 import HlsPlayer from "./components/HlsPlayer";
 import LiveControls from "@components/live/LiveControls.jsx";
 import AndroidPlayer from "./components/AndroidPlayer";
-import {
-  selectPlayerType,
-  setPlayerType,
-} from "@app/channels/channelsSlice";
+import { selectPlayerType, setPlayerType } from "@app/channels/channelsSlice";
 import "./styles/player.scss";
 
 export default memo(function Player({
@@ -31,7 +28,7 @@ export default memo(function Player({
   const secDuration = useRef(0);
 
   const playerType = useSelector(selectPlayerType);
-  
+
   const play = () => {
     if (!window.Android) {
       refVideo.current.play();
@@ -53,14 +50,19 @@ export default memo(function Player({
   const handleTimeUpdate = (currentTime, duration) => {
     secCurrentTime.current = currentTime;
     secDuration.current = duration;
-    if (refDuration.current) {
-      refDuration.current.innerHTML = formatTime(duration);
-    }
-    if (refCurrentTime.current) {
-      refCurrentTime.current.innerHTML = formatTime(currentTime);
-    }
-    if (refProgress.current) {
-      refProgress.current.style.width = `${(currentTime / duration) * 100}%`;
+
+    if (Math.floor(currentTime) >= duration - 1) {
+      endedArchive();
+    } else {
+      if (refDuration.current) {
+        refDuration.current.innerHTML = formatTime(duration);
+      }
+      if (refCurrentTime.current) {
+        refCurrentTime.current.innerHTML = formatTime(currentTime);
+      }
+      if (refProgress.current) {
+        refProgress.current.style.width = `${(currentTime / duration) * 100}%`;
+      }
     }
   };
   const streamEnd = () => {

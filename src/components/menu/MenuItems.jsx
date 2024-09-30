@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import useKeydown from "@hooks/useKeydown";
 import PATHS from "@utils/paths";
 import MenuItem from "./MenuItem";
+import MainModal from "../modal/MainModal";
+import AppExit from "../common/AppExit";
 
 import SvgApps from "@assets/images/menu/SvgApps";
 import SvgLive from "@assets/images/menu/SvgLive";
@@ -50,6 +52,7 @@ export default function MenuItems() {
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [show, setShow] = useState(false);
 
   const listMenu = useMemo(() => list.map((item) => item), []);
 
@@ -68,7 +71,7 @@ export default function MenuItems() {
   const onMouseEnter = useCallback((index) => setActiveIndex(index), []);
 
   useKeydown({
-    isActive: true,
+    isActive: !show,
 
     left: () => {
       if (activeIndex === 0 || activeIndex === 2) return;
@@ -91,10 +94,25 @@ export default function MenuItems() {
     ok: () => {
       onClick(list[activeIndex].path);
     },
+
+    back: () => {
+      ///
+      setShow(true);
+    },
   });
 
   return (
     <div className="menu-list_wrapper">
+      <MainModal show={show} setShow={setShow}>
+        <AppExit
+          onCancel={() => setShow(false)}
+          onConfirm={() => {
+            if (window.Android) {
+              window.Android.exitApp();
+            }
+          }}
+        />
+      </MainModal>
       {listMenu.map((item, index) => {
         return (
           <MenuItem

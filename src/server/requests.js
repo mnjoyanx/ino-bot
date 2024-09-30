@@ -214,9 +214,13 @@ export const getProfile = (body) => {
 //   return request("post", "application/vod/movie/removeFavorite", "", body);
 // };
 
-// export const addLiveFavorite = body => {
-//   return request("post", "v2/users/channels/addFavorite", "", body);
-// };
+export const addLiveFavorite = (body) => {
+  return request("post", "user/channels/addFavorite", "", body);
+};
+
+export const removeLiveFavorite = (body) => {
+  return request("post", "user/channels/deleteFavorite", "", body);
+};
 
 // export const getMovieUrl = queryParams => {
 //   return request("get", "application/vod/movie/url", queryParams);
