@@ -56,6 +56,8 @@ export default memo(function HlsPlayer({
 
       // if(activeMedia){
       hls.on(Hls.Events.ERROR, function (err, data) {
+        console.log(err, "errro");
+        error(err);
         if (data.type == "mediaError") {
         } else {
         }

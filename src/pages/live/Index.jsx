@@ -34,6 +34,7 @@ export default function LivePage() {
 
   const [pipMode, setPipMode] = useState(false);
   const [url, setUrl] = useState(null);
+  const [retryC, setRetryC] = useState(1);
 
   const refUrlLive = useRef(null);
 
@@ -125,6 +126,8 @@ export default function LivePage() {
         setUrl={setUrl}
         refUrlLive={refUrlLive}
         endedArchive={endedArchive}
+        retryC={retryC}
+        setRetryC={setRetryC}
       />
       {pipMode ? (
         <PipModeLive

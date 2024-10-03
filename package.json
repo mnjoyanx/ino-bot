@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --mode=production",
-    "start": "webpack serve --mode=development --port=3000",
+    "start": "webpack serve --mode=development --port=3001",
     "lint": "eslint . --ext .js,.jsx"
   },
   "devDependencies": {
@@ -39,6 +39,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.12.1",
     "@reduxjs/toolkit": "^1.0.0",
+    "lucide-react": "^0.446.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.5",

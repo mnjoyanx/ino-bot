@@ -21,7 +21,9 @@ window.PLAYER = {
 
   getAndroidTracks: () => {},
 
-  playerError: () => {},
+  playerError: () => {
+    dispatchEvent(new CustomEvent("playerError", {}));
+  },
 
   streamEnd: () => {
     dispatchEvent(new CustomEvent("streamEnded", {}));

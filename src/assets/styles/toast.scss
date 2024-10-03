@@ -1,0 +1,89 @@
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 50;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 20rem;
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid #4a5568; // gray-700 equivalent
+}
+
+.toast-icon {
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  min-height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  background-color: #4a5568;
+}
+
+.toast-message {
+  flex: 1;
+  padding: 1rem;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: white;
+}
+
+.toast-close {
+  padding: 1rem;
+  cursor: pointer;
+
+  .icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #a0aec0; // gray-400 equivalent
+
+    &:hover {
+      color: #cbd5e0; // gray-300 equivalent
+    }
+  }
+}
+
+// Add icon-specific colors
+.toast-icon--retrying {
+  .icon {
+    color: #4299e1; // blue-400 equivalent
+    animation: spin 1s linear infinite;
+  }
+}
+
+.toast-icon--error {
+  .icon {
+    color: #f56565; // red-400 equivalent
+  }
+}
+
+.toast-icon--success {
+  .icon {
+    color: #48bb78; // green-400 equivalent
+  }
+}
+
+.toast-icon--info {
+  .icon {
+    color: white;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
