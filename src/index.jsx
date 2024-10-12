@@ -10,6 +10,7 @@ import "./styles/index.css";
 import "./styles/global.css";
 import "./styles/variables.css";
 import "./styles/variables.scss";
+import "./styles/mixins.scss";
 
 import { HashRouter } from "react-router-dom";
 

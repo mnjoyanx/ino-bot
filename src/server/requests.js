@@ -25,6 +25,7 @@ export const getChannels = (queryParams) => {
     ""
   );
 };
+
 export const getChannelCategories = (queryParams) => {
   return request(
     "get",
@@ -150,13 +151,18 @@ export const getProfile = (body) => {
 //   );
 // };
 
-// export const getContentByCategory = queryParams => {
-//   return request(
-//     "get",
-//     "v2/api/movies", // -> endpoint
-//     queryParams,
-//   );
-// };
+export const getAllMovies = (queryParams) => {
+  return request(
+    "get",
+    "v2/api/movies", // -> endpoint
+    queryParams,
+    ""
+  );
+};
+
+export const getAllGenres = (queryParams) => {
+  return request("get", "v2/api/genre", queryParams, "");
+};
 
 // export const getInfoMovie = queryParams => {
 //   return request("get", "v2/api/movies/info", queryParams);

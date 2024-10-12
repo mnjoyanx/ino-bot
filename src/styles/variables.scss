@@ -1,11 +1,13 @@
-$active-color: #0F87B2;
+$active-color: #0f87b2;
 $card-color: #1f2125;
-$secondary-color_opc_50: rgba(19, 17, 26,.7);
-$secondary-color_opc_70: rgba(19, 17, 26,.7);
+$secondary-color_opc_50: rgba(19, 17, 26, 0.7);
+$secondary-color_opc_70: rgba(19, 17, 26, 0.7);
 $secondary-color: rgb(19, 17, 26);
 $menu-color: rgb(4, 8, 20);
 $skeleton_color: rgb(4, 8, 20);
 $menu-color_opc_50: rgba(4, 8, 20, 0.5);
+$dark: #030303;
+$muted: #6e6d6d;
 
 $margin-top: 1.3rem;
 $padding: 2.7rem;
@@ -16,6 +18,13 @@ $border-color: rgb(112, 112, 113);
 
 $transition: 0.2s;
 
-$gradient-border: linear-gradient(rgb(22, 23, 25), rgb(22, 23, 25)) padding-box,
-    linear-gradient(140deg, rgb(112, 112, 113), rgb(98, 99, 100), rgb(45, 46, 48), rgb(26, 27, 29))
-        border-box;
+$gradient-border:
+  linear-gradient(rgb(22, 23, 25), rgb(22, 23, 25)) padding-box,
+  linear-gradient(
+      140deg,
+      rgb(112, 112, 113),
+      rgb(98, 99, 100),
+      rgb(45, 46, 48),
+      rgb(26, 27, 29)
+    )
+    border-box;

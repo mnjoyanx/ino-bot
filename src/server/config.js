@@ -9,4 +9,5 @@ export const CONFIG = {
   CATEGORIES_CHANNEL: "v2/api/category",
   EPG_LIST: "user/epg/getByDate",
   GET_PROFILE: "user/subUser/getByRootUserId",
+  GET_MOVIES: "v2/api/movies",
 };

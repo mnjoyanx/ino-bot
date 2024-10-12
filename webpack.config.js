@@ -53,6 +53,7 @@ module.exports = (env, argv) => {
         "@utils": path.resolve(__dirname, "src/utils"),
         "@server": path.resolve(__dirname, "src/server"),
         "@app": path.resolve(__dirname, "src/app"),
+        "@context": path.resolve(__dirname, "src/context"),
       },
     },
 
@@ -80,8 +81,68 @@ module.exports = (env, argv) => {
       }),
     ],
 
+    // module: {
+    //   rules: [
+    //     {
+    //       test: /\.(js|jsx)$/,
+    //       // exclude: /(node_modules|bower_components)/,
+    //       use: {
+    //         loader: "babel-loader",
+    //         options: {
+    //           presets: ["@babel/preset-env", "@babel/preset-react"],
+    //           plugins: [
+    //             "@babel/plugin-syntax-dynamic-import",
+    //             "@babel/plugin-proposal-class-properties",
+    //           ],
+    //         },
+    //       },
+    //     },
+    //     {
+    //       test: /\.(png|jpg|jpeg|svg|gif)$/i,
+    //       type: "asset/resource",
+    //     },
+    //     {
+    //       test: /\.(css|s[ac]ss)$/,
+    //       use: [
+    //         "style-loader",
+    //         {
+    //           loader: "css-loader",
+    //           options: {
+    //             importLoaders: 1,
+    //             modules: true,
+    //           },
+    //         },
+    //         "postcss-loader",
+    //         "sass-loader",
+    //       ],
+    //       include: /\.module\.css$/,
+    //     },
+    //     {
+    //       test: /\.s[ac]ss$/i,
+    //       use: ["style-loader", "css-loader", "postcss-loader", "sass-loader"],
+    //       exclude: /\.module\.css$/,
+    //     },
+    //     {
+    //       test: /\.html$/,
+    //       use: ["html-loader"],
+    //     },
+    //   ],
+    // },
+
     module: {
       rules: [
+        {
+          test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+          use: [
+            {
+              loader: "url-loader",
+              options: {
+                limit: 10000,
+                name: "[name].[ext]",
+              },
+            },
+          ],
+        },
         {
           test: /\.(js|jsx)$/,
           // exclude: /(node_modules|bower_components)/,

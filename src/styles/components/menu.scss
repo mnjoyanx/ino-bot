@@ -1,35 +1,35 @@
 .menu-wrapper {
-    background-image: url("@assets/images/splashscreen.png");
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-        border: .1rem solid;
+  // background-image: url("@assets/images/splashscreen.png");
+  // width: 100%;
+  // height: 100%;
+  // background-size: cover;
+  // background-position: center;
+  // background-repeat: no-repeat;
+  border: 0.1rem solid;
 
-    .head-menu-wrapper {
-        display: flex;
-        width: 108rem;
-        margin: 0 auto;
-        justify-content: space-between;
-        margin-top: 7rem;
-        position: relative;
-        .logo{
-            width: 12.5rem;
-            height: 5.5rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: absolute;
-            left: 50%;
-            top: 0rem;
-            transform: translateX(-50%);
-            img{
-                width: 100%;
-                height: 100%;
-                object-fit: contain;
-                object-position: center;
-            }
-        }
+  .head-menu-wrapper {
+    display: flex;
+    width: 108rem;
+    margin: 0 auto;
+    justify-content: space-between;
+    margin-top: 7rem;
+    position: relative;
+    .logo {
+      width: 12.5rem;
+      height: 5.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      left: 50%;
+      top: 0rem;
+      transform: translateX(-50%);
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+      }
     }
+  }
 }

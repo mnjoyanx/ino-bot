@@ -1,0 +1,18 @@
+@import "../variables.scss";
+
+.movie-page {
+  .movie-content {
+    position: relative;
+    .app-logo {
+      position: absolute !important;
+      top: 2.4rem !important;
+      left: 8.7rem !important;
+    }
+  }
+}
+
+.movies-list {
+  width: 85%;
+  padding-top: 15rem;
+  margin-left: auto;
+}
