@@ -1,18 +1,15 @@
-import {
+import React, {
   memo,
   useEffect,
   useState,
   useRef,
   useCallback,
   useMemo,
-  startTransition,
 } from "react";
 import "./ListView.scss";
 import useKeydown from "../../hooks/useKeydown";
 
-let styles = {};
-let transformTimeout = null;
-let rtlMode;
+const TRANSFORM_TIMEOUT = 500;
 
 function ListView({
   id,
@@ -30,48 +27,28 @@ function ListView({
   onBackScrollIndex = null,
   startScrollIndex = 0,
   direction = "ltr",
-  ItemRenderer = () => {},
   onMouseEnter = () => {},
   onUp = () => {},
   onDown = () => {},
   onLeft = () => {},
   onRight = () => {},
   onBack = () => {},
+  renderItem,
+  data,
 }) {
-  //   if (rtlMode != Storege.getRtlMode()) styles = {};
-  //   rtlMode = Storege.getRtlMode();
-
-  if (!styles[uniqueKey]) styles[uniqueKey] = {};
-
-  if (startScrollIndex > itemsTotal - 1) startScrollIndex = itemsTotal - 1;
-
-  if (startScrollIndex < 0) startScrollIndex = 0;
-
-  if (initialActiveIndex > itemsTotal - 1) initialActiveIndex = itemsTotal - 1;
-
-  if (initialActiveIndex < 0) initialActiveIndex = 0;
-
-  if (onBackScrollIndex > itemsTotal - 1) onBackScrollIndex = itemsTotal - 1;
-
-  if (onBackScrollIndex < 0) onBackScrollIndex = 0;
-
   const scrollViewRef = useRef(null);
-
   const [startIndex, setStartIndex] = useState(0);
-
   const [activeIndex, setActiveIndex] = useState(initialActiveIndex);
 
-  const [items, setItems] = useState([]);
-
-  const changeStartIndex = (index) => {
-    index -= startScrollIndex;
-
-    if (index > itemsTotal - itemsCount) index = itemsTotal - itemsCount;
-
-    if (index < 0) index = 0;
-
-    setStartIndex(index);
-  };
+  const changeStartIndex = useCallback(
+    (index) => {
+      index -= startScrollIndex;
+      if (index > itemsTotal - itemsCount) index = itemsTotal - itemsCount;
+      if (index < 0) index = 0;
+      setStartIndex(index);
+    },
+    [itemsTotal, itemsCount, startScrollIndex]
+  );
 
   useEffect(() => {
     setInitialActiveIndex(initialActiveIndex);
@@ -161,113 +138,120 @@ function ListView({
     onMouseEnter(index);
   }, []);
 
-  const RenderItem = (index) => {
-    if (!styles[uniqueKey][index]) {
-      let style = {
+  const getItemStyle = useCallback(
+    (index) => {
+      return {
         position: "absolute",
-        width: itemWidth + "rem",
-        height: itemHeight + "rem",
+        width: `${itemWidth}rem`,
+        height: `${itemHeight}rem`,
+        ...(listType === "horizontal"
+          ? {
+              [direction === "rtl" ? "right" : "left"]:
+                `${index * itemWidth}rem`,
+              top: 0,
+            }
+          : { left: 0, top: `${index * itemHeight}rem` }),
       };
+    },
+    [itemWidth, itemHeight, listType, direction]
+  );
 
-      if (listType === "horizontal") {
-        if (direction === "rtl") {
-          style.right = index * itemWidth + "rem";
-        } else {
-          style.left = index * itemWidth + "rem";
-        }
-        style.top = 0;
-      } else {
-        style.left = 0;
-        style.top = index * itemHeight + "rem";
-      }
-
-      styles[uniqueKey][index] = style;
-    }
-
-    return (
-      <ItemRenderer
-        key={uniqueKey + index}
-        index={index}
-        style={styles[uniqueKey][index]}
-        isActive={index == activeIndex && isActive}
-        onUp={up}
-        onDown={down}
-        onLeft={left}
-        onRight={right}
-        onMouseEnter={onMouseEnterItem}
-      />
-    );
-  };
-
-  useEffect(() => {
+  const renderItems = useCallback(() => {
     const items = [];
-
     const start = startIndex - buffer;
     const end = startIndex + itemsCount + buffer;
 
     for (let i = start; i < end; i++) {
-      if (i < 0 || i > itemsTotal - 1) continue;
-
-      items.push(RenderItem(i));
+      if (i >= 0 && i < itemsTotal) {
+        const itemProps = {
+          key: `${uniqueKey}${i}`,
+          index: i,
+          style: getItemStyle(i),
+          isActive: i === activeIndex && isActive,
+          item: data[i],
+          onUp,
+          onDown,
+          onLeft,
+          onRight,
+          onMouseEnter: () => onMouseEnter(i),
+        };
+        items.push(renderItem(itemProps));
+      }
     }
+    return items;
+  }, [
+    startIndex,
+    buffer,
+    itemsCount,
+    itemsTotal,
+    uniqueKey,
+    getItemStyle,
+    activeIndex,
+    isActive,
+    onUp,
+    onDown,
+    onLeft,
+    onRight,
+    onMouseEnter,
+    renderItem,
+    data,
+  ]);
 
-    setItems(items);
-
-    startTransition(() => {
+  useEffect(() => {
+    const applyTransform = () => {
       if (!scrollViewRef.current) return;
 
-      window.transforming = true;
+      const transform =
+        listType === "horizontal"
+          ? `translate3d(${direction === "ltr" ? "-" : ""}${startIndex * itemWidth}rem, 0, 0)`
+          : `translate3d(0, -${startIndex * itemHeight}rem, 0)`;
+
+      scrollViewRef.current.style.transform = transform;
+      scrollViewRef.current.style.webkitTransform = transform;
+      scrollViewRef.current.style.msTransform = transform;
+
       window.dispatchEvent(new Event("transformstart"));
-      clearTimeout(transformTimeout);
+      setTimeout(
+        () => window.dispatchEvent(new Event("transformend")),
+        TRANSFORM_TIMEOUT
+      );
+    };
 
-      transformTimeout = setTimeout(() => {
-        window.transforming = false;
-        window.dispatchEvent(new Event("transformend"));
-      }, 500);
+    applyTransform();
+  }, [startIndex, listType, direction, itemWidth, itemHeight]);
 
-      if (listType === "horizontal") {
-        var transform = `translate3d(${direction == "ltr" ? "-" : ""}${startIndex * itemWidth}rem, 0, 0)`;
-      } else {
-        var transform = `translate3d(0, -${startIndex * itemHeight}rem, 0)`;
-      }
-
-      scrollViewRef.current.style["transform"] = transform;
-      scrollViewRef.current.style["-webkit-transform"] = transform;
-      scrollViewRef.current.style["-ms-transform"] = transform;
-    });
-  }, [activeIndex, startIndex, itemsTotal, isActive, initialActiveIndex, id]);
-
-  const keyDownOptions = useMemo(() => {
-    return {
+  const keyDownOptions = useMemo(
+    () => ({
       isActive: isActive && nativeControle,
       debounce,
-      left,
-      right,
-      up,
-      down,
-      channel_up: channelUp,
-      channel_down: channelDown,
-      back,
-    };
-  }, [isActive, nativeControle, itemsTotal, id, onBackScrollIndex]);
+      left: () => listType === "horizontal" && prev(),
+      right: () => listType === "horizontal" && next(),
+      up: () => listType !== "horizontal" && prev(),
+      down: () => listType !== "horizontal" && next(),
+      channel_up: () => prev(itemsCount),
+      channel_down: () => next(itemsCount),
+      back: onBack,
+    }),
+    [isActive, nativeControle, listType, prev, next, itemsCount, onBack]
+  );
 
   useKeydown(keyDownOptions);
 
-  let parentStyle = {};
-
-  if (listType === "horizontal") {
-    parentStyle.height = itemHeight + "rem";
-  } else {
-    parentStyle.width = itemWidth + "rem";
-  }
+  const parentStyle = useMemo(
+    () => ({
+      [listType === "horizontal" ? "height" : "width"]:
+        `${listType === "horizontal" ? itemHeight : itemWidth}rem`,
+    }),
+    [listType, itemHeight, itemWidth]
+  );
 
   return (
-    <div className={"scroll-view-parent " + listType} style={parentStyle}>
+    <div className={`scroll-view-parent ${listType}`} style={parentStyle}>
       <div
-        className={`scroll-view list-view ${direction == "rtl" ? "rtl-list-view" : ""}`}
+        className={`scroll-view list-view ${direction === "rtl" ? "rtl-list-view" : ""}`}
         ref={scrollViewRef}
       >
-        {items}
+        {renderItems()}
       </div>
     </div>
   );

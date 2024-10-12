@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCtrl } from "@app/global";
-import LIstView from "@components/lists/LIstView";
+import ListView from "@components/lists/ListView";
 import useKeydown from "@hooks/useKeydown";
 import MovieCard from "./MovieCard";
 
@@ -46,34 +46,43 @@ const MoviesList = ({ movies }) => {
     },
   });
 
+  const renderMovieCard = ({ index, style, isActive, item }) => (
+    <MovieCard
+      key={index}
+      style={style}
+      isActive={isActive}
+      name={item.name}
+      poster={item.poster}
+    />
+  );
+
   return (
     <div
       className={`${styles["movies-list"]} ${activeRow > 0 ? styles["up"] : ""}`}
     >
-      {Object.keys(movies).map((movie, index) => {
-        return (
-          <div key={index} className={styles["wrapper"]}>
-            <h2 className={styles["movies-list_title"]}>
-              {movie === "tv_show" ? "Series" : "Movies"}
-            </h2>
-            <LIstView
-              id="movie_list"
-              uniqueKey={"movies-cast-list"}
-              itemsTotal={movies[movie].length}
-              itemsCount={2}
-              listType="horizontal"
-              itemWidth={24}
-              itemHeight={27}
-              isActive={activeRow === index && ctrl === "moviesSeries"}
-              activeCol={activeColumn}
-              ItemRenderer={MovieCard}
-              buffer={5}
-              debounce={100}
-              nativeControle={true}
-            />
-          </div>
-        );
-      })}
+      {Object.entries(movies).map(([movieType, movieList], index) => (
+        <div key={index} className={styles["wrapper"]}>
+          <h2 className={styles["movies-list_title"]}>
+            {movieType === "tv_show" ? "Series" : "Movies"}
+          </h2>
+          <ListView
+            id="movie_list"
+            uniqueKey={`movies-${movieType}-list`}
+            itemsTotal={movieList.length}
+            itemsCount={2}
+            listType="horizontal"
+            itemWidth={24}
+            itemHeight={27}
+            isActive={activeRow === index && ctrl === "moviesSeries"}
+            activeCol={activeColumn}
+            buffer={5}
+            debounce={100}
+            nativeControle={true}
+            renderItem={renderMovieCard}
+            data={movieList}
+          />
+        </div>
+      ))}
     </div>
   );
 };
