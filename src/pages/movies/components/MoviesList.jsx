@@ -20,30 +20,36 @@ const MoviesList = () => {
   const currentMovies = selectedGenre ? moviesByGenre[selectedGenre] || {} : {};
   const movieTypes = Object.keys(currentMovies);
 
-  console.log(currentMovies, "currentMovies");
-
   useKeydown({
     isActive: ctrl === "moviesSeries",
-    up: useCallback(() => {
+    up: () => {
       setActiveRow((prev) => Math.max(0, prev - 1));
-    }, []),
-    down: useCallback(() => {
-      setActiveRow((prev) => Math.min(movieTypes.length - 1, prev + 1));
-    }, [movieTypes]),
-    left: useCallback(() => {
+    },
+
+    down: () => {
+      if (!currentMovies) return;
+
+      const isLastRow = currentMovies[movieTypes[movieTypes.length - 1]];
+      if (activeRow < isLastRow.length) {
+        setActiveRow((prev) => prev + 1);
+      }
+    },
+
+    left: () => {
       if (activeColumn > 0) {
         setActiveColumn((prev) => prev - 1);
       } else {
         dispatch(setCtrl("mainSidebar"));
         dispatch(setIsOpenMainSidebar(true));
       }
-    }, [activeColumn, dispatch]),
-    right: useCallback(() => {
+    },
+
+    right: () => {
       const currentMovieList = currentMovies[movieTypes[activeRow]] || [];
       setActiveColumn((prev) =>
         Math.min(currentMovieList.length - 1, prev + 1)
       );
-    }, [currentMovies, movieTypes, activeRow]),
+    },
   });
 
   const renderMovieCard = useCallback(

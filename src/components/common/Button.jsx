@@ -8,6 +8,7 @@ const Button = ({
   onMouseEnter,
   title,
   isActive,
+  icon = null,
 }) => {
   return (
     <button
@@ -15,8 +16,17 @@ const Button = ({
       onClick={onClick}
       onMouseEnter={() => onMouseEnter(index)}
     >
-      {title}
+      {icon ? <WithIcon icon={icon}>{title}</WithIcon> : title}
     </button>
+  );
+};
+
+const WithIcon = ({ children, icon }) => {
+  return (
+    <span className="with-icon">
+      {icon}
+      {children}
+    </span>
   );
 };
 

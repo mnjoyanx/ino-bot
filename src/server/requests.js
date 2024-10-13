@@ -228,6 +228,6 @@ export const removeLiveFavorite = (body) => {
   return request("post", "user/channels/deleteFavorite", "", body);
 };
 
-// export const getMovieUrl = queryParams => {
-//   return request("get", "application/vod/movie/url", queryParams);
-// };
+export const getMovieUrl = (queryParams) => {
+  return request("get", "application/vod/movie/url", queryParams);
+};

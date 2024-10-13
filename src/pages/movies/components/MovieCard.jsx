@@ -2,13 +2,16 @@ import React, { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "@styles/components/movieCard.module.scss";
 import useKeydown from "@hooks/useKeydown";
-
+import { setCtrl } from "@app/global";
+import { useDispatch } from "react-redux";
 const MovieCard = React.memo(({ style, isActive, name, poster, id }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleNavigation = useCallback(() => {
     navigate(`/movie/${id}`);
-  }, [navigate, id]);
+    dispatch(setCtrl("movieInfo"));
+  }, [navigate, id, dispatch]);
 
   useKeydown({
     isActive,

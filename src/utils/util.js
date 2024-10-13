@@ -83,6 +83,29 @@ export const formatDate = (date, patternStr) => {
   return patternStr;
 };
 
+export const formatTime = (seconds) => {
+  if (!seconds) return "00:00";
+
+  let hh = Math.floor(seconds / 3600),
+    mm = Math.floor(seconds / 60) % 60,
+    ss = Math.floor(seconds) % 60;
+
+  if (hh) {
+    return (
+      (hh < 10 ? "0" : "") +
+      hh +
+      ":" +
+      (mm < 10 ? "0" : "") +
+      mm +
+      ":" +
+      (ss < 10 ? "0" : "") +
+      ss
+    );
+  } else {
+    return (mm < 10 ? "0" : "") + mm + ":" + (ss < 10 ? "0" : "") + ss;
+  }
+};
+
 export const applicationExit = () => {
   const os = LOCAL_STORAGE.DEVICE_OS.GET();
 
@@ -167,29 +190,6 @@ export const generateMacAddress = (str) => {
   }
 
   return mac.join(":");
-};
-
-export const formatTime = (seconds) => {
-  if (!seconds) return "00:00";
-
-  let hh = Math.floor(seconds / 3600),
-    mm = Math.floor(seconds / 60) % 60,
-    ss = Math.floor(seconds) % 60;
-
-  if (hh) {
-    return (
-      (hh < 10 ? "0" : "") +
-      hh +
-      ":" +
-      (mm < 10 ? "0" : "") +
-      mm +
-      ":" +
-      (ss < 10 ? "0" : "") +
-      ss
-    );
-  } else {
-    return (mm < 10 ? "0" : "") + mm + ":" + (ss < 10 ? "0" : "") + ss;
-  }
 };
 
 export const scrollElement = (
