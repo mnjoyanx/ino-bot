@@ -9,6 +9,7 @@ import Menu from "@pages/menu/Index.jsx";
 import LivePage from "@pages/live/Index.jsx";
 import Settings from "@pages/settings/Index.jsx";
 import MoviesPage from "@pages/movies/Index.jsx";
+import MovieInfo from "@pages/movieInfo/Index.jsx";
 import { ToastProvider } from "./hooks/useToast";
 import { MoviesProvider } from "./context/moviesContext";
 
@@ -30,6 +31,7 @@ function App() {
             </MoviesProvider>
           }
         />
+        <Route path={PATHS.MOVIE_INFO} element={<MovieInfo />} />
 
         {/* <Route path={PATHS.LOGIN} element={<Login imagesApp={imagesAppObj} />} />
             <Route path={PATHS.SUBUSERS} element={<Subusers imagesApp={imagesAppObj} />} />

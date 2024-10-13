@@ -49,6 +49,7 @@ const MoviesList = () => {
   const renderMovieCard = useCallback(
     ({ index, style, isActive, item }) => (
       <MovieCard
+        id={item.id}
         key={item.id}
         style={style}
         isActive={isActive}

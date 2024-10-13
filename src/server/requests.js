@@ -164,9 +164,9 @@ export const getAllGenres = (queryParams) => {
   return request("get", "v2/api/genre", queryParams, "");
 };
 
-// export const getInfoMovie = queryParams => {
-//   return request("get", "v2/api/movies/info", queryParams);
-// };
+export const getMovieById = (queryParams) => {
+  return request("get", "v2/api/movies/info", queryParams);
+};
 
 // export const getAdsMovie = queryParams => {
 //   return request("get", "v2/api/ads/by_movie_id", queryParams);
