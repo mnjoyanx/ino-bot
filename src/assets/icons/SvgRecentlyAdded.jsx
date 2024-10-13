@@ -2,8 +2,8 @@ const SvgRecentlyAdded = () => {
   return (
     <svg
       fill="#717171"
-      width="3rem"
-      height="3rem"
+      width="2.6rem"
+      height="2.6rem"
       viewBox="0 0 24 24"
       id="Layer_1"
     >

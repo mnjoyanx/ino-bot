@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { MoviesContext } from "@context/moviesContext";
 
 import {
   selectCtrl,
@@ -19,6 +20,7 @@ import { setCtrl } from "../../app/global";
 
 const MainSidebar = ({ categories }) => {
   const dispatch = useDispatch();
+  const { setSelectedGenre } = useContext(MoviesContext);
 
   const isOpen = useSelector(selectIsOpenMainSidebar);
   const ctrl = useSelector(selectCtrl);
@@ -80,7 +82,20 @@ const MainSidebar = ({ categories }) => {
         dispatch(setCtrl("movieCategories"));
       }
     },
+
+    back: () => {
+      dispatch(setIsOpenMainSidebar(false));
+      dispatch(setCtrl("moviesSeries"));
+      setIsCategoriesOpened(false);
+    },
   });
+
+  const handleCategorySelect = (categoryId) => {
+    setSelectedGenre(categoryId);
+    setIsCategoriesOpened(false);
+    dispatch(setIsOpenMainSidebar(false));
+    dispatch(setCtrl("moviesSeries"));
+  };
 
   return (
     <div
@@ -104,6 +119,7 @@ const MainSidebar = ({ categories }) => {
                   isOpen={isCategoriesOpened}
                   setIsOpen={setIsCategoriesOpened}
                   ctrl={ctrl}
+                  onSelectCategory={handleCategorySelect}
                 />
               ) : null}
             </div>
@@ -114,7 +130,13 @@ const MainSidebar = ({ categories }) => {
   );
 };
 
-const CategoriesList = ({ categories, isOpen, setIsOpen, ctrl }) => {
+const CategoriesList = ({
+  categories,
+  isOpen,
+  setIsOpen,
+  ctrl,
+  onSelectCategory,
+}) => {
   const dispatch = useDispatch();
 
   const [catActive, setCatActive] = useState(0);
@@ -135,19 +157,35 @@ const CategoriesList = ({ categories, isOpen, setIsOpen, ctrl }) => {
         setCatActive(catActive + 1);
       }
     },
+
+    ok: () => {
+      onSelectCategory(categories[catActive].id);
+    },
+
+    back: () => {
+      dispatch(setCtrl("mainSidebar"));
+      setIsOpen(false);
+    },
   });
+
   return (
     <div className={styles["categories"]}>
-      {categories.map((category, idx) => {
-        return (
-          <p
-            key={idx}
-            className={`${styles["name"]} ${idx === catActive ? styles["active"] : ""}`}
-          >
-            {category.name}
-          </p>
-        );
-      })}
+      {!categories.length ? (
+        <p>No Categories</p>
+      ) : (
+        <>
+          {categories.map((category, idx) => {
+            return (
+              <p
+                key={idx}
+                className={`${styles["name"]} ${idx === catActive ? styles["active"] : ""}`}
+              >
+                {category.name}
+              </p>
+            );
+          })}
+        </>
+      )}
     </div>
   );
 };

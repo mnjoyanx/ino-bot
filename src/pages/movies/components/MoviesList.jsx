@@ -1,90 +1,109 @@
-import { useState } from "react";
+import React, { useState, useCallback, useContext } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCtrl } from "@app/global";
 import ListView from "@components/lists/ListView";
 import useKeydown from "@hooks/useKeydown";
 import MovieCard from "./MovieCard";
-
+import { MoviesContext } from "@context/moviesContext";
 import styles from "@styles/components/moviesList.module.scss";
 import { setCtrl, setIsOpenMainSidebar } from "../../../app/global";
 
-const MoviesList = ({ movies }) => {
+const MoviesList = () => {
   const dispatch = useDispatch();
   const ctrl = useSelector(selectCtrl);
+  const { moviesByGenre, selectedGenre } = useContext(MoviesContext);
+  console.log(moviesByGenre, "moviesByGenre");
 
   const [activeRow, setActiveRow] = useState(0);
   const [activeColumn, setActiveColumn] = useState(0);
 
+  const currentMovies = selectedGenre ? moviesByGenre[selectedGenre] || {} : {};
+  const movieTypes = Object.keys(currentMovies);
+
+  console.log(currentMovies, "currentMovies");
+
   useKeydown({
     isActive: ctrl === "moviesSeries",
-
-    up: () => {
-      if (activeRow > 0) setActiveRow(activeRow - 1);
-    },
-
-    down: () => {
-      if (activeRow < Object.keys(movies).length - 1)
-        setActiveRow(activeRow + 1);
-    },
-
-    left: () => {
+    up: useCallback(() => {
+      setActiveRow((prev) => Math.max(0, prev - 1));
+    }, []),
+    down: useCallback(() => {
+      setActiveRow((prev) => Math.min(movieTypes.length - 1, prev + 1));
+    }, [movieTypes]),
+    left: useCallback(() => {
       if (activeColumn > 0) {
-        setActiveColumn(activeColumn - 1);
+        setActiveColumn((prev) => prev - 1);
       } else {
         dispatch(setCtrl("mainSidebar"));
         dispatch(setIsOpenMainSidebar(true));
       }
-    },
-
-    right: () => {
-      if (
-        activeColumn <
-        Object.keys(movies[Object.keys(movies)[activeRow]]).length - 1
-      ) {
-        setActiveColumn(activeColumn + 1);
-      }
-    },
+    }, [activeColumn, dispatch]),
+    right: useCallback(() => {
+      const currentMovieList = currentMovies[movieTypes[activeRow]] || [];
+      setActiveColumn((prev) =>
+        Math.min(currentMovieList.length - 1, prev + 1)
+      );
+    }, [currentMovies, movieTypes, activeRow]),
   });
 
-  const renderMovieCard = ({ index, style, isActive, item }) => (
-    <MovieCard
-      key={index}
-      style={style}
-      isActive={isActive}
-      name={item.name}
-      poster={item.poster}
-    />
+  const renderMovieCard = useCallback(
+    ({ index, style, isActive, item }) => (
+      <MovieCard
+        key={item.id}
+        style={style}
+        isActive={isActive}
+        name={item.name}
+        poster={item.poster}
+      />
+    ),
+    []
   );
+
+  const renderContent = (movieType, movies) => {
+    if (!movies || movies.length === 0) {
+      return (
+        <div className={styles["no-content"]}>
+          {`There are no ${movieType === "tv_show" ? "TV shows" : "movies"} available.`}
+        </div>
+      );
+    }
+
+    return (
+      <ListView
+        id={`movie_list_${movieType}`}
+        uniqueKey={`movies-${movieType}-list`}
+        itemsTotal={movies.length}
+        itemsCount={2}
+        listType="horizontal"
+        itemWidth={24}
+        itemHeight={27}
+        isActive={
+          activeRow === movieTypes.indexOf(movieType) && ctrl === "moviesSeries"
+        }
+        activeCol={activeColumn}
+        buffer={5}
+        debounce={100}
+        nativeControle={true}
+        renderItem={renderMovieCard}
+        data={movies}
+      />
+    );
+  };
 
   return (
     <div
       className={`${styles["movies-list"]} ${activeRow > 0 ? styles["up"] : ""}`}
     >
-      {Object.entries(movies).map(([movieType, movieList], index) => (
-        <div key={index} className={styles["wrapper"]}>
+      {movieTypes.map((movieType) => (
+        <div key={movieType} className={styles["wrapper"]}>
           <h2 className={styles["movies-list_title"]}>
             {movieType === "tv_show" ? "Series" : "Movies"}
           </h2>
-          <ListView
-            id="movie_list"
-            uniqueKey={`movies-${movieType}-list`}
-            itemsTotal={movieList.length}
-            itemsCount={2}
-            listType="horizontal"
-            itemWidth={24}
-            itemHeight={27}
-            isActive={activeRow === index && ctrl === "moviesSeries"}
-            activeCol={activeColumn}
-            buffer={5}
-            debounce={100}
-            nativeControle={true}
-            renderItem={renderMovieCard}
-            data={movieList}
-          />
+          {renderContent(movieType, currentMovies[movieType])}
         </div>
       ))}
     </div>
   );
 };
 
-export default MoviesList;
+export default React.memo(MoviesList);

@@ -1,6 +1,7 @@
+import React from "react";
 import styles from "@styles/components/movieCard.module.scss";
 
-const MovieCard = ({ style, isActive, name, poster }) => {
+const MovieCard = React.memo(({ style, isActive, name, poster }) => {
   return (
     <div
       style={style}
@@ -12,6 +13,6 @@ const MovieCard = ({ style, isActive, name, poster }) => {
       <p className={styles["title"]}>{name}</p>
     </div>
   );
-};
+});
 
 export default MovieCard;

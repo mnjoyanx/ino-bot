@@ -2,7 +2,7 @@ const SvgGenres = () => {
   return (
     <svg
       fill="#717171"
-      width="3rem"
+      width="2.6rem"
       height="3rem"
       viewBox="0 0 32 32"
       id="Layer_1"
