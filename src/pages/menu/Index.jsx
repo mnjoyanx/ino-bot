@@ -10,6 +10,7 @@ import MenuItems from "@components/menu/MenuItems";
 import LOCAL_STORAGE from "@utils/localStorage";
 
 import "@styles/components/menu.scss";
+import AppLogo from "@components/common/AppLogo";
 
 export default function Menu() {
   const dispatch = useDispatch();
@@ -23,14 +24,7 @@ export default function Menu() {
     <div className="menu-wrapper">
       <div className="head-menu-wrapper">
         <TimeWrapper />
-        <div className="logo">
-          {configs?.basics?.logo || LOCAL_STORAGE.LOGO.GET() ? (
-            <img
-              src={configs?.basics?.logo || LOCAL_STORAGE.LOGO.GET()}
-              alt="logo"
-            />
-          ) : null}
-        </div>
+        <AppLogo />
         <NetworkStatus />
       </div>
       <MenuItems />

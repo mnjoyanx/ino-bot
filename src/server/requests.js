@@ -25,6 +25,7 @@ export const getChannels = (queryParams) => {
     ""
   );
 };
+
 export const getChannelCategories = (queryParams) => {
   return request(
     "get",
@@ -150,17 +151,22 @@ export const getProfile = (body) => {
 //   );
 // };
 
-// export const getContentByCategory = queryParams => {
-//   return request(
-//     "get",
-//     "v2/api/movies", // -> endpoint
-//     queryParams,
-//   );
-// };
+export const getAllMovies = (queryParams) => {
+  return request(
+    "get",
+    "v2/api/movies", // -> endpoint
+    queryParams,
+    ""
+  );
+};
 
-// export const getInfoMovie = queryParams => {
-//   return request("get", "v2/api/movies/info", queryParams);
-// };
+export const getAllGenres = (queryParams) => {
+  return request("get", "v2/api/genre", queryParams, "");
+};
+
+export const getMovieById = (queryParams) => {
+  return request("get", "v2/api/movies/info", queryParams);
+};
 
 // export const getAdsMovie = queryParams => {
 //   return request("get", "v2/api/ads/by_movie_id", queryParams);
@@ -222,6 +228,6 @@ export const removeLiveFavorite = (body) => {
   return request("post", "user/channels/deleteFavorite", "", body);
 };
 
-// export const getMovieUrl = queryParams => {
-//   return request("get", "application/vod/movie/url", queryParams);
-// };
+export const getMovieUrl = (queryParams) => {
+  return request("get", "application/vod/movie/url", queryParams);
+};

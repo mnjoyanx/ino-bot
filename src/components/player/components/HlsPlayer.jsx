@@ -14,60 +14,38 @@ export default memo(function HlsPlayer({
   const currentTime = useRef(0);
 
   useEffect(() => {
+    console.log("URL changed:", url);
     let hls = null;
 
     if (Hls.isSupported()) {
+      console.log("Hls is supported");
       hls = new Hls();
 
       hls.loadSource(url);
       hls.attachMedia(refVideo.current);
 
-      hls.on(Hls.Events.AUDIO_TRACK_LOADED, function (err, data) {});
-
-      hls.on(Hls.Events.AUDIO_TRACK_SWITCHED, function (e, data) {
-        // setActiveAudioTrack(hls_player.audioTrack);
-        // setActiveSub(hls_player.subtitleTrack);
-      });
-
-      hls.on(Hls.Events.SUBTITLE_TRACK_LOADED, function (e, data) {
-        // console.log(hls.subtitleTracks, "sub data ----");
-        // setSubtitles(hls_player.subtitleTracks);
-      });
-
-      hls.on(Hls.Events.SUBTITLE_TRACK_SWITCH, function (e, data) {
-        // setActiveSub(hls_player.subtitleTrack);
-      });
-
       hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-        // const levels = hls_player.levels;
+        console.log("Manifest parsed, attempting to play");
+        refVideo.current.play().catch((e) => console.error("Play failed:", e));
       });
 
-      refVideo.current.onwaiting = () => {
-        waiting();
-      };
-
-      // refVideo.current.onplay = () => {
-      //   play();
-      // };
-
-      refVideo.current.onpause = () => {
-        pause();
-      };
-
-      // if(activeMedia){
       hls.on(Hls.Events.ERROR, function (err, data) {
-        console.log(err, "errro");
+        console.error("Hls error:", err, data);
         error(err);
-        if (data.type == "mediaError") {
-        } else {
-        }
       });
+    } else {
+      console.warn("Hls is not supported");
+      // Fallback to native video player
+      refVideo.current.src = url;
     }
 
     return () => {
-      hls.stopLoad();
-      hls.detachMedia();
-      hls.destroy();
+      if (hls) {
+        console.log("Cleaning up Hls");
+        hls.stopLoad();
+        hls.detachMedia();
+        hls.destroy();
+      }
     };
   }, [url]);
 
@@ -87,6 +65,7 @@ export default memo(function HlsPlayer({
       ref={refVideo}
       autoPlay={true}
       src={url}
+      playsInline
     />
   );
 });

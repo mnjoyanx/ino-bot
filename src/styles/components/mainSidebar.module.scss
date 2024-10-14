@@ -1,0 +1,137 @@
+@import "../variables.scss";
+@import "../mixins.scss";
+
+.main-sidebar {
+  width: 29.5rem;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  .app-logo {
+    position: absolute;
+    top: 2.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.2s linear;
+  }
+
+  .outline {
+    width: 100%;
+    height: 100%;
+    background-color: $dark;
+    opacity: 0.95;
+    transform: translateX(-100%);
+    transition: transform 0.2s linear;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+  }
+
+  &.open {
+    .app-logo {
+      opacity: 1;
+    }
+
+    .outline {
+      transform: translateX(0);
+    }
+
+    .items {
+      .item {
+        .text {
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+  .items {
+    @include flex-column(flex-start, flex-start);
+    gap: 5.2rem;
+    position: relative;
+    top: 0;
+    transform: translateY(0);
+    transition: transform 0.2s linear;
+
+    &.categories-opened {
+      transform: translateY(-40%);
+    }
+
+    .item {
+      @include flex(flex-start, center);
+      gap: 1.6rem;
+
+      &.parent {
+        position: relative;
+      }
+
+      &.active {
+        .text {
+          color: #fff;
+        }
+
+        .icon {
+          svg {
+            fill: #fff !important;
+            color: #fff;
+            path {
+              fill: #fff;
+            }
+          }
+        }
+      }
+
+      .text {
+        font-size: 1.8rem;
+        font-weight: 500;
+        color: $muted;
+        opacity: 0;
+        transition: opacity 0.3s linear;
+      }
+
+      .icon {
+        width: 2.4rem;
+        height: 2.4rem;
+      }
+    }
+  }
+}
+
+.main-sidebar {
+  .open {
+    .items {
+      .item {
+        .text {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+    }
+  }
+}
+
+.categories {
+  position: absolute;
+  top: 5rem;
+  left: 3rem;
+  @include flex-column(flex-start, flex-start);
+  gap: 1.6rem;
+
+  .name {
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: $muted;
+
+    &.active {
+      color: #fff;
+    }
+  }
+}

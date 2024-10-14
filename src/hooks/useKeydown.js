@@ -7,6 +7,10 @@ function useKeydown(props) {
       event.preventDefault();
       let key = check_key(e);
 
+      if (props.move) {
+        props.move(e);
+      }
+
       if (key && !isNaN(key) && props["number"]) key = "number";
 
       if (props[key]) props[key](e);

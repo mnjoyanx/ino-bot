@@ -6,11 +6,17 @@ import LOCAL_STORAGE from "@utils/localStorage";
 import HlsPlayer from "./components/HlsPlayer";
 import LiveControls from "@components/live/LiveControls.jsx";
 import AndroidPlayer from "./components/AndroidPlayer";
-import { selectPlayerType, setPlayerType } from "@app/channels/channelsSlice";
+import { selectPlayerType } from "@app/channels/channelsSlice";
+import { useToast } from "@hooks/useToast";
+import VodControls from "./components/VodControl";
+
 import "./styles/player.scss";
-import { useToast } from "../../hooks/useToast";
 
 let timeout = null;
+
+const isHlsUrl = (url) => {
+  return url.includes(".m3u8") || url.includes(".ts");
+};
 
 export default memo(function Player({
   type,
@@ -22,6 +28,7 @@ export default memo(function Player({
   endedArchive,
   retryC,
   setRetryC,
+  title,
 }) {
   const dispatch = useDispatch();
   const refVideo = useRef(null);
@@ -59,6 +66,7 @@ export default memo(function Player({
 
   const loadedMetadataHandler = () => {
     hideToast();
+    play();
   };
 
   const handleTimeUpdate = (currentTime, duration) => {
@@ -127,8 +135,7 @@ export default memo(function Player({
   }, [refVideo.current]);
 
   const onErrorHandler = async (err) => {
-    // if (alreadyRetryed) return;
-    console.warn("----------errrorrr---------");
+    console.warn("----------errrorrr---------", err);
 
     if (retryC < maxRetries) {
       showToast(
@@ -138,19 +145,12 @@ export default memo(function Player({
     } else {
       hideToast();
       setAlreadyRetryed(true);
-      showToast(
-        "Unable to play channel. Please try again later.",
-        "error",
-        5000
-      );
-      // clearTimeout(timeout);
+      showToast("Unable to play video. Please try again later.", "error", 5000);
       setRetryC(0);
       return;
     }
 
-    // timeout = setTimeout(() => {
     setRetryC(retryC + 1);
-    // }, 3000);
     try {
       await retryPlayback();
       setRetryC(0);
@@ -160,6 +160,7 @@ export default memo(function Player({
   };
 
   useEffect(() => {
+    console.log("URL in Player:", url);
     document.addEventListener("playerError", onErrorHandler);
     setRetryC(0);
     hideToast();
@@ -169,10 +170,58 @@ export default memo(function Player({
     };
   }, [url]);
 
+  const renderPlayer = () => {
+    if (!url) return null;
+
+    if (LOCAL_STORAGE.DEVICE_OS.GET() === "android") {
+      return (
+        <AndroidPlayer
+          url={url}
+          timeUpdate={handleTimeUpdate}
+          streamEnd={streamEnd}
+        />
+      );
+    }
+
+    if (isHlsUrl(url)) {
+      return (
+        <HlsPlayer
+          refVideo={refVideo}
+          url={url}
+          timeUpdate={handleTimeUpdate}
+          streamEnd={streamEnd}
+          error={onErrorHandler}
+          loadVideo={loadedMetadataHandler}
+        />
+      );
+    }
+
+    // Fallback to native HTML5 video player for non-HLS URLs
+    return (
+      <video
+        ref={refVideo}
+        src={url}
+        id="video_player"
+        onTimeUpdate={() =>
+          handleTimeUpdate(
+            refVideo.current.currentTime,
+            refVideo.current.duration
+          )
+        }
+        onEnded={streamEnd}
+        onLoadedMetadata={loadedMetadataHandler}
+        onError={onErrorHandler}
+        onWaiting={() => console.log("Video is waiting")}
+        autoPlay
+        playsInline
+      />
+    );
+  };
+
   return (
     <>
       <div id="controls_player">
-        {type == "live" && !pipMode ? (
+        {type === "live" && !pipMode && (
           <LiveControls
             setUrl={setUrl}
             url={url}
@@ -187,27 +236,22 @@ export default memo(function Player({
             play={play}
             pause={pause}
           />
-        ) : null}
-      </div>
-      {/* <HlsPlayer refVideo={refVideo} /> */}
-      {url ? (
-        LOCAL_STORAGE.DEVICE_OS.GET() === "android" ? (
-          <AndroidPlayer
-            url={url}
-            timeUpdate={handleTimeUpdate}
-            streamEnd={streamEnd}
-          />
-        ) : (
-          <HlsPlayer
+        )}
+        {type === "vod" && !pipMode && (
+          <VodControls
+            durationRef={refDuration}
+            currentTimeRef={refCurrentTime}
+            refProgress={refProgress}
+            secCurrentTime={secCurrentTime}
+            secDuration={secDuration}
             refVideo={refVideo}
-            url={url}
-            timeUpdate={handleTimeUpdate}
-            streamEnd={streamEnd}
-            error={onErrorHandler}
-            loadVideo={loadedMetadataHandler}
+            play={play}
+            pause={pause}
+            title={title}
           />
-        )
-      ) : null}
+        )}
+      </div>
+      {renderPlayer()}
     </>
   );
 });

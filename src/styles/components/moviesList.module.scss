@@ -1,0 +1,29 @@
+@import "../variables.scss";
+@import "../mixins.scss";
+
+.movies-list {
+  position: relative;
+  transition: transform 0.5s cubic-bezier(0.4, 0.8, 0.5, 1);
+
+  &.up {
+    transform: translateY(-33rem);
+  }
+}
+
+.wrapper {
+  margin-bottom: 4rem;
+}
+
+.movies-list_title {
+  font-size: 2.8rem;
+  color: white;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.no-content {
+  font-size: 1.8rem;
+  color: #ccc;
+  text-align: center;
+  margin-top: 2rem;
+}
