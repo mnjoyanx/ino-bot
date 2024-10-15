@@ -1,22 +1,22 @@
 .parent-live-page {
-    &.pip-mode {
-        width: 128rem;
-        height: 72rem;
-        background-image: url('../../assets/images/bgPipMode.png');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        #controls_player{
-            opacity: 0;
-            pointer-events: none;
-        }
-        #video_player {
-            width: 47.9rem;
-            height: 26.7rem;
-            top: 14.8rem;
-            left: 70.5rem;
-            z-index: 1000;
-            border-radius: 2.5rem;
-        }
+  &.pip-mode {
+    width: 128rem;
+    height: 72rem;
+    background-image: url("../../assets/images/bgPipMode.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    #controls_player {
+      opacity: 0;
+      pointer-events: none;
     }
+    #video_player {
+      width: 47.9rem;
+      height: 26.7rem;
+      top: 14.8rem;
+      left: 70.5rem;
+      z-index: 1000;
+      border-radius: 2.5rem;
+    }
+  }
 }

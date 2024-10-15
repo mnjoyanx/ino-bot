@@ -15,8 +15,8 @@ import SvgGenres from "@assets/icons/SvgGenres";
 import AppLogo from "./AppLogo";
 
 import styles from "@styles/components/mainSidebar.module.scss";
-import useKeydown from "../../hooks/useKeydown";
-import { setCtrl } from "../../app/global";
+import useKeydown from "@hooks/useKeydown";
+import { setCtrl, setIsMovieSearchBarOpen } from "@app/global";
 
 const MainSidebar = ({ categories }) => {
   const dispatch = useDispatch();
@@ -80,6 +80,10 @@ const MainSidebar = ({ categories }) => {
       if (active === sidebarItems.length - 1 && sidebarItems[active].items) {
         setIsCategoriesOpened(!isCategoriesOpened);
         dispatch(setCtrl("movieCategories"));
+      } else if (active === 0) {
+        dispatch(setCtrl("moviesSearchKeyboard"));
+        dispatch(setIsOpenMainSidebar(false));
+        dispatch(setIsMovieSearchBarOpen(true));
       }
     },
 

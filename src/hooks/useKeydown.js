@@ -7,13 +7,17 @@ function useKeydown(props) {
       event.preventDefault();
       let key = check_key(e);
 
-      if (props.move) {
-        props.move(e);
-      }
+      // if (props.move) {
+      //   props.move(e);
+      // }
 
       if (key && !isNaN(key) && props["number"]) key = "number";
 
       if (props[key]) props[key](e);
+
+      if (props.handleKeyPress) {
+        props.handleKeyPress(e.key);
+      }
     };
 
     if (props.isActive) {

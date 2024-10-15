@@ -93,6 +93,7 @@ const MoviesList = () => {
         nativeControle={true}
         renderItem={renderMovieCard}
         data={movies}
+        onBackScrollIndex={0}
       />
     );
   };

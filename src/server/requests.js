@@ -118,13 +118,13 @@ export const getProfile = (body) => {
 //   );
 // };
 
-// export const getSearchResults = queryParams => {
-//   return request(
-//     "get",
-//     "user/smart/search", // -> endpoint
-//     queryParams,
-//   );
-// };
+export const getSearchResults = (queryParams) => {
+  return request(
+    "get",
+    "user/smart/search", // -> endpoint
+    queryParams
+  );
+};
 
 // export const loginGuestMode = body => {
 //   return request(
