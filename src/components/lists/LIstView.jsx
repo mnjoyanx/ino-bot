@@ -59,6 +59,19 @@ function ListView({
     changeStartIndex(index);
   };
 
+  const scrollToIndex = useCallback(
+    (index) => {
+      setActiveIndex(index);
+      changeStartIndex(index);
+
+      // Trigger a re-render to update the transform
+      setTimeout(() => {
+        setStartIndex((prevStartIndex) => prevStartIndex);
+      }, 0);
+    },
+    [changeStartIndex]
+  );
+
   const next = (count = 1) => {
     setActiveIndex((index) => {
       if (index === itemsTotal - 1) {
@@ -118,20 +131,13 @@ function ListView({
   }, [itemsTotal]);
 
   const back = useCallback(() => {
-    if (onBackScrollIndex == null) return onBack();
-
-    setActiveIndex((index) => {
-      if (index === onBackScrollIndex) {
-        requestAnimationFrame(onBack);
-      } else {
-        index = onBackScrollIndex;
-      }
-
-      changeStartIndex(index);
-
-      return index;
-    });
-  }, [id, isActive, onBackScrollIndex]);
+    if (onBackScrollIndex !== null) {
+      scrollToIndex(onBackScrollIndex);
+    } else {
+      scrollToIndex(0); // Scroll to the first element
+    }
+    requestAnimationFrame(onBack);
+  }, [onBackScrollIndex, scrollToIndex, onBack]);
 
   const onMouseEnterItem = useCallback((index) => {
     setActiveIndex(index);
@@ -230,9 +236,9 @@ function ListView({
       down: () => listType !== "horizontal" && next(),
       channel_up: () => prev(itemsCount),
       channel_down: () => next(itemsCount),
-      back: onBack,
+      back,
     }),
-    [isActive, nativeControle, listType, prev, next, itemsCount, onBack]
+    [isActive, nativeControle, listType, prev, next, itemsCount, back]
   );
 
   useKeydown(keyDownOptions);

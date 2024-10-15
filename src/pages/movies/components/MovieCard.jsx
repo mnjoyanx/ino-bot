@@ -27,7 +27,7 @@ const MovieCard = React.memo(({ style, isActive, name, poster, id }) => {
       <div className={styles["movie-card"]}>
         <img src={poster} alt={name} />
       </div>
-      <p className={styles["title"]}>{name}</p>
+      <p className={`${styles["title"]} one-line`}>{name}</p>
     </div>
   );
 });

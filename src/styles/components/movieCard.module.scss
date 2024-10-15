@@ -13,10 +13,11 @@
   .movie-card {
     width: 20rem;
     height: 27rem;
-    position: absolute;
+    // position: absolute;
     border: 0.2rem solid transparent;
     border-radius: 1.8rem;
     overflow: hidden;
+    margin-bottom: 0.5rem;
 
     img {
       width: 100%;
