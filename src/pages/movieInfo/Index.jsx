@@ -16,6 +16,7 @@ import {
   selectCtrl,
   setCtrl,
 } from "@app/global";
+import { addFavorite } from "../../server/requests";
 const MovieInfo = () => {
   const dispatch = useDispatch();
 
@@ -61,29 +62,39 @@ const MovieInfo = () => {
     }
   }, [id]);
 
-  const handleRetry = useCallback(() => {
-    if (retryCount < maxRetries) {
-      setRetryCount((prevCount) => prevCount + 1);
-      showToast(
-        `Attempting to replay... (${retryCount + 1}/${maxRetries})`,
-        "retrying"
-      );
-    } else {
-      hideToast();
-      showToast("Unable to play movie. Please try again later.", "error", 5000);
-      setRetryCount(0);
-    }
-  }, [retryCount, maxRetries, showToast, hideToast]);
+  // const handleRetry = useCallback(() => {
+  //   if (retryCount < maxRetries) {
+  //     setRetryCount((prevCount) => prevCount + 1);
+  //     showToast(
+  //       `Attempting to replay... (${retryCount + 1}/${maxRetries})`,
+  //       "retrying"
+  //     );
+  //   } else {
+  //     hideToast();
+  //     showToast("Unable to play movie. Please try again later.", "error", 5000);
+  //     setRetryCount(0);
+  //   }
+  // }, [retryCount, maxRetries, showToast, hideToast]);
 
   const handleContinueWatchingClick = useCallback(() => {
     console.log("Continue Watching button clicked");
     // Implement continue watching functionality here
   }, []);
 
-  const handleFavoriteClick = useCallback(() => {
+  const handleFavoriteClick = async () => {
     console.log("Favorite button clicked");
-    // Implement favorite functionality here
-  }, []);
+    try {
+      const response = await addFavorite({ movieId: id });
+      const parsedResponse = JSON.parse(response);
+      if (!parsedResponse.error) {
+        showToast("Movie added to favorites", "success", 3000);
+      } else {
+        showToast("Failed to add movie to favorites", "error", 3000);
+      }
+    } catch (error) {
+      console.error("Failed to add movie to favorites:", error);
+    }
+  };
 
   const handleMouseEnter = useCallback((index) => {
     setActiveButton(index);

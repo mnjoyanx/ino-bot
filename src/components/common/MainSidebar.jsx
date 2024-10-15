@@ -36,14 +36,17 @@ const MainSidebar = ({ categories }) => {
     },
     {
       name: "Favorites",
+      id: "favorites",
       icon: <SvgFavorites />,
     },
     {
       name: "Last Watched",
+      id: "lastWatched",
       icon: <SvgLastWatched />,
     },
     {
       name: "Recently Added",
+      id: "recentlyAdded",
       icon: <SvgRecentlyAdded />,
     },
   ];
@@ -84,6 +87,9 @@ const MainSidebar = ({ categories }) => {
         dispatch(setCtrl("moviesSearchKeyboard"));
         dispatch(setIsOpenMainSidebar(false));
         dispatch(setIsMovieSearchBarOpen(true));
+      } else {
+        handleCategorySelect(sidebarItems[active].id);
+        dispatch(setIsOpenMainSidebar(false));
       }
     },
 

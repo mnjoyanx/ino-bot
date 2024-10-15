@@ -212,9 +212,13 @@ export const getMovieById = (queryParams) => {
 //   return request("get", "application/vod/movie/related", queryParams);
 // };
 
-// export const addFavorite = body => {
-//   return request("post", "application/vod/movie/addFavorite", "", body);
-// };
+export const addFavorite = (body) => {
+  return request("post", "application/vod/movie/addFavorite", "", body);
+};
+
+export const getFavorites = (queryParams) => {
+  return request("get", "v2/api/movies/favorites", queryParams);
+};
 
 // export const removeFavorite = body => {
 //   return request("post", "application/vod/movie/removeFavorite", "", body);
@@ -230,4 +234,8 @@ export const removeLiveFavorite = (body) => {
 
 export const getMovieUrl = (queryParams) => {
   return request("get", "application/vod/movie/url", queryParams);
+};
+
+export const getLastWatchedMovies = (queryParams) => {
+  return request("get", "v2/api/watch_history/movies", queryParams);
 };

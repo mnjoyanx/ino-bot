@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  ctrl: "mainSidebar",
-  isOpenMainSidebar: true,
+  ctrl: "",
+  isOpenMainSidebar: false,
   isPlayerOpen: false,
   isMovieSearchBarOpen: false,
 };
