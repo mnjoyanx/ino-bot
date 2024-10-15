@@ -1,0 +1,48 @@
+@import "../variables.scss";
+@import "../mixins.scss";
+
+.episodes-container {
+  margin-top: 2rem;
+
+  h3 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+
+  .episodes-list {
+    display: flex;
+    gap: 1.5rem;
+  }
+}
+
+.episode {
+  position: relative;
+  width: 18.5rem;
+  height: 14rem;
+  background-color: $dark;
+  border-radius: 0.8rem;
+  transition: all 0.3s ease;
+
+  &.active {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .episode-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    position: absolute;
+    right: 2rem;
+    bottom: -1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+}

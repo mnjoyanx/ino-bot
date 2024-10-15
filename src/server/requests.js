@@ -184,9 +184,9 @@ export const getMovieById = (queryParams) => {
 //   return request("get", "v2/api/season/by_movie_id", queryParams);
 // };
 
-// export const getEpisodes = queryParams => {
-//   return request("get", "v2/api/episode/by_season_id", queryParams);
-// };
+export const getEpisodes = (queryParams) => {
+  return request("get", "v2/api/episode/by_season_id", queryParams);
+};
 
 // export const getTranslationsMovie = queryParams => {
 //   return request("get", "v2/api/movie_translations/by_movie_id", queryParams);
