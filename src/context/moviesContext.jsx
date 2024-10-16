@@ -1,7 +1,6 @@
 import {
   createContext,
   useReducer,
-  useContext,
   useState,
   useMemo,
   useCallback,
@@ -28,7 +27,7 @@ const filterMoviesAndSeries = (movies) => {
       return acc;
     },
     { movies: [], tv_show: [] }
-  ); // Initialize with empty arrays for both types
+  );
 };
 
 function moviesReducer(state, action) {
@@ -104,5 +103,3 @@ export const MoviesProvider = ({ children }) => {
     </MoviesContext.Provider>
   );
 };
-
-export const useMovies = () => useContext(MoviesContext);

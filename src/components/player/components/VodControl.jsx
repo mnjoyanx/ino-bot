@@ -7,6 +7,11 @@ import Progress from "./Progress";
 import Duration from "./Duration";
 import { selectCtrl, setIsPlayerOpen, setCtrl } from "@app/global";
 import Button from "../../common/Button";
+import SvgPlay from "@assets/images/player/SvgPlay";
+import SvgPause from "@assets/images/player/SvgPause";
+import SvgRewind from "@assets/icons/SvgRewind";
+import SvgForward from "@assets/icons/SvgForward";
+import SvgSettings from "@assets/icons/SvgSettings";
 
 import "@styles/components/vodControl.scss";
 
@@ -30,6 +35,7 @@ export default memo(function VodControls({
 
   const [hideControls, setHideControls] = useState(false);
   const [active, setActive] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
 
   const showControl = () => {
     if (hideControls) setHideControls(false);
@@ -101,18 +107,23 @@ export default memo(function VodControls({
     },
 
     back: () => {
-    //   if (!hideControls) {
-    //     setHideControls(false);
-    //   } else {
-        dispatch(setIsPlayerOpen(false));
-        dispatch(setCtrl("movieInfo"));
-    //   }
+      //   if (!hideControls) {
+      //     setHideControls(false);
+      //   } else {
+      dispatch(setIsPlayerOpen(false));
+      dispatch(setCtrl("movieInfo"));
+      //   }
     },
 
     move: () => {
-    //   showControl();
+      //   showControl();
     },
   });
+
+  const toggleSettings = () => {
+    setShowSettings(!showSettings);
+    showControl();
+  };
 
   return (
     <div className={`vod-control${hideControls ? " hide" : ""}`}>
@@ -128,27 +139,48 @@ export default memo(function VodControls({
         <Button
           className="control-btn"
           onClick={() => handleSeek("backward")}
-          onMouseEnter={() => setActiveButton(0)}
           title="Rewind"
           isActive={active === 1}
-          //   icon={<SvgRewind />}
+          icon={<SvgRewind />}
         />
         <Button
-          className="control-btn"
+          className="control-btn play-pause"
           onClick={isPaused ? play : pause}
-          onMouseEnter={() => setActiveButton(1)}
           title={isPaused ? "Play" : "Pause"}
           isActive={active === 2}
-          //   icon={isPaused ? <SvgPlay /> : <SvgPause />}
+          icon={isPaused ? <SvgPlay /> : <SvgPause />}
         />
         <Button
           className="control-btn"
           onClick={() => handleSeek("forward")}
-          onMouseEnter={() => setActiveButton(2)}
           title="Forward"
           isActive={active === 3}
-          //   icon={<SvgForward />}
+          icon={<SvgForward />}
         />
+      </div>
+      <div className="settings-control">
+        <Button
+          className="settings-btn"
+          onClick={toggleSettings}
+          title="Settings"
+          icon={<SvgSettings />}
+        />
+        {showSettings && (
+          <div className="settings-menu">
+            <div className="settings-item">
+              <span>Quality</span>
+              <span>Auto</span>
+            </div>
+            <div className="settings-item">
+              <span>Playback Speed</span>
+              <span>Normal</span>
+            </div>
+            <div className="settings-item">
+              <span>Subtitles</span>
+              <span>Off</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { selectCtrl, setCtrl } from "@app/global";
 import styles from "@styles/components/tvShowSeasons.module.scss";
 import SeasonEpisodes from "./SeasonEpisodes";
 import { getEpisodes } from "@server/requests";
 import Button from "@components/common/Button";
 import useKeydown from "@hooks/useKeydown";
-import { useSelector, useDispatch } from "react-redux";
-import { selectCtrl, setCtrl } from "@app/global";
 
-const TvShowSeasons = ({ seasons, activeSeason, setActiveSeason }) => {
+const TvShowSeasons = ({ seasons, seriesId }) => {
+  const [activeSeason, setActiveSeason] = useState(0);
   const [allEpisodes, setAllEpisodes] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const ctrl = useSelector(selectCtrl);
@@ -50,7 +51,7 @@ const TvShowSeasons = ({ seasons, activeSeason, setActiveSeason }) => {
   useEffect(() => {
     setActiveSeason(0);
     fetchAllEpisodes();
-  }, [seasons, setActiveSeason]);
+  }, [seasons]);
 
   useKeydown({
     isActive: ctrl === "seasons",
@@ -59,6 +60,7 @@ const TvShowSeasons = ({ seasons, activeSeason, setActiveSeason }) => {
       setActiveSeason((prev) => Math.min(seasons.length - 1, prev + 1)),
     down: () => dispatch(setCtrl("episodes")),
     up: () => dispatch(setCtrl("movieInfo")),
+    back: () => dispatch(setCtrl("movieInfo")),
   });
 
   return (
@@ -81,8 +83,9 @@ const TvShowSeasons = ({ seasons, activeSeason, setActiveSeason }) => {
         <SeasonEpisodes
           episodes={allEpisodes[seasons[activeSeason].id]}
           activeSeason={activeSeason}
-          setActiveSeason={setActiveSeason}
           seasonsLength={seasons.length}
+          seriesId={seriesId}
+          setActiveSeason={setActiveSeason}
         />
       )}
     </div>

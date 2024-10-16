@@ -1,33 +1,27 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import styles from "@styles/components/movieInfo.module.scss";
-import { useMovieActions } from "./hooks/useMovieActions";
-import { useMovieKeyboardNavigation } from "./hooks/useMovieKeyboardNavigation";
 import MovieBackground from "./components/MovieBackground";
 import MovieContent from "./components/MovieContent";
 import MovieActions from "./components/MovieActions";
+import TvShowSeasons from "./components/TvShowSeasons";
 import Player from "@components/player/Player";
+import { getMovieById } from "@server/requests";
 import useKeydown from "@hooks/useKeydown";
 import { selectIsPlayerOpen, selectCtrl, setCtrl } from "@app/global";
-import { getMovieById } from "@server/requests";
-import TvShowSeasons from "./components/TvShowSeasons";
+import { MovieInfoProvider, useMovieInfo } from "@context/movieInfoContext";
 
-const MovieInfo = () => {
+import styles from "@styles/components/movieInfo.module.scss";
+
+const MovieInfoContent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  const isPlayerOpen = useSelector(selectIsPlayerOpen);
   const ctrl = useSelector(selectCtrl);
-  const [movie, setMovie] = useState(null);
-  const [url, setUrl] = useState(null);
-  const [activeButton, setActiveButton] = useState(0);
-  const [retryCount, setRetryCount] = useState(0);
-  const [activeSeason, setActiveSeason] = useState(0);
+  const isPlayerOpen = useSelector(selectIsPlayerOpen);
+  const { url, setUrl } = useMovieInfo();
 
-  const { handleWatchClick, handleContinueWatchingClick, handleFavoriteClick } =
-    useMovieActions(id, setUrl);
+  const [movie, setMovie] = useState(null);
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -47,42 +41,14 @@ const MovieInfo = () => {
     fetchMovie();
   }, [id]);
 
-  const handleMouseEnter = useCallback((index) => {
-    setActiveButton(index);
+  useEffect(() => {
+    if (ctrl !== "movieInfo") {
+      dispatch(setCtrl("movieInfo"));
+    }
   }, []);
 
-  useEffect(() => {
-    dispatch(setCtrl("movieInfo"));
-  }, [dispatch]);
-
-  const keydownHandlers = useMovieKeyboardNavigation({
-    ctrl,
-    activeButton,
-    setActiveButton,
-    navigate,
-    handleWatchClick,
-    handleContinueWatchingClick,
-    handleFavoriteClick,
-    movie,
-    setCtrl: (newCtrl) => dispatch(setCtrl(newCtrl)),
-  });
-
   useKeydown({
-    ...keydownHandlers,
-    down: () => {
-      if (ctrl === "movieInfo") {
-        dispatch(setCtrl("seasons"));
-      } else if (ctrl === "seasons") {
-        dispatch(setCtrl("episodes"));
-      }
-    },
-    up: () => {
-      if (ctrl === "episodes") {
-        dispatch(setCtrl("seasons"));
-      } else if (ctrl === "seasons") {
-        dispatch(setCtrl("movieInfo"));
-      }
-    },
+    back: () => navigate(-1),
   });
 
   if (!movie) {
@@ -90,38 +56,31 @@ const MovieInfo = () => {
   }
 
   return (
-    <>
-      {url && isPlayerOpen && (
+    <div className={styles["movie-info"]}>
+      <MovieBackground backdrop={movie.backdrop} />
+      <MovieContent movie={movie} />
+      <MovieActions movie={movie} movieId={id} />
+      {movie.type === "tv_show" && (
+        <TvShowSeasons seasons={movie.seasons} seriesId={id} />
+      )}
+      {isPlayerOpen && url && (
         <Player
           type="vod"
           url={url}
-          retryC={retryCount}
-          setRetryC={setRetryCount}
+          pipMode={false}
+          title={movie.name}
+          setUrl={setUrl}
+          setRetryC={() => {}}
         />
       )}
-      <div className={styles["movie-info"]}>
-        <MovieBackground backdrop={movie.backdrop} />
-        <MovieContent movie={movie} />
-        <MovieActions
-          movie={movie}
-          activeButton={activeButton}
-          handleMouseEnter={handleMouseEnter}
-          handleWatchClick={handleWatchClick}
-          handleContinueWatchingClick={handleContinueWatchingClick}
-          handleFavoriteClick={handleFavoriteClick}
-          ctrl={ctrl}
-        />
-        {movie.type === "tv_show" && (
-          <TvShowSeasons
-            seasons={movie.seasons}
-            activeSeason={activeSeason}
-            setActiveSeason={setActiveSeason}
-            ctrl={ctrl}
-          />
-        )}
-      </div>
-    </>
+    </div>
   );
 };
+
+const MovieInfo = () => (
+  <MovieInfoProvider>
+    <MovieInfoContent />
+  </MovieInfoProvider>
+);
 
 export default MovieInfo;

@@ -2,11 +2,11 @@ import React from "react";
 import styles from "@styles/components/seasonEpisodes.module.scss";
 import { useImageFallback } from "@hooks/useImageFallback";
 
-const EpisodeCard = ({ episode, index, isActive, style }) => {
+const EpisodeCard = ({ episode, index, isActive, style, onClick }) => {
   const imageSrc = useImageFallback(episode.poster);
 
   return (
-    <div style={style}>
+    <div style={style} onClick={onClick}>
       <div
         className={`${styles["episode"]} ${isActive ? styles["active"] : ""}`}
       >

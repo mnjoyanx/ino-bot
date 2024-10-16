@@ -23,7 +23,6 @@ export const useMovieActions = (id, setUrl) => {
 
   const handleContinueWatchingClick = useCallback(() => {
     console.log("Continue Watching button clicked");
-    // Implement continue watching functionality here
   }, []);
 
   const handleFavoriteClick = useCallback(async () => {

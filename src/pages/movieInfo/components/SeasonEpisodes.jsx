@@ -5,16 +5,24 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectCtrl, setCtrl } from "@app/global";
 import EpisodeCard from "./EpisodeCard";
 import ListView from "@components/lists/ListView";
+import { useSeasonEpisodeActions } from "../hooks/useSeasonEpisodeActions";
 
 const SeasonEpisodes = ({
   episodes,
   activeSeason,
   setActiveSeason,
   seasonsLength,
+  seriesId,
+  setUrl,
 }) => {
   const [activeEpisode, setActiveEpisode] = useState(0);
   const ctrl = useSelector(selectCtrl);
   const dispatch = useDispatch();
+
+  const { handleEpisodeClick, handleSeasonChange } = useSeasonEpisodeActions(
+    seriesId,
+    setUrl
+  );
 
   useKeydown({
     isActive: ctrl === "episodes",
@@ -24,11 +32,18 @@ const SeasonEpisodes = ({
     left: () => setActiveSeason((prev) => Math.max(0, prev - 1)),
     right: () =>
       setActiveSeason((prev) => Math.min(seasonsLength - 1, prev + 1)),
+    ok: () => {
+      console.log(episodes, "epeepe", episodes[activeEpisode]);
+      if (episodes[activeEpisode]) {
+        handleEpisodeClick(episodes[activeEpisode].id);
+      }
+    },
   });
 
   useEffect(() => {
     setActiveEpisode(0);
-  }, [activeSeason]);
+    handleSeasonChange(activeSeason);
+  }, [activeSeason, handleSeasonChange]);
 
   const renderEpisodeCard = useCallback(
     ({ index, style, isActive, item }) => (
@@ -38,9 +53,10 @@ const SeasonEpisodes = ({
         index={index}
         isActive={isActive}
         style={style}
+        onClick={() => handleEpisodeClick(item.id)}
       />
     ),
-    []
+    [handleEpisodeClick]
   );
 
   return (
@@ -50,10 +66,10 @@ const SeasonEpisodes = ({
         id="episodes_list"
         uniqueKey={`episodes-season-${activeSeason}-list`}
         itemsTotal={episodes.length}
-        itemsCount={5} // Adjust based on how many episodes you want to show at once
+        itemsCount={5}
         listType="horizontal"
-        itemWidth={20} // Adjust based on your EpisodeCard width
-        itemHeight={15} // Adjust based on your EpisodeCard height
+        itemWidth={20}
+        itemHeight={15}
         isActive={ctrl === "episodes"}
         activeCol={activeEpisode}
         buffer={2}
