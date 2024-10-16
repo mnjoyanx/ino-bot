@@ -12,6 +12,7 @@ import SvgPause from "@assets/images/player/SvgPause";
 import SvgRewind from "@assets/icons/SvgRewind";
 import SvgForward from "@assets/icons/SvgForward";
 import SvgSettings from "@assets/icons/SvgSettings";
+import PlaybackActions from "./PlaybackActions";
 
 import "@styles/components/vodControl.scss";
 
@@ -33,7 +34,7 @@ export default memo(function VodControls({
   const ctrl = useSelector(selectCtrl);
   const refVal = useRef(null);
 
-  const [hideControls, setHideControls] = useState(false);
+  const [hideControls, setHideControls] = useState(true);
   const [active, setActive] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -43,7 +44,7 @@ export default memo(function VodControls({
     clearTimeout(hideControlsTimer);
 
     hideControlsTimer = setTimeout(() => {
-      setHideControls(true);
+      // setHideControls(true);
     }, 3000);
   };
 
@@ -126,62 +127,36 @@ export default memo(function VodControls({
   };
 
   return (
-    <div className={`vod-control${hideControls ? " hide" : ""}`}>
-      <div className="vod-info">
-        <h2 className="vod-title">{title}</h2>
+    <>
+      <div className="playback-actions_wrapper">
+        <PlaybackActions isPaused={isPaused} />
       </div>
-      <div className="progress-field">
-        <Progress color="#FFFFFF" refProgress={refProgress} refVal={refVal} />
-        <Duration _ref={currentTimeRef} className="vod-current-time" />
-        <Duration _ref={durationRef} className="vod-duration" />
-      </div>
-      <div className="vod-controls">
-        <Button
-          className="control-btn"
-          onClick={() => handleSeek("backward")}
-          title="Rewind"
-          isActive={active === 1}
-          icon={<SvgRewind />}
-        />
-        <Button
-          className="control-btn play-pause"
-          onClick={isPaused ? play : pause}
-          title={isPaused ? "Play" : "Pause"}
-          isActive={active === 2}
-          icon={isPaused ? <SvgPlay /> : <SvgPause />}
-        />
-        <Button
-          className="control-btn"
-          onClick={() => handleSeek("forward")}
-          title="Forward"
-          isActive={active === 3}
-          icon={<SvgForward />}
-        />
-      </div>
-      <div className="settings-control">
-        <Button
-          className="settings-btn"
-          onClick={toggleSettings}
-          title="Settings"
-          icon={<SvgSettings />}
-        />
-        {showSettings && (
-          <div className="settings-menu">
-            <div className="settings-item">
-              <span>Quality</span>
-              <span>Auto</span>
+      <div className={`vod-control${hideControls ? " hide" : ""}`}>
+        <div className="vod-info">
+          <h2 className="vod-title">{title}</h2>
+        </div>
+
+        <div className="progress-field">
+          <Progress
+            color="#FFFFFF"
+            refProgress={refProgress}
+            refVal={refVal}
+            classNames="vod_progress"
+          />
+          <div className="vod-actions_wrapper">
+            <div className="vod-control-btns">
+              {/* <div className="vod-ctrl_btn">
+                {isPaused ? <SvgPlay /> : <SvgPause />}
+              </div> */}
+              <Duration _ref={currentTimeRef} className="vod-current_time" />
+              <Duration _ref={durationRef} className="vod_duration" />
             </div>
-            <div className="settings-item">
-              <span>Playback Speed</span>
-              <span>Normal</span>
-            </div>
-            <div className="settings-item">
-              <span>Subtitles</span>
-              <span>Off</span>
+            <div className="vod-ctrl_btn">
+              <SvgSettings />
             </div>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </>
   );
 });

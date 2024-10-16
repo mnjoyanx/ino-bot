@@ -35,18 +35,14 @@
 
     .vod-current-time,
     .vod-duration {
-      position: absolute;
-      top: 1.5rem;
       font-size: 1.4rem;
     }
+  }
 
-    .vod-current-time {
-      left: 0;
-    }
-
-    .vod-duration {
-      right: 0;
-    }
+  .vod-control-btns {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
   }
 
   .vod-controls {
@@ -70,4 +66,45 @@
       }
     }
   }
+}
+
+.vod-actions_wrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .vod-ctrl_btn {
+    padding: 0.4rem;
+    border-radius: 0.5rem;
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+    border: 1px solid #fff;
+    cursor: pointer;
+
+    svg {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    &.active {
+      background-color: $dark;
+    }
+
+    &:hover {
+      background-color: $dark;
+    }
+  }
+}
+
+.vod_progress {
+  margin-bottom: 1rem;
+}
+
+.playback-actions_wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
 }
