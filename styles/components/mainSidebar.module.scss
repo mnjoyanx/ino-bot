@@ -1,0 +1,33 @@
+.categories-wrapper {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  width: 200px;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+
+.category-item {
+  padding: 10px 15px;
+  font-size: 16px;
+  color: #fff;
+  transition: background-color 0.2s ease;
+
+  &.active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.categories {
+  position: relative;
+  height: 100%;
+}
+
+.item {
+  &.parent {
+    position: relative;
+  }
+
+  overflow: hidden;
+}
