@@ -4,7 +4,7 @@ import useKeydown from "@hooks/useKeydown";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCtrl, setCtrl } from "@app/global";
 import EpisodeCard from "./EpisodeCard";
-import ListView from "@components/lists/ListView";
+import ListView from "ino-listview";
 import { useSeasonEpisodeActions } from "../hooks/useSeasonEpisodeActions";
 
 const SeasonEpisodes = ({

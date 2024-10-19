@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useContext, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCtrl } from "@app/global";
-import ListView from "@components/lists/ListView";
+import ListView from "ino-listview";
 import useKeydown from "@hooks/useKeydown";
 import MovieCard from "./MovieCard";
 import { MoviesContext } from "@context/moviesContext";
@@ -26,11 +26,15 @@ const MoviesList = () => {
   useKeydown({
     isActive: ctrl === "moviesSeries",
     up: () => {
-      setActiveRow(activeRow - 1);
+      if (activeRow > 0) {
+        setActiveRow(activeRow - 1);
+      }
     },
 
     down: () => {
-      setActiveRow(activeRow + 1);
+      if (activeRow < 1) {
+        setActiveRow(activeRow + 1);
+      }
       if (ctrl !== "moviesSeries") {
         dispatch(setCtrl("moviesSeries"));
       }
