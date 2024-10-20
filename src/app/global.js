@@ -12,6 +12,7 @@ const globalSlice = createSlice({
   initialState,
   reducers: {
     setCtrl: (state, action) => {
+      console.log("setCtrl", action.payload);
       state.ctrl = action.payload;
     },
     setIsOpenMainSidebar: (state, action) => {

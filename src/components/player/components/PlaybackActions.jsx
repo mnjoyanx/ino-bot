@@ -4,18 +4,27 @@ import SvgPlay from "@assets/images/player/SvgPlay";
 import SvgPauseIcon from "@assets/icons/SvgPauseIcon";
 import SvgForward from "@assets/icons/SvgForward";
 
-const PlaybackActions = ({ isPaused }) => {
+const PlaybackActions = ({ isPaused, focusedControl, onSeek, onPlayPause }) => {
   return (
     <div className={styles["playback_actions"]}>
-      <div className={styles["playback_btn"]}>
+      <button
+        className={`${styles["playback_btn"]}${focusedControl === "backward" ? " focused" : ""}`}
+        onClick={() => onSeek("backward")}
+      >
         <SvgBackward />
-      </div>
-      <div className={styles["playback_btn"]}>
+      </button>
+      <button
+        className={`${styles["playback_btn"]}${focusedControl === "play" ? " focused" : ""}`}
+        onClick={onPlayPause}
+      >
         {isPaused ? <SvgPlay /> : <SvgPauseIcon />}
-      </div>
-      <div className={styles["playback_btn"]}>
+      </button>
+      <button
+        className={`${styles["playback_btn"]}${focusedControl === "forward" ? " focused" : ""}`}
+        onClick={() => onSeek("forward")}
+      >
         <SvgForward />
-      </div>
+      </button>
     </div>
   );
 };
