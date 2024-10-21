@@ -7,6 +7,7 @@ import Duration from "./Duration";
 import { selectCtrl, setIsPlayerOpen, setCtrl } from "@app/global";
 import SvgSettings from "@assets/icons/SvgSettings";
 import PlaybackActions from "./PlaybackActions";
+import ControlSettings from "./ControlSettings";
 
 import "@styles/components/vodControl.scss";
 
@@ -27,9 +28,10 @@ export default memo(function VodControls({
   const ctrl = useSelector(selectCtrl);
 
   const [hideControls, setHideControls] = useState(false);
-  const [activeCtrl, setActiveCtrl] = useState("top"); // 'top' or 'bottom'
-  const [topActiveIndex, setTopActiveIndex] = useState(1); // 0: backward, 1: play/pause, 2: forward
+  const [activeCtrl, setActiveCtrl] = useState("top");
+  const [topActiveIndex, setTopActiveIndex] = useState(1);
   const [isSettingsActive, setIsSettingsActive] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const showControl = () => {
     if (hideControls) setHideControls(false);
@@ -52,6 +54,16 @@ export default memo(function VodControls({
       Math.min(newTime, refVideo.current.duration)
     );
     showControl();
+  };
+
+  const handleSettingsClick = () => {
+    setShowSettings(true);
+    dispatch(setCtrl("settings"));
+  };
+
+  const handleCloseSettings = () => {
+    setShowSettings(false);
+    dispatch(setCtrl("vodCtrl"));
   };
 
   useKeydown({
@@ -84,9 +96,7 @@ export default memo(function VodControls({
         else if (topActiveIndex === 1) isPaused ? play() : pause();
         else if (topActiveIndex === 2) handleSeek("forward");
       } else {
-        // Handle settings button click
-        console.log("Settings clicked");
-        // Add your settings logic here
+        handleSettingsClick();
       }
       showControl();
     },
@@ -99,7 +109,7 @@ export default memo(function VodControls({
 
   return (
     <>
-      <div className={`vod-control${hideControls ? " " : ""}`}>
+      <div className={`vod-control${hideControls ? " hide" : ""}`}>
         <div className="vod-info">
           <h2 className="vod-title">{title}</h2>
         </div>
@@ -126,12 +136,21 @@ export default memo(function VodControls({
             </div>
             <button
               className={`vod-ctrl_btn settings-btn${isSettingsActive ? " active" : ""}`}
+              onClick={handleSettingsClick}
             >
               <SvgSettings />
             </button>
           </div>
         </div>
       </div>
+
+      {showSettings && (
+        <ControlSettings
+          isVisible={showSettings}
+          onClose={handleCloseSettings}
+          showControl={showControl}
+        />
+      )}
     </>
   );
 });
