@@ -6,12 +6,16 @@ import SeasonEpisodes from "./SeasonEpisodes";
 import { getEpisodes } from "@server/requests";
 import Button from "@components/common/Button";
 import useKeydown from "@hooks/useKeydown";
+import { useMovieInfo } from "@context/movieInfoContext";
 
 const TvShowSeasons = ({ seasons, seriesId }) => {
+  const ctrl = useSelector(selectCtrl);
+
+  const { currentEpisode, setCurrentEpisode } = useMovieInfo();
+
   const [activeSeason, setActiveSeason] = useState(0);
   const [allEpisodes, setAllEpisodes] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const ctrl = useSelector(selectCtrl);
   const dispatch = useDispatch();
 
   const getEpisodeBySeasonId = async (seasonId) => {
@@ -30,6 +34,13 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
       const { error, message } = parsedRes;
 
       if (!error) {
+        const lastWatchedEpisode = message.findLastIndex(
+          (episode) => episode.watched
+        );
+
+        setCurrentEpisode(message[lastWatchedEpisode].id);
+
+        console.log(lastWatchedEpisode, "lastWatchedEpisodelastWatchedEpisode");
         const obj = message.reduce((acc, curr) => {
           if (!acc[curr.seasonId]) {
             acc[curr.seasonId] = [];

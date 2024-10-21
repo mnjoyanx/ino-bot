@@ -216,6 +216,10 @@ export const addFavorite = (body) => {
   return request("post", "application/vod/movie/addFavorite", "", body);
 };
 
+export const removeFavorite = (body) => {
+  return request("post", "application/vod/movie/removeFavorite", "", body);
+};
+
 export const getFavorites = (queryParams) => {
   return request("get", "v2/api/movies/favorites", queryParams);
 };
@@ -230,6 +234,10 @@ export const addLiveFavorite = (body) => {
 
 export const removeLiveFavorite = (body) => {
   return request("post", "user/channels/deleteFavorite", "", body);
+};
+
+export const rememberTime = (body) => {
+  return request("post", "application/vod/movie/rememberTime", "", body);
 };
 
 export const getMovieUrl = (queryParams) => {
