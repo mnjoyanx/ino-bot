@@ -6,7 +6,7 @@ import MovieContent from "./components/MovieContent";
 import MovieActions from "./components/MovieActions";
 import TvShowSeasons from "./components/TvShowSeasons";
 import Player from "@components/player/Player";
-import { getMovieById } from "@server/requests";
+import { getMovieById, rememberTime } from "@server/requests";
 import useKeydown from "@hooks/useKeydown";
 import { selectIsPlayerOpen, selectCtrl, setCtrl } from "@app/global";
 import { MovieInfoProvider, useMovieInfo } from "@context/movieInfoContext";
@@ -19,25 +19,59 @@ const MovieInfoContent = () => {
   const dispatch = useDispatch();
   const ctrl = useSelector(selectCtrl);
   const isPlayerOpen = useSelector(selectIsPlayerOpen);
-  const { url, setUrl } = useMovieInfo();
+  const {
+    url,
+    setUrl,
+    movieInfo,
+    setMovieInfo,
+    currentEpisode,
+    setCurrentEpisode,
+    startTime,
+    setStartTime,
+  } = useMovieInfo();
 
-  const [movie, setMovie] = useState(null);
+  const fetchMovie = async () => {
+    try {
+      const response = await getMovieById({ movie_id: id });
+      const parsedResponse = JSON.parse(response);
+      if (!parsedResponse.error) {
+        if (parsedResponse.message.type === "tv_show") {
+          const lastWatchedEpisode = parsedResponse.message.watched?.episodeId;
+          setCurrentEpisode(lastWatchedEpisode);
+        } else {
+          setStartTime(parsedResponse.message.watched?.time || 0);
+        }
+        setMovieInfo(parsedResponse.message);
+      } else {
+        console.error(parsedResponse.error);
+      }
+    } catch (error) {
+      console.error("Failed to fetch movie:", error);
+    }
+  };
+
+  const rememberTimeHandler = async (
+    currentTime,
+    percent,
+    needToRefetch = false
+  ) => {
+    const body = {
+      movieId: id,
+      time: currentTime,
+      percent,
+    };
+    try {
+      const response = await rememberTime(body);
+      if (needToRefetch) {
+        fetchMovie();
+      }
+      console.log("rememberTimeHandler", response);
+    } catch (error) {
+      console.error("Failed to remember time:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchMovie = async () => {
-      try {
-        const response = await getMovieById({ movie_id: id });
-        const parsedResponse = JSON.parse(response);
-        if (!parsedResponse.error) {
-          setMovie(parsedResponse.message);
-        } else {
-          console.error(parsedResponse.error);
-        }
-      } catch (error) {
-        console.error("Failed to fetch movie:", error);
-      }
-    };
-
     fetchMovie();
   }, [id]);
 
@@ -51,26 +85,28 @@ const MovieInfoContent = () => {
     back: () => navigate(-1),
   });
 
-  if (!movie) {
+  if (!movieInfo) {
     return <div>Loading...</div>;
   }
 
   return (
     <div className={styles["movie-info"]}>
-      <MovieBackground backdrop={movie.backdrop} />
-      <MovieContent movie={movie} />
-      <MovieActions movie={movie} movieId={id} />
-      {movie.type === "tv_show" && (
-        <TvShowSeasons seasons={movie.seasons} seriesId={id} />
+      <MovieBackground backdrop={movieInfo.backdrop} />
+      <MovieContent movie={movieInfo} />
+      <MovieActions movie={movieInfo} movieId={id} />
+      {movieInfo.type === "tv_show" && (
+        <TvShowSeasons seasons={movieInfo.seasons} seriesId={id} />
       )}
       {isPlayerOpen && url && (
         <Player
           type="vod"
           url={url}
           pipMode={false}
-          title={movie.name}
+          title={movieInfo.name}
           setUrl={setUrl}
           setRetryC={() => {}}
+          onRememberTime={rememberTimeHandler}
+          startTime={startTime}
         />
       )}
     </div>

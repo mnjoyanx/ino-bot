@@ -4,19 +4,32 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectCtrl, setCtrl } from "@app/global";
 import Button from "@components/common/Button";
 import SvgPlay from "@assets/icons/SvgPlay";
+import SvgFav from "@assets/icons/SvgFav";
+import SvgFavFill from "@assets/icons/SvgFavFill";
 import useKeydown from "@hooks/useKeydown";
 import { useMovieActions } from "../hooks/useMovieActions";
 import styles from "@styles/components/movieInfo.module.scss";
 import { useMovieInfo } from "@context/movieInfoContext";
+import { formatTime } from "@utils/util";
 
 const MovieActions = ({ movie, movieId }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [activeButton, setActiveButton] = useState(0);
   const ctrl = useSelector(selectCtrl);
-  const { setUrl } = useMovieInfo();
+  const { setUrl, currentEpisode, movieInfo, setMovieInfo, setStartTime } =
+    useMovieInfo();
   const { handleWatchClick, handleContinueWatchingClick, handleFavoriteClick } =
-    useMovieActions(movieId, setUrl);
+    useMovieActions(
+      movieId,
+      setUrl,
+      movieInfo.type,
+      movieInfo.watched?.episodeId,
+      setMovieInfo,
+      movieInfo.favorite,
+      movieInfo.watched?.time || 0,
+      setStartTime
+    );
 
   useKeydown({
     isActive: ctrl === "movieInfo",
@@ -33,6 +46,7 @@ const MovieActions = ({ movie, movieId }) => {
           if (movie?.canWatch) handleWatchClick();
           break;
         case 1:
+          setStartTime(movie.watched.time);
           handleContinueWatchingClick();
           break;
         case 2:
@@ -50,24 +64,29 @@ const MovieActions = ({ movie, movieId }) => {
           className={styles["action-btn"]}
           onClick={handleWatchClick}
           onMouseEnter={() => setActiveButton(0)}
-          title="WATCH"
+          title="Watch"
           isActive={activeButton === 0 && ctrl === "movieInfo"}
           icon={<SvgPlay />}
         />
       )}
-      <Button
-        className={styles["action-btn"]}
-        onClick={handleContinueWatchingClick}
-        onMouseEnter={() => setActiveButton(1)}
-        title="CONTINUE WATCHING"
-        isActive={activeButton === 1 && ctrl === "movieInfo"}
-      />
+      {movie.watched ? (
+        <Button
+          className={styles["action-btn"]}
+          onClick={() => {
+            setStartTime(movie.watched.time);
+            handleContinueWatchingClick();
+          }}
+          onMouseEnter={() => setActiveButton(1)}
+          title={formatTime(movie.watched.time)}
+          isActive={activeButton === 1 && ctrl === "movieInfo"}
+        />
+      ) : null}
       <Button
         className={styles["action-btn"]}
         onClick={handleFavoriteClick}
         onMouseEnter={() => setActiveButton(2)}
-        title="FAVORITE"
         isActive={activeButton === 2 && ctrl === "movieInfo"}
+        icon={movie.favorite ? <SvgFavFill /> : <SvgFav />}
       />
     </div>
   );

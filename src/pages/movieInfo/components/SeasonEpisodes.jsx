@@ -6,6 +6,7 @@ import { selectCtrl, setCtrl } from "@app/global";
 import EpisodeCard from "./EpisodeCard";
 import ListView from "ino-listview";
 import { useSeasonEpisodeActions } from "../hooks/useSeasonEpisodeActions";
+import { useMovieInfo } from "../../../context/movieInfoContext";
 
 const SeasonEpisodes = ({
   episodes,
@@ -15,13 +16,16 @@ const SeasonEpisodes = ({
   seriesId,
   setUrl,
 }) => {
-  const [activeEpisode, setActiveEpisode] = useState(0);
+  const { setStartTime } = useMovieInfo();
   const ctrl = useSelector(selectCtrl);
   const dispatch = useDispatch();
 
+  const [activeEpisode, setActiveEpisode] = useState(0);
+
   const { handleEpisodeClick, handleSeasonChange } = useSeasonEpisodeActions(
     seriesId,
-    setUrl
+    setUrl,
+    episodes[activeEpisode]?.watched?.time || 0
   );
 
   useKeydown({
@@ -29,12 +33,12 @@ const SeasonEpisodes = ({
     up: () => {
       dispatch(setCtrl("seasons"));
     },
-    left: () => setActiveSeason((prev) => Math.max(0, prev - 1)),
+    left: () => setActiveEpisode((prev) => Math.max(0, prev - 1)),
     right: () =>
-      setActiveSeason((prev) => Math.min(seasonsLength - 1, prev + 1)),
+      setActiveEpisode((prev) => Math.min(episodes.length - 1, prev + 1)),
     ok: () => {
-      console.log(episodes, "epeepe", episodes[activeEpisode]);
       if (episodes[activeEpisode]) {
+        setStartTime(episodes[activeEpisode]?.watched?.time || 0);
         handleEpisodeClick(episodes[activeEpisode].id);
       }
     },
@@ -53,7 +57,10 @@ const SeasonEpisodes = ({
         index={index}
         isActive={isActive}
         style={style}
-        onClick={() => handleEpisodeClick(item.id)}
+        onClick={() => {
+          setStartTime(item.watched?.time || 0);
+          handleEpisodeClick(item.id);
+        }}
       />
     ),
     [handleEpisodeClick]

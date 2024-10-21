@@ -183,6 +183,7 @@ export default memo(function VodControls({
   play,
   pause,
   title,
+  onBack,
 }) {
   const dispatch = useDispatch();
   const isPaused = useSelector(selectIsPaused);
@@ -248,10 +249,10 @@ export default memo(function VodControls({
       showControl();
     },
     back: () => {
+      onBack();
       dispatch(setIsPlayerOpen(false));
       dispatch(setCtrl("movieInfo"));
     },
-    move: showControl,
   });
 
   return (
