@@ -1,175 +1,122 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import styles from "@styles/components/movieInfo.module.scss";
-import Button from "@components/common/Button";
-import { getMovieById, getMovieUrl } from "@server/requests"; // Assume this function exists
-import useKeydown from "@hooks/useKeydown";
-import SvgPlay from "@assets/icons/SvgPlay";
+import { useSelector, useDispatch } from "react-redux";
+import MovieBackground from "./components/MovieBackground";
+import MovieContent from "./components/MovieContent";
+import MovieActions from "./components/MovieActions";
+import TvShowSeasons from "./components/TvShowSeasons";
 import Player from "@components/player/Player";
-import { useToast } from "@hooks/useToast";
-import { useDispatch } from "react-redux";
-import { setPlayerType } from "@app/channels/channelsSlice";
-import {
-  selectIsPlayerOpen,
-  setIsPlayerOpen,
-  selectCtrl,
-  setCtrl,
-} from "@app/global";
-const MovieInfo = () => {
-  const dispatch = useDispatch();
+import { getMovieById, rememberTime } from "@server/requests";
+import useKeydown from "@hooks/useKeydown";
+import { selectIsPlayerOpen, selectCtrl, setCtrl } from "@app/global";
+import { MovieInfoProvider, useMovieInfo } from "@context/movieInfoContext";
 
+import styles from "@styles/components/movieInfo.module.scss";
+
+const MovieInfoContent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  const isPlayerOpen = useSelector(selectIsPlayerOpen);
+  const dispatch = useDispatch();
   const ctrl = useSelector(selectCtrl);
-  const [movie, setMovie] = useState(null);
-  const [url, setUrl] = useState(null);
-  const [activeButton, setActiveButton] = useState(0);
-  const [retryCount, setRetryCount] = useState(0);
-  const { showToast, hideToast } = useToast();
-  const maxRetries = 3;
+  const isPlayerOpen = useSelector(selectIsPlayerOpen);
+  const {
+    url,
+    setUrl,
+    movieInfo,
+    setMovieInfo,
+    currentEpisode,
+    setCurrentEpisode,
+    startTime,
+    setStartTime,
+  } = useMovieInfo();
+
+  const fetchMovie = async () => {
+    try {
+      const response = await getMovieById({ movie_id: id });
+      const parsedResponse = JSON.parse(response);
+      if (!parsedResponse.error) {
+        if (parsedResponse.message.type === "tv_show") {
+          const lastWatchedEpisode = parsedResponse.message.watched?.episodeId;
+          setCurrentEpisode(lastWatchedEpisode);
+        } else {
+          setStartTime(parsedResponse.message.watched?.time || 0);
+        }
+        setMovieInfo(parsedResponse.message);
+      } else {
+        console.error(parsedResponse.error);
+      }
+    } catch (error) {
+      console.error("Failed to fetch movie:", error);
+    }
+  };
+
+  const rememberTimeHandler = async (
+    currentTime,
+    percent,
+    needToRefetch = false
+  ) => {
+    const body = {
+      movieId: id,
+      time: currentTime,
+      percent,
+    };
+    try {
+      const response = await rememberTime(body);
+      if (needToRefetch) {
+        fetchMovie();
+      }
+      console.log("rememberTimeHandler", response);
+    } catch (error) {
+      console.error("Failed to remember time:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchMovie = async () => {
-      try {
-        const response = await getMovieById({ movie_id: id });
-        const parsedResponse = JSON.parse(response);
-        if (!parsedResponse.error) {
-          setMovie(parsedResponse.message);
-        } else {
-          console.error(parsedResponse.error);
-        }
-      } catch (error) {
-        console.error("Failed to fetch movie:", error);
-      }
-    };
-
     fetchMovie();
   }, [id]);
 
-  const handleWatchClick = useCallback(async () => {
-    console.log("Watch button clicked");
-    const response = await getMovieUrl({ id });
-    const parsedResponse = JSON.parse(response);
-    if (!parsedResponse.error) {
-      dispatch(setIsPlayerOpen(true));
-      dispatch(setPlayerType("vod"));
-      dispatch(setCtrl("vodCtrl"));
-      setUrl(parsedResponse.message.stream_url);
+  useEffect(() => {
+    if (ctrl !== "movieInfo") {
+      dispatch(setCtrl("movieInfo"));
     }
-  }, [id]);
-
-  const handleRetry = useCallback(() => {
-    if (retryCount < maxRetries) {
-      setRetryCount((prevCount) => prevCount + 1);
-      showToast(
-        `Attempting to replay... (${retryCount + 1}/${maxRetries})`,
-        "retrying"
-      );
-    } else {
-      hideToast();
-      showToast("Unable to play movie. Please try again later.", "error", 5000);
-      setRetryCount(0);
-    }
-  }, [retryCount, maxRetries, showToast, hideToast]);
-
-  const handleContinueWatchingClick = useCallback(() => {
-    console.log("Continue Watching button clicked");
-    // Implement continue watching functionality here
-  }, []);
-
-  const handleFavoriteClick = useCallback(() => {
-    console.log("Favorite button clicked");
-    // Implement favorite functionality here
-  }, []);
-
-  const handleMouseEnter = useCallback((index) => {
-    setActiveButton(index);
   }, []);
 
   useKeydown({
-    isActive: ctrl === "movieInfo",
-    back: () => {
-      dispatch(setCtrl("moviesSeries"));
-      navigate(-1);
-    },
-    left: () => setActiveButton((prev) => Math.max(0, prev - 1)),
-    right: () => setActiveButton((prev) => Math.min(2, prev + 1)),
-    ok: () => {
-      switch (activeButton) {
-        case 0:
-          handleWatchClick();
-          break;
-        case 1:
-          handleContinueWatchingClick();
-          break;
-        case 2:
-          handleFavoriteClick();
-          break;
-      }
-    },
+    back: () => navigate(-1),
   });
 
-  if (!movie) {
+  if (!movieInfo) {
     return <div>Loading...</div>;
   }
 
   return (
-    <>
-      {url && isPlayerOpen && (
+    <div className={styles["movie-info"]}>
+      <MovieBackground backdrop={movieInfo.backdrop} />
+      <MovieContent movie={movieInfo} />
+      <MovieActions movie={movieInfo} movieId={id} />
+      {movieInfo.type === "tv_show" && (
+        <TvShowSeasons seasons={movieInfo.seasons} seriesId={id} />
+      )}
+      {isPlayerOpen && url && (
         <Player
           type="vod"
           url={url}
-          retryC={retryCount}
-          setRetryC={setRetryCount}
+          pipMode={false}
+          title={movieInfo.name}
+          setUrl={setUrl}
+          setRetryC={() => {}}
+          onRememberTime={rememberTimeHandler}
+          startTime={startTime}
         />
       )}
-      <div className={styles["movie-info"]}>
-        <div
-          className={styles["background-image"]}
-          style={{ backgroundImage: `url(${movie.backdrop})` }}
-        />
-        <div className={styles["content"]}>
-          <h1 className={styles["title"]}>{movie.name}</h1>
-          <div className={styles["metadata"]}>
-            <span>{movie.year}</span>
-            <span>{movie.pg}+</span>
-            <span>{`${movie.duration} min`}</span>
-            <span>{movie.type}</span>
-          </div>
-          <p className={styles["description"]}>{movie.description}</p>
-          <div className={styles["actions-container"]}>
-            {movie.canWatch && (
-              <Button
-                className={styles["action-btn"]}
-                onClick={handleWatchClick}
-                onMouseEnter={() => handleMouseEnter(0)}
-                title="WATCH"
-                isActive={activeButton === 0}
-                icon={<SvgPlay />}
-              />
-            )}
-            <Button
-              className={styles["action-btn"]}
-              onClick={handleContinueWatchingClick}
-              onMouseEnter={() => handleMouseEnter(1)}
-              title="CONTINUE WATCHING"
-              isActive={activeButton === 1}
-            />
-            <Button
-              className={styles["action-btn"]}
-              onClick={handleFavoriteClick}
-              onMouseEnter={() => handleMouseEnter(2)}
-              title="FAVORITE"
-              isActive={activeButton === 2}
-            />
-          </div>
-        </div>
-      </div>
-    </>
+    </div>
   );
 };
+
+const MovieInfo = () => (
+  <MovieInfoProvider>
+    <MovieInfoContent />
+  </MovieInfoProvider>
+);
 
 export default MovieInfo;

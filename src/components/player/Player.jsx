@@ -11,6 +11,7 @@ import { useToast } from "@hooks/useToast";
 import VodControls from "./components/VodControl";
 
 import "./styles/player.scss";
+import { useMovieInfo } from "../../context/movieInfoContext";
 
 let timeout = null;
 
@@ -29,6 +30,8 @@ export default memo(function Player({
   retryC,
   setRetryC,
   title,
+  onRememberTime,
+  startTime,
 }) {
   const dispatch = useDispatch();
   const refVideo = useRef(null);
@@ -39,6 +42,7 @@ export default memo(function Player({
 
   const secCurrentTime = useRef(0);
   const secDuration = useRef(0);
+  const lastRememberTimeUpdate = useRef(0);
   const maxRetries = 3;
 
   const [retryCount, setRetryCount] = useState(0);
@@ -64,10 +68,13 @@ export default memo(function Player({
     dispatch(setPaused(true));
   };
 
-  const loadedMetadataHandler = () => {
+  const loadedMetadataHandler = useCallback(() => {
     hideToast();
+    if (startTime && refVideo.current) {
+      refVideo.current.currentTime = startTime;
+    }
     play();
-  };
+  }, [startTime]);
 
   const handleTimeUpdate = (currentTime, duration) => {
     secCurrentTime.current = currentTime;
@@ -85,14 +92,32 @@ export default memo(function Player({
       if (refProgress.current) {
         refProgress.current.style.width = `${(currentTime / duration) * 100}%`;
       }
+
+      // Remember time logic
+      if (type === "vod" && currentTime > 0) {
+        const now = Date.now();
+        if (now - lastRememberTimeUpdate.current >= 15000) {
+          // 15 seconds
+          const percent = duration > 0 ? (currentTime / duration) * 100 : 0;
+          onRememberTime(Math.floor(currentTime), percent);
+          lastRememberTimeUpdate.current = now;
+        }
+      }
     }
   };
+
   const streamEnd = () => {
     if (type === "live") {
       if (playerType !== "live") {
         endedArchive();
       }
     }
+  };
+
+  const onBack = () => {
+    const currentTime = Math.floor(secCurrentTime.current);
+    const percent = (currentTime / secDuration.current) * 100;
+    onRememberTime(currentTime, percent, true);
   };
 
   // const onErrorHandler = useCallback(
@@ -159,6 +184,21 @@ export default memo(function Player({
     }
   };
 
+  // useEffect(() => {
+  //   return () => {
+  //     // Final remember time update when component unmounts
+  //     if (type === "vod" && secCurrentTime.current > 0) {
+  //       const currentTime = Math.floor(secCurrentTime.current);
+  //       const duration = Math.floor(secDuration.current);
+  //       const percent = duration > 0 ? (currentTime / duration) * 100 : 0;
+  //       onRememberTime(currentTime, percent);
+  //       console.log(
+  //         `Final remember time update: ${currentTime}s, ${percent.toFixed(2)}%`
+  //       );
+  //     }
+  //   };
+  // }, [type, onRememberTime]);
+
   useEffect(() => {
     console.log("URL in Player:", url);
     document.addEventListener("playerError", onErrorHandler);
@@ -170,6 +210,25 @@ export default memo(function Player({
     };
   }, [url]);
 
+  // useEffect(() => {
+  //   if (type !== "vod") return;
+
+  //   if (!refVideo.current) return;
+
+  //   const duration = refVideo.current.duration;
+  //   const currentTime = refVideo.current.currentTime;
+  //   console.log("currentTime", currentTime);
+  //   const percent = (currentTime / duration) * 100;
+
+  //   const intervalId = setInterval(() => {
+  //     onRememberTime(currentTime, percent);
+  //   }, 5000);
+
+  //   return () => {
+  //     clearInterval(intervalId);
+  //   };
+  // }, [type, onRememberTime, refVideo.current]);
+
   const renderPlayer = () => {
     if (!url) return null;
 
@@ -179,6 +238,7 @@ export default memo(function Player({
           url={url}
           timeUpdate={handleTimeUpdate}
           streamEnd={streamEnd}
+          startTime={startTime}
         />
       );
     }
@@ -192,6 +252,7 @@ export default memo(function Player({
           streamEnd={streamEnd}
           error={onErrorHandler}
           loadVideo={loadedMetadataHandler}
+          startTime={startTime}
         />
       );
     }
@@ -247,6 +308,7 @@ export default memo(function Player({
             refVideo={refVideo}
             play={play}
             pause={pause}
+            onBack={onBack}
             title={title}
           />
         )}

@@ -36,14 +36,17 @@ const MainSidebar = ({ categories }) => {
     },
     {
       name: "Favorites",
+      id: "favorites",
       icon: <SvgFavorites />,
     },
     {
       name: "Last Watched",
+      id: "lastWatched",
       icon: <SvgLastWatched />,
     },
     {
       name: "Recently Added",
+      id: "recentlyAdded",
       icon: <SvgRecentlyAdded />,
     },
   ];
@@ -84,6 +87,9 @@ const MainSidebar = ({ categories }) => {
         dispatch(setCtrl("moviesSearchKeyboard"));
         dispatch(setIsOpenMainSidebar(false));
         dispatch(setIsMovieSearchBarOpen(true));
+      } else {
+        handleCategorySelect(sidebarItems[active].id);
+        dispatch(setIsOpenMainSidebar(false));
       }
     },
 
@@ -145,12 +151,15 @@ const CategoriesList = ({
 
   const [catActive, setCatActive] = useState(0);
 
+  const [translateY, setTranslateY] = useState(0);
+
   useKeydown({
     isActive: isOpen && ctrl === "movieCategories",
 
     up: () => {
       if (catActive > 0) {
         setCatActive(catActive - 1);
+        setTranslateY((prev) => Math.min(prev + 2.8, 0)); // Limit upward translation
       } else {
         dispatch(setCtrl("mainSidebar"));
         setIsOpen(false);
@@ -159,6 +168,11 @@ const CategoriesList = ({
     down: () => {
       if (catActive < categories.length - 1) {
         setCatActive(catActive + 1);
+        if (catActive >= 3) {
+          setTranslateY((prev) =>
+            Math.max(prev - 2.8, -((categories.length - 1) * 2.8) + 6)
+          );
+        }
       }
     },
 
@@ -174,22 +188,27 @@ const CategoriesList = ({
 
   return (
     <div className={styles["categories"]}>
-      {!categories.length ? (
-        <p>No Categories</p>
-      ) : (
-        <>
-          {categories.map((category, idx) => {
-            return (
-              <p
-                key={idx}
-                className={`${styles["name"]} ${idx === catActive ? styles["active"] : ""}`}
-              >
-                {category.name}
-              </p>
-            );
-          })}
-        </>
-      )}
+      <div
+        className={styles["categories-list_wrapper"]}
+        style={{ transform: `translateY(${translateY}rem)` }}
+      >
+        {!categories.length ? (
+          <p>No Categories</p>
+        ) : (
+          <>
+            {categories.map((category, idx) => {
+              return (
+                <p
+                  key={idx}
+                  className={`${styles["name"]} ${idx === catActive ? styles["active"] : ""}`}
+                >
+                  {category.name}
+                </p>
+              );
+            })}
+          </>
+        )}
+      </div>
     </div>
   );
 };

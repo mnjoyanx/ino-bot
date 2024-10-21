@@ -1,0 +1,34 @@
+@import "@styles/variables.scss";
+@import "@styles/mixins.scss";
+
+.playback_actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  .playback_btn {
+    @include flex(center, center);
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 1px solid $dark;
+    cursor: pointer;
+    transition: all 0.1s ease;
+
+    &:active {
+      transform: scale(0.9);
+    }
+
+    &.active {
+      transform: scale(1.1);
+    }
+  }
+
+  svg {
+    width: 3rem;
+    height: 3rem;
+    fill: $dark;
+  }
+}

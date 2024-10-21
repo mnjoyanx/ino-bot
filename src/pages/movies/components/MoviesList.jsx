@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useContext } from "react";
+import React, { useState, useCallback, useContext, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCtrl } from "@app/global";
-import ListView from "@components/lists/ListView";
+import ListView from "ino-listview";
 import useKeydown from "@hooks/useKeydown";
 import MovieCard from "./MovieCard";
 import { MoviesContext } from "@context/moviesContext";
@@ -12,10 +12,13 @@ const MoviesList = () => {
   const dispatch = useDispatch();
   const ctrl = useSelector(selectCtrl);
   const { moviesByGenre, selectedGenre } = useContext(MoviesContext);
-  console.log(moviesByGenre, "moviesByGenre");
 
   const [activeRow, setActiveRow] = useState(0);
   const [activeColumn, setActiveColumn] = useState(0);
+
+  useEffect(() => {
+    dispatch(setCtrl("moviesSeries"));
+  }, []);
 
   const currentMovies = selectedGenre ? moviesByGenre[selectedGenre] || {} : {};
   const movieTypes = Object.keys(currentMovies);
@@ -23,33 +26,24 @@ const MoviesList = () => {
   useKeydown({
     isActive: ctrl === "moviesSeries",
     up: () => {
-      setActiveRow((prev) => Math.max(0, prev - 1));
+      if (activeRow > 0) {
+        setActiveRow(activeRow - 1);
+      }
     },
 
     down: () => {
-      if (!currentMovies) return;
-
-      const isLastRow = currentMovies[movieTypes[movieTypes.length - 1]];
-      if (activeRow < isLastRow.length) {
-        setActiveRow((prev) => prev + 1);
+      if (activeRow < 1) {
+        setActiveRow(activeRow + 1);
+      }
+      if (ctrl !== "moviesSeries") {
+        dispatch(setCtrl("moviesSeries"));
       }
     },
 
-    left: () => {
-      if (activeColumn > 0) {
-        setActiveColumn((prev) => prev - 1);
-      } else {
-        dispatch(setCtrl("mainSidebar"));
-        dispatch(setIsOpenMainSidebar(true));
-      }
-    },
-
-    right: () => {
-      const currentMovieList = currentMovies[movieTypes[activeRow]] || [];
-      setActiveColumn((prev) =>
-        Math.min(currentMovieList.length - 1, prev + 1)
-      );
-    },
+    // back: () => {
+    //   dispatch(setCtrl("mainSidebar"));
+    //   dispatch(setIsOpenMainSidebar(true));
+    // },
   });
 
   const renderMovieCard = useCallback(
@@ -85,7 +79,7 @@ const MoviesList = () => {
         itemWidth={24}
         itemHeight={27}
         isActive={
-          activeRow === movieTypes.indexOf(movieType) && ctrl === "moviesSeries"
+          ctrl === "moviesSeries" && activeRow === movieTypes.indexOf(movieType)
         }
         activeCol={activeColumn}
         buffer={5}
@@ -94,6 +88,10 @@ const MoviesList = () => {
         renderItem={renderMovieCard}
         data={movies}
         onBackScrollIndex={0}
+        onLeft={() => {
+          dispatch(setCtrl("mainSidebar"));
+          dispatch(setIsOpenMainSidebar(true));
+        }}
       />
     );
   };

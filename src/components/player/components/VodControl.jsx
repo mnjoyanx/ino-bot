@@ -1,12 +1,13 @@
 import React, { memo, useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { formatTime } from "@utils/util";
 import { setPaused, selectIsPaused } from "@app/player/playerSlice";
 import useKeydown from "@hooks/useKeydown";
 import Progress from "./Progress";
 import Duration from "./Duration";
 import { selectCtrl, setIsPlayerOpen, setCtrl } from "@app/global";
-import Button from "../../common/Button";
+import SvgSettings from "@assets/icons/SvgSettings";
+import PlaybackActions from "./PlaybackActions";
+import ControlSettings from "./ControlSettings";
 
 import "@styles/components/vodControl.scss";
 
@@ -16,26 +17,25 @@ export default memo(function VodControls({
   durationRef,
   currentTimeRef,
   refProgress,
-  secCurrentTime,
-  secDuration,
   refVideo,
   play,
   pause,
   title,
+  onBack,
 }) {
   const dispatch = useDispatch();
   const isPaused = useSelector(selectIsPaused);
   const ctrl = useSelector(selectCtrl);
-  const refVal = useRef(null);
 
   const [hideControls, setHideControls] = useState(false);
-  const [active, setActive] = useState(0);
+  const [activeCtrl, setActiveCtrl] = useState("top");
+  const [topActiveIndex, setTopActiveIndex] = useState(1);
+  const [isSettingsActive, setIsSettingsActive] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const showControl = () => {
     if (hideControls) setHideControls(false);
-
     clearTimeout(hideControlsTimer);
-
     hideControlsTimer = setTimeout(() => {
       setHideControls(true);
     }, 3000);
@@ -56,100 +56,101 @@ export default memo(function VodControls({
     showControl();
   };
 
+  const handleSettingsClick = () => {
+    setShowSettings(true);
+    dispatch(setCtrl("settings"));
+  };
+
+  const handleCloseSettings = () => {
+    setShowSettings(false);
+    dispatch(setCtrl("vodCtrl"));
+  };
+
   useKeydown({
     isActive: ctrl === "vodCtrl",
-
     left: () => {
-      if (active === 0) {
-        handleSeek("backward");
-      } else {
-        if (active > 1) {
-          setActive(active - 1);
-        }
+      if (activeCtrl === "top") {
+        setTopActiveIndex((prev) => Math.max(0, prev - 1));
       }
+      showControl();
     },
     right: () => {
-      if (active === 0) {
-        handleSeek("forward");
-      } else {
-        if (active > 0 && active < 3) {
-          setActive(active + 1);
-        }
+      if (activeCtrl === "top") {
+        setTopActiveIndex((prev) => Math.min(2, prev + 1));
       }
+      showControl();
     },
-
-    up: () => {
-      setActive(0);
-    },
-
     down: () => {
-      setActive(1);
+      setActiveCtrl("bottom");
+      setIsSettingsActive(true);
+      showControl();
     },
-
-    pause: () => {
-      if (isPaused) play();
-      else pause();
-    },
-
-    play: () => {
-      if (isPaused) play();
-      else pause();
+    up: () => {
+      setActiveCtrl("top");
+      setIsSettingsActive(false);
+      showControl();
     },
     ok: () => {
-      if (isPaused) play();
-      else pause();
+      if (activeCtrl === "top") {
+        if (topActiveIndex === 0) handleSeek("backward");
+        else if (topActiveIndex === 1) isPaused ? play() : pause();
+        else if (topActiveIndex === 2) handleSeek("forward");
+      } else {
+        handleSettingsClick();
+      }
+      showControl();
     },
-
     back: () => {
-    //   if (!hideControls) {
-    //     setHideControls(false);
-    //   } else {
-        dispatch(setIsPlayerOpen(false));
-        dispatch(setCtrl("movieInfo"));
-    //   }
-    },
-
-    move: () => {
-    //   showControl();
+      onBack();
+      dispatch(setIsPlayerOpen(false));
+      dispatch(setCtrl("movieInfo"));
     },
   });
 
   return (
-    <div className={`vod-control${hideControls ? " hide" : ""}`}>
-      <div className="vod-info">
-        <h2 className="vod-title">{title}</h2>
+    <>
+      <div className={`vod-control${hideControls ? " hide" : ""}`}>
+        <div className="vod-info">
+          <h2 className="vod-title">{title}</h2>
+        </div>
+
+        <div className="playback-actions_wrapper">
+          <PlaybackActions
+            isPaused={isPaused}
+            activeIndex={activeCtrl === "top" ? topActiveIndex : -1}
+            onSeek={handleSeek}
+            onPlayPause={() => (isPaused ? play() : pause())}
+          />
+        </div>
+
+        <div className="progress-field">
+          <Progress
+            color="#FFFFFF"
+            refProgress={refProgress}
+            classNames="vod_progress"
+          />
+          <div className="vod-actions_wrapper">
+            <div className="vod-ctrl_times">
+              <Duration _ref={currentTimeRef} className="vod-current_time" />
+              <Duration _ref={durationRef} className="vod_duration" />
+            </div>
+            <button
+              className={`vod-ctrl_btn settings-btn${isSettingsActive ? " active" : ""}`}
+              onClick={handleSettingsClick}
+            >
+              <SvgSettings />
+            </button>
+          </div>
+        </div>
       </div>
-      <div className="progress-field">
-        <Progress color="#FFFFFF" refProgress={refProgress} refVal={refVal} />
-        <Duration _ref={currentTimeRef} className="vod-current-time" />
-        <Duration _ref={durationRef} className="vod-duration" />
-      </div>
-      <div className="vod-controls">
-        <Button
-          className="control-btn"
-          onClick={() => handleSeek("backward")}
-          onMouseEnter={() => setActiveButton(0)}
-          title="Rewind"
-          isActive={active === 1}
-          //   icon={<SvgRewind />}
+
+      {showSettings && (
+        <ControlSettings
+          isVisible={showSettings}
+          onClose={handleCloseSettings}
+          showControl={showControl}
         />
-        <Button
-          className="control-btn"
-          onClick={isPaused ? play : pause}
-          onMouseEnter={() => setActiveButton(1)}
-          title={isPaused ? "Play" : "Pause"}
-          isActive={active === 2}
-          //   icon={isPaused ? <SvgPlay /> : <SvgPause />}
-        />
-        <Button
-          className="control-btn"
-          onClick={() => handleSeek("forward")}
-          onMouseEnter={() => setActiveButton(2)}
-          title="Forward"
-          isActive={active === 3}
-          //   icon={<SvgForward />}
-        />
-      </div>
-    </div>
+      )}
+    </>
   );
 });

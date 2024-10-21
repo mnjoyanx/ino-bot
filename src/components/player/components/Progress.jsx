@@ -6,6 +6,7 @@ export default memo(function Progress({
   refProgress,
   playerType = "",
   refVal = null,
+  classNames = "",
 }) {
   const styleProgress = {
     backgroundColor: placeholderColor,
@@ -16,14 +17,13 @@ export default memo(function Progress({
   };
 
   return (
-    <div className="progress" style={styleProgress}>
+    <div className={`progress ${classNames}`} style={styleProgress}>
       <div
         className={`progress-bar ${playerType}`}
         style={styleProgressBar}
         ref={refProgress}
       >
-        <div className="seekto-current_time" ref={refVal}>
-        </div>
+        <div className="seekto-current_time" ref={refVal}></div>
       </div>
     </div>
   );

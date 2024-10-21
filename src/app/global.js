@@ -1,8 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  ctrl: "mainSidebar",
-  isOpenMainSidebar: true,
+  ctrl: "",
+  isOpenMainSidebar: false,
   isPlayerOpen: false,
   isMovieSearchBarOpen: false,
 };
@@ -12,6 +12,7 @@ const globalSlice = createSlice({
   initialState,
   reducers: {
     setCtrl: (state, action) => {
+      console.log("setCtrl", action.payload);
       state.ctrl = action.payload;
     },
     setIsOpenMainSidebar: (state, action) => {

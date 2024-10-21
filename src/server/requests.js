@@ -184,9 +184,9 @@ export const getMovieById = (queryParams) => {
 //   return request("get", "v2/api/season/by_movie_id", queryParams);
 // };
 
-// export const getEpisodes = queryParams => {
-//   return request("get", "v2/api/episode/by_season_id", queryParams);
-// };
+export const getEpisodes = (queryParams) => {
+  return request("get", "v2/api/episode/by_season_id", queryParams);
+};
 
 // export const getTranslationsMovie = queryParams => {
 //   return request("get", "v2/api/movie_translations/by_movie_id", queryParams);
@@ -212,9 +212,17 @@ export const getMovieById = (queryParams) => {
 //   return request("get", "application/vod/movie/related", queryParams);
 // };
 
-// export const addFavorite = body => {
-//   return request("post", "application/vod/movie/addFavorite", "", body);
-// };
+export const addFavorite = (body) => {
+  return request("post", "application/vod/movie/addFavorite", "", body);
+};
+
+export const removeFavorite = (body) => {
+  return request("post", "application/vod/movie/removeFavorite", "", body);
+};
+
+export const getFavorites = (queryParams) => {
+  return request("get", "v2/api/movies/favorites", queryParams);
+};
 
 // export const removeFavorite = body => {
 //   return request("post", "application/vod/movie/removeFavorite", "", body);
@@ -228,6 +236,14 @@ export const removeLiveFavorite = (body) => {
   return request("post", "user/channels/deleteFavorite", "", body);
 };
 
+export const rememberTime = (body) => {
+  return request("post", "application/vod/movie/rememberTime", "", body);
+};
+
 export const getMovieUrl = (queryParams) => {
   return request("get", "application/vod/movie/url", queryParams);
+};
+
+export const getLastWatchedMovies = (queryParams) => {
+  return request("get", "v2/api/watch_history/movies", queryParams);
 };

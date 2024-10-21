@@ -122,9 +122,13 @@
   position: absolute;
   top: 5rem;
   left: 3rem;
+  overflow: hidden;
+}
+
+.categories-list_wrapper {
   @include flex-column(flex-start, flex-start);
   gap: 1.6rem;
-
+  transition: transform 0.2s linear;
   .name {
     font-size: 1.8rem;
     font-weight: 500;

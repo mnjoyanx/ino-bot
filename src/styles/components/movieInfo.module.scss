@@ -21,7 +21,7 @@
 
 .content {
   position: relative;
-  padding: 13rem 6.7rem;
+  padding: 10rem 6.7rem 0;
   max-width: 50%;
   z-index: 1;
 }
@@ -49,11 +49,19 @@
 .description {
   font-size: 1.6rem;
   margin-bottom: 2rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
 }
 
 .actions-container {
   display: flex;
   gap: 1rem;
+  position: relative;
+  left: 6.7rem;
 }
 
 .action-btn {

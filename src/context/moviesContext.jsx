@@ -1,7 +1,6 @@
 import {
   createContext,
   useReducer,
-  useContext,
   useState,
   useMemo,
   useCallback,
@@ -12,6 +11,9 @@ export const MoviesContext = createContext();
 const initialState = {
   moviesByGenre: {},
   genres: [],
+  recentlyAdded: [],
+  lastWatched: [],
+  favorites: [],
 };
 
 const filterMoviesAndSeries = (movies) => {
@@ -25,7 +27,7 @@ const filterMoviesAndSeries = (movies) => {
       return acc;
     },
     { movies: [], tv_show: [] }
-  ); // Initialize with empty arrays for both types
+  );
 };
 
 function moviesReducer(state, action) {
@@ -57,12 +59,17 @@ function moviesReducer(state, action) {
 export const MoviesProvider = ({ children }) => {
   const [state, dispatch] = useReducer(moviesReducer, initialState);
   const [selectedGenre, setSelectedGenre] = useState(null);
+  const [recentlyAdded, setRecentlyAdded] = useState([]);
 
   const setMoviesByGenre = useCallback((genreId, movies) => {
     dispatch({
       type: "SET_MOVIES_BY_GENRE",
       payload: { genreId, movies },
     });
+  }, []);
+
+  const setRecentlyAddedHandler = useCallback((movies) => {
+    setRecentlyAdded(movies);
   }, []);
 
   const setGenres = useCallback((genres) => {
@@ -96,5 +103,3 @@ export const MoviesProvider = ({ children }) => {
     </MoviesContext.Provider>
   );
 };
-
-export const useMovies = () => useContext(MoviesContext);

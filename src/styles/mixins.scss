@@ -12,3 +12,9 @@
   justify-content: $justify;
   align-items: $align;
 }
+
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
