@@ -1,4 +1,5 @@
 @import "@styles/variables.scss";
+@import "@styles/mixins.scss";
 
 .vod-control {
   width: 128rem;
@@ -107,4 +108,23 @@
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 100;
+}
+
+.settings-btn {
+  // ... existing styles
+  border-radius: 50% !important;
+  width: 5rem;
+  height: 5rem;
+  @include flex(center, center);
+
+  &.active {
+    background-color: $active-muted !important;
+    border-color: #ffffff;
+  }
+}
+
+.vod-ctrl_times {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
