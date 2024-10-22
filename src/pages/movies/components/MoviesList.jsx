@@ -31,7 +31,19 @@ const MoviesList = () => {
       }
     },
 
+    left: () => {
+      if (
+        currentMovies &&
+        !currentMovies.tv_show.length &&
+        !currentMovies.movies.length
+      ) {
+        dispatch(setCtrl("mainSidebar"));
+        dispatch(setIsOpenMainSidebar(true));
+      }
+    },
+
     down: () => {
+      if (!moviesByGenre[selectedGenre].tv_show.length) return;
       if (activeRow < 1) {
         setActiveRow(activeRow + 1);
       }
