@@ -35,6 +35,7 @@ export default memo(function VodControls({
   const [hideControls, setHideControls] = useState(false);
   const [activeCtrl, setActiveCtrl] = useState("top");
   const [topActiveIndex, setTopActiveIndex] = useState(1);
+  const [bottomActiveIndex, setBottomActiveIndex] = useState(0);
   const [isSettingsActive, setIsSettingsActive] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
@@ -94,23 +95,28 @@ export default memo(function VodControls({
     left: () => {
       if (activeCtrl === "top") {
         setTopActiveIndex((prev) => Math.max(0, prev - 1));
+      } else {
+        setBottomActiveIndex((prev) => Math.max(0, prev - 1));
       }
       showControl();
     },
     right: () => {
       if (activeCtrl === "top") {
         setTopActiveIndex((prev) => Math.min(2, prev + 1));
+      } else {
+        const maxIndex = !isLastEpisode ? 1 : 0;
+        setBottomActiveIndex((prev) => Math.min(maxIndex, prev + 1));
       }
       showControl();
     },
     down: () => {
       setActiveCtrl("bottom");
-      setIsSettingsActive(true);
+      setBottomActiveIndex(0);
       showControl();
     },
     up: () => {
       setActiveCtrl("top");
-      setIsSettingsActive(false);
+      setTopActiveIndex(1);
       showControl();
     },
     ok: () => {
@@ -119,7 +125,11 @@ export default memo(function VodControls({
         else if (topActiveIndex === 1) isPaused ? play() : pause();
         else if (topActiveIndex === 2) handleSeek("forward");
       } else {
-        handleSettingsClick();
+        if (bottomActiveIndex === 0 && !isLastEpisode) {
+          handleNextEpisode();
+        } else {
+          handleSettingsClick();
+        }
       }
       showControl();
     },
@@ -173,21 +183,34 @@ export default memo(function VodControls({
               <Duration _ref={currentTimeRef} className="vod-current_time" />
               <Duration _ref={durationRef} className="vod_duration" />
             </div>
-            {!isLastEpisode && (
+            <div className="vod-ctrl_btns_right">
+              {!isLastEpisode && (
+                <button
+                  className={`vod-ctrl_btn next-episode-btn${
+                    activeCtrl === "bottom" && bottomActiveIndex === 0
+                      ? " active"
+                      : ""
+                  }`}
+                  onClick={handleNextEpisode}
+                >
+                  <SvgNextEpisode />
+                  <span>Next episode</span>
+                </button>
+              )}
               <button
-                className="vod-ctrl_btn next-episode-btn"
-                onClick={handleNextEpisode}
+                className={`vod-ctrl_btn settings-btn${
+                  activeCtrl === "bottom" &&
+                  (!isLastEpisode
+                    ? bottomActiveIndex === 1
+                    : bottomActiveIndex === 0)
+                    ? " active"
+                    : ""
+                }`}
+                onClick={handleSettingsClick}
               >
-                <SvgNextEpisode />
-                <span>Next episode</span>
+                <SvgSettings />
               </button>
-            )}
-            <button
-              className={`vod-ctrl_btn settings-btn${isSettingsActive ? " active" : ""}`}
-              onClick={handleSettingsClick}
-            >
-              <SvgSettings />
-            </button>
+            </div>
           </div>
         </div>
       </div>
