@@ -30,7 +30,7 @@ export const useMovieActions = (
 
       const body = { id };
       if (type === "tv_show") {
-        body.episode_id = currentEpisode.id;
+        body.episode_id = currentEpisode;
       }
       const response = await getMovieUrl(body);
       const parsedResponse = JSON.parse(response);
