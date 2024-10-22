@@ -33,6 +33,8 @@ export default memo(function VodControls({
   const [isSettingsActive, setIsSettingsActive] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
+  const controlsRef = useRef(null);
+
   const showControl = () => {
     if (hideControls) setHideControls(false);
     clearTimeout(hideControlsTimer);
@@ -43,6 +45,22 @@ export default memo(function VodControls({
 
   useEffect(() => {
     showControl();
+
+    const handleMouseMove = () => {
+      showControl();
+    };
+
+    const controlsElement = controlsRef.current;
+    if (controlsElement) {
+      controlsElement.addEventListener("mousemove", handleMouseMove);
+    }
+
+    return () => {
+      if (controlsElement) {
+        controlsElement.removeEventListener("mousemove", handleMouseMove);
+      }
+      clearTimeout(hideControlsTimer);
+    };
   }, []);
 
   const handleSeek = (direction) => {
@@ -107,9 +125,19 @@ export default memo(function VodControls({
     },
   });
 
+  const handleSeekTo = (seekTime) => {
+    if (refVideo.current) {
+      refVideo.current.currentTime = seekTime;
+    }
+    showControl();
+  };
+
   return (
     <>
-      <div className={`vod-control${hideControls ? " hide" : ""}`}>
+      <div
+        className={`vod-control${hideControls ? " hide" : ""}`}
+        ref={controlsRef}
+      >
         <div className="vod-info">
           <h2 className="vod-title">{title}</h2>
         </div>
@@ -128,6 +156,8 @@ export default memo(function VodControls({
             color="#FFFFFF"
             refProgress={refProgress}
             classNames="vod_progress"
+            duration={refVideo.current ? refVideo.current.duration : 0}
+            onSeekTo={handleSeekTo}
           />
           <div className="vod-actions_wrapper">
             <div className="vod-ctrl_times">

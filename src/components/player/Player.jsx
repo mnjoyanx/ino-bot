@@ -81,7 +81,11 @@ export default memo(function Player({
     secDuration.current = duration;
 
     if (Math.floor(currentTime) >= duration - 1) {
-      endedArchive();
+      if (type === "vod") {
+        onEnded();
+      } else {
+        endedArchive();
+      }
     } else {
       if (refDuration.current) {
         refDuration.current.innerHTML = formatTime(duration);

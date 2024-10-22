@@ -12,6 +12,7 @@ import { selectIsPlayerOpen, selectCtrl, setCtrl } from "@app/global";
 import { MovieInfoProvider, useMovieInfo } from "@context/movieInfoContext";
 
 import styles from "@styles/components/movieInfo.module.scss";
+import { setIsPlayerOpen } from "../../app/global";
 
 const MovieInfoContent = () => {
   const { id } = useParams();
@@ -71,6 +72,12 @@ const MovieInfoContent = () => {
     }
   };
 
+  const onEnded = () => {
+    dispatch(setCtrl("moviesSeries"));
+    dispatch(setIsPlayerOpen(false));
+    dispatch(setUrl(""));
+  };
+
   useEffect(() => {
     fetchMovie();
   }, [id]);
@@ -107,6 +114,7 @@ const MovieInfoContent = () => {
           setRetryC={() => {}}
           onRememberTime={rememberTimeHandler}
           startTime={startTime}
+          onEnded={onEnded}
         />
       )}
     </div>
