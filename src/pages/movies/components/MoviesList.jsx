@@ -58,6 +58,10 @@ const MoviesList = () => {
     // },
   });
 
+  useEffect(() => {
+    setActiveRow(0);
+  }, [selectedGenre]);
+
   const renderMovieCard = useCallback(
     ({ index, style, isActive, item }) => (
       <MovieCard

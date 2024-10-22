@@ -21,7 +21,7 @@ export default memo(function Search({
   const ctrl = useSelector(selectCtrl);
   const refInp = useRef(null);
 
-  const [control, setControl] = useState("keyboard"); // result | keyboard
+  const [control, setControl] = useState("keyboard");
   const [valueSearch, setValueSearch] = useState("");
   const [result, setResult] = useState([]);
   const [empty, setEmpty] = useState(false);
