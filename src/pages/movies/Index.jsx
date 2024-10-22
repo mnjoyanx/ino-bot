@@ -32,7 +32,6 @@ const MoviesPage = () => {
   const [url, setUrl] = useState(null);
 
   const getGenresHandler = useCallback(async () => {
-    console.log("getGenresHandler", selectedGenre);
     try {
       const response = await getAllGenres();
       const parsedResponse = JSON.parse(response);
@@ -46,7 +45,6 @@ const MoviesPage = () => {
           setSelectedGenre(message.rows[0].id);
         }
       }
-      console.log(parsedResponse);
     } catch (error) {
       console.log(error);
     }

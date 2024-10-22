@@ -40,7 +40,6 @@ export default memo(function Player({
   const refCurrentTime = useRef(null);
   const refProgress = useRef(null);
   const { retryOperation, showToast, hideToast } = useToast();
-  const { isLastEpisode } = useMovieInfo();
 
   const secCurrentTime = useRef(0);
   const secDuration = useRef(0);
@@ -316,7 +315,6 @@ export default memo(function Player({
             pause={pause}
             onBack={onBack}
             title={title}
-            hasNextEpisode={!isLastEpisode}
           />
         )}
       </div>

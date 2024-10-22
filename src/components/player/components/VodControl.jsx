@@ -24,7 +24,6 @@ export default memo(function VodControls({
   pause,
   title,
   onBack,
-  hasNextEpisode,
 }) {
   const dispatch = useDispatch();
   const isPaused = useSelector(selectIsPaused);
