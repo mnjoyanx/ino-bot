@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { selectCtrl, setCtrl } from "@app/global";
+import {
+  selectCtrl,
+  setCtrl,
+  selectResolutions,
+  selectSubtitles,
+  setSelectedQuality,
+  setSelectedSubtitle,
+  setSelectedPlaybackSpeed,
+  selectSelectedQuality,
+  selectSelectedSubtitle,
+  selectSelectedPlaybackSpeed,
+} from "@app/global";
 import useKeydown from "@hooks/useKeydown";
 import styles from "@styles/components/controlSettings.module.scss";
 
@@ -31,7 +42,7 @@ const initialSettingsOptions = [
   {
     name: "Quality",
     value: "Auto",
-    children: ["Auto", "1080p", "720p", "480p", "360p"],
+    children: ["Auto"],
   },
   {
     name: "Playback Speed",
@@ -41,13 +52,18 @@ const initialSettingsOptions = [
   {
     name: "Subtitles",
     value: "Off",
-    children: ["Off", "English", "Spanish", "French"],
+    children: ["Off"],
   },
 ];
 
 const ControlSettings = ({ isVisible, onClose, showControl }) => {
   const dispatch = useDispatch();
   const ctrl = useSelector(selectCtrl);
+  const resolutions = useSelector(selectResolutions);
+  const subtitles = useSelector(selectSubtitles);
+  const selectedQuality = useSelector(selectSelectedQuality);
+  const selectedSubtitle = useSelector(selectSelectedSubtitle);
+  const selectedPlaybackSpeed = useSelector(selectSelectedPlaybackSpeed);
   const [activeOption, setActiveOption] = useState(0);
   const [expandedOption, setExpandedOption] = useState(null);
   const [activeChild, setActiveChild] = useState(0);
@@ -56,10 +72,61 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
   );
 
   useEffect(() => {
-    if (isVisible) {
-      dispatch(setCtrl("settings"));
+    setSettingsOptions((prevOptions) => {
+      const newOptions = [...prevOptions];
+
+      // Update Quality options
+      if (resolutions.length > 0) {
+        newOptions[0] = {
+          ...newOptions[0],
+          children: ["Auto", ...resolutions.map((res) => `${res}p`)],
+          value: selectedQuality,
+        };
+      }
+
+      // Update Playback Speed options
+      newOptions[1] = {
+        ...newOptions[1],
+        value: selectedPlaybackSpeed,
+      };
+
+      // Update Subtitles options
+      if (subtitles.length > 0) {
+        newOptions[2] = {
+          ...newOptions[2],
+          children: ["Off", ...subtitles.map((sub) => sub.name)],
+          value: selectedSubtitle,
+        };
+      }
+
+      return newOptions;
+    });
+  }, [
+    resolutions,
+    subtitles,
+    selectedQuality,
+    selectedSubtitle,
+    selectedPlaybackSpeed,
+  ]);
+
+  const handleOptionSelect = (optionIndex, newValue) => {
+    setSettingsOptions((prevOptions) => {
+      const newOptions = [...prevOptions];
+      newOptions[optionIndex] = {
+        ...newOptions[optionIndex],
+        value: newValue,
+      };
+      return newOptions;
+    });
+
+    if (optionIndex === 0) {
+      dispatch(setSelectedQuality(newValue));
+    } else if (optionIndex === 1) {
+      dispatch(setSelectedPlaybackSpeed(newValue));
+    } else if (optionIndex === 2) {
+      dispatch(setSelectedSubtitle(newValue));
     }
-  }, [isVisible, dispatch]);
+  };
 
   useKeydown({
     isActive: ctrl === "settings",
@@ -105,14 +172,7 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
       showControl();
       if (expandedOption !== null) {
         const newValue = settingsOptions[expandedOption].children[activeChild];
-        setSettingsOptions((prevOptions) => {
-          const newOptions = [...prevOptions];
-          newOptions[expandedOption] = {
-            ...newOptions[expandedOption],
-            value: newValue,
-          };
-          return newOptions;
-        });
+        handleOptionSelect(expandedOption, newValue);
       } else {
         setExpandedOption(activeOption);
       }
@@ -135,7 +195,10 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
       <div className={styles.controlSettings}>
         <div className={styles.settingsContainer}>
           {settingsOptions.map((option, index) => (
-            <div key={option.name} className={styles.settingGroup}>
+            <div
+              key={option.name + Math.random()}
+              className={styles.settingGroup}
+            >
               <div
                 className={`${styles.settingsOption} ${
                   activeOption === index ? styles.active : ""
