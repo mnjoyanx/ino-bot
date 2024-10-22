@@ -36,7 +36,7 @@ export default memo(function VodControls({
   const controlsRef = useRef(null);
 
   const showControl = () => {
-    if (hideControls) setHideControls(false);
+    setHideControls(false);
     clearTimeout(hideControlsTimer);
     hideControlsTimer = setTimeout(() => {
       setHideControls(true);
@@ -50,18 +50,18 @@ export default memo(function VodControls({
       showControl();
     };
 
-    const controlsElement = controlsRef.current;
-    if (controlsElement) {
-      controlsElement.addEventListener("mousemove", handleMouseMove);
+    const playerElement = refVideo.current?.parentElement;
+    if (playerElement) {
+      playerElement.addEventListener("mousemove", handleMouseMove);
     }
 
     return () => {
-      if (controlsElement) {
-        controlsElement.removeEventListener("mousemove", handleMouseMove);
+      if (playerElement) {
+        playerElement.removeEventListener("mousemove", handleMouseMove);
       }
       clearTimeout(hideControlsTimer);
     };
-  }, []);
+  }, [refVideo]);
 
   const handleSeek = (direction) => {
     const currentTime = refVideo.current.currentTime;

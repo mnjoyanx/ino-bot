@@ -73,9 +73,9 @@ const MovieInfoContent = () => {
   };
 
   const onEnded = () => {
-    dispatch(setCtrl("moviesSeries"));
+    dispatch(setCtrl("movieInfo"));
     dispatch(setIsPlayerOpen(false));
-    dispatch(setUrl(""));
+    setUrl("");
   };
 
   useEffect(() => {

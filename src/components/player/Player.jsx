@@ -30,6 +30,7 @@ export default memo(function Player({
   retryC,
   setRetryC,
   title,
+  onEnded,
   onRememberTime,
   startTime,
 }) {
