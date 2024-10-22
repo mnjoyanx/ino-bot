@@ -38,14 +38,20 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
           (episode) => episode.watched
         );
 
-        setCurrentEpisode(message[lastWatchedEpisode].id);
+        const lastWatchedEpisodeIndex = message.findIndex(
+          (episode) => episode.id === message[lastWatchedEpisode].id
+        );
 
-        console.log(lastWatchedEpisode, "lastWatchedEpisodelastWatchedEpisode");
-        const obj = message.reduce((acc, curr) => {
+        setCurrentEpisode(message[lastWatchedEpisodeIndex]);
+
+        const obj = message.reduce((acc, curr, index) => {
           if (!acc[curr.seasonId]) {
             acc[curr.seasonId] = [];
           }
 
+          if (index === message.length - 1) {
+            curr.is_last = true;
+          }
           acc[curr.seasonId].push(curr);
           return acc;
         }, {});

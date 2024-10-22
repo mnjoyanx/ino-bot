@@ -13,7 +13,6 @@ export const useSeasonEpisodeActions = (seriesId) => {
 
   const handleEpisodeClick = useCallback(
     async (episodeId) => {
-      console.log("Episode clicked:", episodeId);
       try {
         const response = await getMovieUrl({
           id: seriesId,

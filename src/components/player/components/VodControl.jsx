@@ -8,6 +8,8 @@ import { selectCtrl, setIsPlayerOpen, setCtrl } from "@app/global";
 import SvgSettings from "@assets/icons/SvgSettings";
 import PlaybackActions from "./PlaybackActions";
 import ControlSettings from "./ControlSettings";
+import SvgNextEpisode from "@assets/icons/SvgNextEpisode";
+import { useMovieInfo } from "@context/movieInfoContext";
 
 import "@styles/components/vodControl.scss";
 
@@ -22,10 +24,13 @@ export default memo(function VodControls({
   pause,
   title,
   onBack,
+  hasNextEpisode,
 }) {
   const dispatch = useDispatch();
   const isPaused = useSelector(selectIsPaused);
   const ctrl = useSelector(selectCtrl);
+
+  const { isLastEpisode } = useMovieInfo();
 
   const [hideControls, setHideControls] = useState(false);
   const [activeCtrl, setActiveCtrl] = useState("top");
@@ -132,6 +137,10 @@ export default memo(function VodControls({
     showControl();
   };
 
+  const handleNextEpisode = () => {
+    document.dispatchEvent(new Event("next-episode"));
+  };
+
   return (
     <>
       <div
@@ -164,6 +173,15 @@ export default memo(function VodControls({
               <Duration _ref={currentTimeRef} className="vod-current_time" />
               <Duration _ref={durationRef} className="vod_duration" />
             </div>
+            {!isLastEpisode && (
+              <button
+                className="vod-ctrl_btn next-episode-btn"
+                onClick={handleNextEpisode}
+              >
+                <SvgNextEpisode />
+                <span>Next episode</span>
+              </button>
+            )}
             <button
               className={`vod-ctrl_btn settings-btn${isSettingsActive ? " active" : ""}`}
               onClick={handleSettingsClick}

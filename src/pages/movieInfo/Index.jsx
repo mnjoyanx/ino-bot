@@ -36,12 +36,7 @@ const MovieInfoContent = () => {
       const response = await getMovieById({ movie_id: id });
       const parsedResponse = JSON.parse(response);
       if (!parsedResponse.error) {
-        if (parsedResponse.message.type === "tv_show") {
-          const lastWatchedEpisode = parsedResponse.message.watched?.episodeId;
-          setCurrentEpisode(lastWatchedEpisode);
-        } else {
-          setStartTime(parsedResponse.message.watched?.time || 0);
-        }
+        setStartTime(parsedResponse.message.watched?.time || 0);
         setMovieInfo(parsedResponse.message);
       } else {
         console.error(parsedResponse.error);
@@ -77,6 +72,11 @@ const MovieInfoContent = () => {
     dispatch(setIsPlayerOpen(false));
     setUrl("");
   };
+
+  // const showNextEpisode =
+  //   movieInfo &&
+  //   movieInfo.type === "tv_show" &&
+  //   currentEpisode < movieInfo.episodes.length - 1;
 
   useEffect(() => {
     fetchMovie();
@@ -115,6 +115,7 @@ const MovieInfoContent = () => {
           onRememberTime={rememberTimeHandler}
           startTime={startTime}
           onEnded={onEnded}
+          showNextEpisode={movieInfo.type === "tv_show"}
         />
       )}
     </div>

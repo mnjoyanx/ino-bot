@@ -130,3 +130,28 @@
   align-items: center;
   gap: 1rem;
 }
+
+.next-episode-btn {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  padding: 5px 10px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  svg {
+    margin-right: 5px;
+  }
+
+  span {
+    font-size: 14px;
+  }
+}

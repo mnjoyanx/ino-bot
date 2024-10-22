@@ -9,9 +9,9 @@ import AndroidPlayer from "./components/AndroidPlayer";
 import { selectPlayerType } from "@app/channels/channelsSlice";
 import { useToast } from "@hooks/useToast";
 import VodControls from "./components/VodControl";
+import { useMovieInfo } from "@context/movieInfoContext";
 
 import "./styles/player.scss";
-import { useMovieInfo } from "../../context/movieInfoContext";
 
 let timeout = null;
 
@@ -40,6 +40,7 @@ export default memo(function Player({
   const refCurrentTime = useRef(null);
   const refProgress = useRef(null);
   const { retryOperation, showToast, hideToast } = useToast();
+  const { isLastEpisode } = useMovieInfo();
 
   const secCurrentTime = useRef(0);
   const secDuration = useRef(0);
@@ -315,6 +316,7 @@ export default memo(function Player({
             pause={pause}
             onBack={onBack}
             title={title}
+            hasNextEpisode={!isLastEpisode}
           />
         )}
       </div>
