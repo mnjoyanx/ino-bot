@@ -1,3 +1,5 @@
+@import "@styles/mixins.scss";
+
 .menu-wrapper {
   // background-image: url("@assets/images/splashscreen.png");
   // width: 100%;
@@ -6,6 +8,8 @@
   // background-position: center;
   // background-repeat: no-repeat;
   border: 0.1rem solid;
+  height: 100%;
+  @include bg-img;
 
   .head-menu-wrapper {
     display: flex;

@@ -17,6 +17,8 @@ import {
 } from "@app/global";
 import Search from "@components/search/Search";
 
+import "@styles/moviePage.scss";
+
 const MoviesPage = () => {
   const isMovieSearchBarOpen = useSelector(selectIsMovieSearchBarOpen);
   const dispatch = useDispatch();
@@ -163,7 +165,7 @@ const MoviesPage = () => {
   }, [genres, getGenresHandler, selectedGenre, setSelectedGenre]);
 
   return (
-    <>
+    <div className="home-page">
       {isMovieSearchBarOpen ? (
         <Search type={"content"} setUrl={setUrl} setShow={toggleSearchBar} />
       ) : null}
@@ -178,7 +180,7 @@ const MoviesPage = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -18,3 +18,10 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+@mixin bg-img {
+  background-image: url("@assets/images/splashscreen.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
