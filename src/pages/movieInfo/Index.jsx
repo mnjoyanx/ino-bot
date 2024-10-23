@@ -12,6 +12,7 @@ import { selectIsPlayerOpen, selectCtrl, setCtrl } from "@app/global";
 import { MovieInfoProvider, useMovieInfo } from "@context/movieInfoContext";
 
 import styles from "@styles/components/movieInfo.module.scss";
+import { setIsPlayerOpen } from "../../app/global";
 
 const MovieInfoContent = () => {
   const { id } = useParams();
@@ -35,12 +36,7 @@ const MovieInfoContent = () => {
       const response = await getMovieById({ movie_id: id });
       const parsedResponse = JSON.parse(response);
       if (!parsedResponse.error) {
-        if (parsedResponse.message.type === "tv_show") {
-          const lastWatchedEpisode = parsedResponse.message.watched?.episodeId;
-          setCurrentEpisode(lastWatchedEpisode);
-        } else {
-          setStartTime(parsedResponse.message.watched?.time || 0);
-        }
+        setStartTime(parsedResponse.message.watched?.time || 0);
         setMovieInfo(parsedResponse.message);
       } else {
         console.error(parsedResponse.error);
@@ -70,6 +66,17 @@ const MovieInfoContent = () => {
       console.error("Failed to remember time:", error);
     }
   };
+
+  const onEnded = () => {
+    dispatch(setCtrl("movieInfo"));
+    dispatch(setIsPlayerOpen(false));
+    setUrl("");
+  };
+
+  // const showNextEpisode =
+  //   movieInfo &&
+  //   movieInfo.type === "tv_show" &&
+  //   currentEpisode < movieInfo.episodes.length - 1;
 
   useEffect(() => {
     fetchMovie();
@@ -107,6 +114,8 @@ const MovieInfoContent = () => {
           setRetryC={() => {}}
           onRememberTime={rememberTimeHandler}
           startTime={startTime}
+          onEnded={onEnded}
+          showNextEpisode={movieInfo.type === "tv_show"}
         />
       )}
     </div>

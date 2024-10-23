@@ -6,12 +6,17 @@ import useKeydown from "@hooks/useKeydown";
 import MovieCard from "./MovieCard";
 import { MoviesContext } from "@context/moviesContext";
 import styles from "@styles/components/moviesList.module.scss";
-import { setCtrl, setIsOpenMainSidebar } from "../../../app/global";
+import {
+  selectIsMovieSearchBarOpen,
+  setCtrl,
+  setIsOpenMainSidebar,
+} from "@app/global";
 
 const MoviesList = () => {
   const dispatch = useDispatch();
   const ctrl = useSelector(selectCtrl);
   const { moviesByGenre, selectedGenre } = useContext(MoviesContext);
+  const isMovieSearchBarOpen = useSelector(selectIsMovieSearchBarOpen);
 
   const [activeRow, setActiveRow] = useState(0);
   const [activeColumn, setActiveColumn] = useState(0);
@@ -24,7 +29,7 @@ const MoviesList = () => {
   const movieTypes = Object.keys(currentMovies);
 
   useKeydown({
-    isActive: ctrl === "moviesSeries",
+    isActive: ctrl === "moviesSeries" && !isMovieSearchBarOpen,
     up: () => {
       if (activeRow > 0) {
         setActiveRow(activeRow - 1);
@@ -57,6 +62,10 @@ const MoviesList = () => {
     //   dispatch(setIsOpenMainSidebar(true));
     // },
   });
+
+  useEffect(() => {
+    setActiveRow(0);
+  }, [selectedGenre]);
 
   const renderMovieCard = useCallback(
     ({ index, style, isActive, item }) => (

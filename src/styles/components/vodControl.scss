@@ -120,12 +120,47 @@
   @include flex(center, center);
 
   &.active {
-    background-color: $active-muted !important;
+    background-color: rgba(143, 143, 143, 0.6) !important;
     border-color: #ffffff;
   }
 }
 
 .vod-ctrl_times {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.next-episode-btn {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 3.5rem !important;
+  color: white;
+  padding: 0.5rem 1rem !important;
+  margin-right: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &.active {
+    background-color: rgba(143, 143, 143, 0.6) !important;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  svg {
+    margin-right: 5px;
+  }
+
+  span {
+    font-size: 14px;
+  }
+}
+
+.vod-ctrl_btns_right {
   display: flex;
   align-items: center;
   gap: 1rem;

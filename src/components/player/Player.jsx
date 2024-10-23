@@ -9,9 +9,9 @@ import AndroidPlayer from "./components/AndroidPlayer";
 import { selectPlayerType } from "@app/channels/channelsSlice";
 import { useToast } from "@hooks/useToast";
 import VodControls from "./components/VodControl";
+import { useMovieInfo } from "@context/movieInfoContext";
 
 import "./styles/player.scss";
-import { useMovieInfo } from "../../context/movieInfoContext";
 
 let timeout = null;
 
@@ -30,6 +30,7 @@ export default memo(function Player({
   retryC,
   setRetryC,
   title,
+  onEnded,
   onRememberTime,
   startTime,
 }) {
@@ -81,7 +82,11 @@ export default memo(function Player({
     secDuration.current = duration;
 
     if (Math.floor(currentTime) >= duration - 1) {
-      endedArchive();
+      if (type === "vod") {
+        onEnded();
+      } else {
+        endedArchive();
+      }
     } else {
       if (refDuration.current) {
         refDuration.current.innerHTML = formatTime(duration);

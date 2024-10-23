@@ -8,6 +8,8 @@ import { selectCtrl, setIsPlayerOpen, setCtrl } from "@app/global";
 import SvgSettings from "@assets/icons/SvgSettings";
 import PlaybackActions from "./PlaybackActions";
 import ControlSettings from "./ControlSettings";
+import SvgNextEpisode from "@assets/icons/SvgNextEpisode";
+import { useMovieInfo } from "@context/movieInfoContext";
 
 import "@styles/components/vodControl.scss";
 
@@ -27,14 +29,19 @@ export default memo(function VodControls({
   const isPaused = useSelector(selectIsPaused);
   const ctrl = useSelector(selectCtrl);
 
+  const { isLastEpisode } = useMovieInfo();
+
   const [hideControls, setHideControls] = useState(false);
   const [activeCtrl, setActiveCtrl] = useState("top");
   const [topActiveIndex, setTopActiveIndex] = useState(1);
+  const [bottomActiveIndex, setBottomActiveIndex] = useState(0);
   const [isSettingsActive, setIsSettingsActive] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
+  const controlsRef = useRef(null);
+
   const showControl = () => {
-    if (hideControls) setHideControls(false);
+    setHideControls(false);
     clearTimeout(hideControlsTimer);
     hideControlsTimer = setTimeout(() => {
       setHideControls(true);
@@ -43,7 +50,23 @@ export default memo(function VodControls({
 
   useEffect(() => {
     showControl();
-  }, []);
+
+    const handleMouseMove = () => {
+      showControl();
+    };
+
+    const playerElement = refVideo.current?.parentElement;
+    if (playerElement) {
+      playerElement.addEventListener("mousemove", handleMouseMove);
+    }
+
+    return () => {
+      if (playerElement) {
+        playerElement.removeEventListener("mousemove", handleMouseMove);
+      }
+      clearTimeout(hideControlsTimer);
+    };
+  }, [refVideo]);
 
   const handleSeek = (direction) => {
     const currentTime = refVideo.current.currentTime;
@@ -71,23 +94,28 @@ export default memo(function VodControls({
     left: () => {
       if (activeCtrl === "top") {
         setTopActiveIndex((prev) => Math.max(0, prev - 1));
+      } else {
+        setBottomActiveIndex((prev) => Math.max(0, prev - 1));
       }
       showControl();
     },
     right: () => {
       if (activeCtrl === "top") {
         setTopActiveIndex((prev) => Math.min(2, prev + 1));
+      } else {
+        const maxIndex = !isLastEpisode ? 1 : 0;
+        setBottomActiveIndex((prev) => Math.min(maxIndex, prev + 1));
       }
       showControl();
     },
     down: () => {
       setActiveCtrl("bottom");
-      setIsSettingsActive(true);
+      setBottomActiveIndex(0);
       showControl();
     },
     up: () => {
       setActiveCtrl("top");
-      setIsSettingsActive(false);
+      setTopActiveIndex(1);
       showControl();
     },
     ok: () => {
@@ -96,7 +124,11 @@ export default memo(function VodControls({
         else if (topActiveIndex === 1) isPaused ? play() : pause();
         else if (topActiveIndex === 2) handleSeek("forward");
       } else {
-        handleSettingsClick();
+        if (bottomActiveIndex === 0 && !isLastEpisode) {
+          handleNextEpisode();
+        } else {
+          handleSettingsClick();
+        }
       }
       showControl();
     },
@@ -107,9 +139,23 @@ export default memo(function VodControls({
     },
   });
 
+  const handleSeekTo = (seekTime) => {
+    if (refVideo.current) {
+      refVideo.current.currentTime = seekTime;
+    }
+    showControl();
+  };
+
+  const handleNextEpisode = () => {
+    document.dispatchEvent(new Event("next-episode"));
+  };
+
   return (
     <>
-      <div className={`vod-control${hideControls ? " hide" : ""}`}>
+      <div
+        className={`vod-control${hideControls ? " hide" : ""}`}
+        ref={controlsRef}
+      >
         <div className="vod-info">
           <h2 className="vod-title">{title}</h2>
         </div>
@@ -128,18 +174,42 @@ export default memo(function VodControls({
             color="#FFFFFF"
             refProgress={refProgress}
             classNames="vod_progress"
+            duration={refVideo.current ? refVideo.current.duration : 0}
+            onSeekTo={handleSeekTo}
           />
           <div className="vod-actions_wrapper">
             <div className="vod-ctrl_times">
               <Duration _ref={currentTimeRef} className="vod-current_time" />
               <Duration _ref={durationRef} className="vod_duration" />
             </div>
-            <button
-              className={`vod-ctrl_btn settings-btn${isSettingsActive ? " active" : ""}`}
-              onClick={handleSettingsClick}
-            >
-              <SvgSettings />
-            </button>
+            <div className="vod-ctrl_btns_right">
+              {!isLastEpisode && (
+                <button
+                  className={`vod-ctrl_btn next-episode-btn${
+                    activeCtrl === "bottom" && bottomActiveIndex === 0
+                      ? " active"
+                      : ""
+                  }`}
+                  onClick={handleNextEpisode}
+                >
+                  <SvgNextEpisode />
+                  <span>Next episode</span>
+                </button>
+              )}
+              <button
+                className={`vod-ctrl_btn settings-btn${
+                  activeCtrl === "bottom" &&
+                  (!isLastEpisode
+                    ? bottomActiveIndex === 1
+                    : bottomActiveIndex === 0)
+                    ? " active"
+                    : ""
+                }`}
+                onClick={handleSettingsClick}
+              >
+                <SvgSettings />
+              </button>
+            </div>
           </div>
         </div>
       </div>

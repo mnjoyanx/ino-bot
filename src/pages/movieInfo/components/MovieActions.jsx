@@ -54,7 +54,7 @@ const MovieActions = ({ movie, movieId }) => {
           break;
       }
     },
-    back: () => navigate("/movies"),
+    back: () => navigate(-1),
   });
 
   return (

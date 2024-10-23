@@ -17,6 +17,8 @@ import {
 } from "@app/global";
 import Search from "@components/search/Search";
 
+import "@styles/moviePage.scss";
+
 const MoviesPage = () => {
   const isMovieSearchBarOpen = useSelector(selectIsMovieSearchBarOpen);
   const dispatch = useDispatch();
@@ -32,7 +34,6 @@ const MoviesPage = () => {
   const [url, setUrl] = useState(null);
 
   const getGenresHandler = useCallback(async () => {
-    console.log("getGenresHandler", selectedGenre);
     try {
       const response = await getAllGenres();
       const parsedResponse = JSON.parse(response);
@@ -46,7 +47,6 @@ const MoviesPage = () => {
           setSelectedGenre(message.rows[0].id);
         }
       }
-      console.log(parsedResponse);
     } catch (error) {
       console.log(error);
     }
@@ -165,7 +165,7 @@ const MoviesPage = () => {
   }, [genres, getGenresHandler, selectedGenre, setSelectedGenre]);
 
   return (
-    <>
+    <div className="home-page">
       {isMovieSearchBarOpen ? (
         <Search type={"content"} setUrl={setUrl} setShow={toggleSearchBar} />
       ) : null}
@@ -180,7 +180,7 @@ const MoviesPage = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

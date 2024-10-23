@@ -14,6 +14,31 @@ import { ToastProvider } from "./hooks/useToast";
 import { MoviesProvider } from "./context/moviesContext";
 
 function App() {
+  useEffect(() => {
+    const useResize = () => {
+      let fontSize = 10; // 1rem = 10px (default) 1920x1080
+
+      let k = window.innerWidth / 1920;
+
+      fontSize = fontSize * k;
+
+      console.log(fontSize, "size");
+
+      document.documentElement.style.fontSize = fontSize + "px";
+    };
+
+    useResize();
+
+    window.addEventListener("load", useResize);
+
+    window.addEventListener("resize", useResize);
+
+    return () => {
+      window.removeEventListener("load", useResize);
+      window.removeEventListener("resize", useResize);
+    };
+  }, []);
+
   return (
     <ToastProvider>
       <Routes>
