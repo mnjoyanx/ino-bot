@@ -9,7 +9,7 @@
 }
 
 #controls_player {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -24,6 +24,9 @@
     rgba(0, 0, 0, 0.7) 0%,
     rgba(0, 0, 0, 0) 100%
   );
+
+  background: red;
+  opacity: 0.5;
 }
 
 .vod-control {
