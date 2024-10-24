@@ -33,6 +33,8 @@ const MoviesList = () => {
     up: () => {
       if (activeRow > 0) {
         setActiveRow(activeRow - 1);
+      } else {
+        dispatch(setCtrl("backBtn"));
       }
     },
 
@@ -47,6 +49,10 @@ const MoviesList = () => {
       }
     },
 
+    // up: () => {
+    //   if (!moviesByGenre[selectedGenre].movies.length) return;
+    // },
+
     down: () => {
       if (!moviesByGenre[selectedGenre].tv_show.length) return;
       if (activeRow < 1) {
@@ -56,16 +62,19 @@ const MoviesList = () => {
         dispatch(setCtrl("moviesSeries"));
       }
     },
-
-    // back: () => {
-    //   dispatch(setCtrl("mainSidebar"));
-    //   dispatch(setIsOpenMainSidebar(true));
-    // },
   });
 
   useEffect(() => {
-    setActiveRow(0);
-  }, [selectedGenre]);
+    if (
+      moviesByGenre &&
+      moviesByGenre[selectedGenre] &&
+      !moviesByGenre[selectedGenre].movies.length
+    ) {
+      setActiveRow(1);
+    } else {
+      setActiveRow(0);
+    }
+  }, [selectedGenre, moviesByGenre]);
 
   const renderMovieCard = useCallback(
     ({ index, style, isActive, item }) => (
@@ -119,7 +128,14 @@ const MoviesList = () => {
 
   return (
     <div
-      className={`${styles["movies-list"]} ${activeRow > 0 ? styles["up"] : ""}`}
+      className={`${styles["movies-list"]} ${
+        activeRow > 0 &&
+        moviesByGenre &&
+        moviesByGenre[selectedGenre] &&
+        moviesByGenre[selectedGenre].movies.length
+          ? styles["up"]
+          : ""
+      }`}
     >
       {movieTypes.map((movieType) => (
         <div key={movieType} className={styles["wrapper"]}>

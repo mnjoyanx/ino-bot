@@ -1,23 +1,23 @@
 body {
-    margin: 0;
-    width: 128rem;
-    height: 72rem;
+  margin: 0;
+  width: 128rem;
+  height: 72rem;
 }
 
 * {
-    margin: 0;
-    padding: 0;
-    font-size: 15px;
-    box-sizing: border-box;
-    appearance: none;
-    font-family: "Montserrat", sans-serif;
-    outline:none;
+  margin: 0;
+  padding: 0;
+  font-size: 15px;
+  box-sizing: border-box;
+  appearance: none;
+  font-family: "Montserrat", sans-serif;
+  outline: none;
 }
 
 @media only screen and (max-width: 1280px) {
-    * {
-        font-size: 10px;
-    }
+  * {
+    font-size: 10px;
+  }
 }
 
 /* @media only screen and (min-width: 3840px) {
@@ -27,19 +27,53 @@ body {
 } */
 
 #root {
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: black;
-    width: 128rem;
-    height: 72rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: black;
+  width: 128rem;
+  height: 72rem;
 }
 
-.android #root{
-    background-color: transparent !important;
+.android #root {
+  background-color: transparent !important;
 }
 
 p {
-    color: white;
-    font-size: 1.6rem;
+  color: white;
+  font-size: 1.6rem;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  position: absolute;
+  top: 3rem;
+  left: 20rem;
+}
+
+.back-button svg {
+  width: 3rem;
+  height: 3rem;
+}
+
+.back-button-text {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.back-button:hover,
+.back-button.active .back-button-text {
+  color: #ccc;
+}
+
+.back-button:hover svg,
+.back-button.active svg path {
+  stroke: #ccc;
 }
