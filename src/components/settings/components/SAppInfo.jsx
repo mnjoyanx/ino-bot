@@ -7,6 +7,8 @@ export default function AppInfo() {
       <p>
         {LOCAL_STORAGE.DEVICE_OS.GET()} {/* 2GB RAM. (SD v23423) */}
       </p>
+      <p>App Version: 1.0.1</p>
+
       <span>
         There are many variations of passages of Lorem Ipsum available, but the
         majority have suffered alteration in some form, by injected humour, or
