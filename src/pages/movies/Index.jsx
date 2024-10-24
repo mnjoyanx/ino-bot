@@ -12,10 +12,12 @@ import AppLogo from "@components/common/AppLogo";
 import MainSidebar from "@components/common/MainSidebar";
 import MoviesList from "./components/MoviesList";
 import {
+  setCtrl,
   selectIsMovieSearchBarOpen,
   setIsMovieSearchBarOpen,
 } from "@app/global";
 import Search from "@components/search/Search";
+import BackButton from "@components/common/BackButton";
 
 import "@styles/moviePage.scss";
 
@@ -32,12 +34,14 @@ const MoviesPage = () => {
   } = useContext(MoviesContext);
 
   const [url, setUrl] = useState(null);
+  const [alreadyFetched, setAlreadyFetched] = useState(false);
 
   const getGenresHandler = useCallback(async () => {
     try {
       const response = await getAllGenres();
       const parsedResponse = JSON.parse(response);
       const { error, message } = parsedResponse;
+      setAlreadyFetched(true);
 
       if (error) {
         console.log(error);
@@ -157,23 +161,35 @@ const MoviesPage = () => {
   }, [selectedGenre, getMoviesByGenreHandler]);
 
   useEffect(() => {
-    if (genres.length === 0) {
+    if (genres.length === 0 && !alreadyFetched) {
       getGenresHandler();
     } else if (!selectedGenre && genres.length > 0) {
       setSelectedGenre(genres[0].id);
     }
-  }, [genres, getGenresHandler, selectedGenre, setSelectedGenre]);
+  }, [
+    genres,
+    getGenresHandler,
+    selectedGenre,
+    setSelectedGenre,
+    alreadyFetched,
+  ]);
 
   return (
     <div className="home-page">
+      <BackButton
+        path="Menu"
+        onDownHandler={() => {
+          dispatch(setCtrl("moviesSeries"));
+        }}
+      />
+      <div className="app-logo">
+        <AppLogo />
+      </div>
       {isMovieSearchBarOpen ? (
         <Search type={"content"} setUrl={setUrl} setShow={toggleSearchBar} />
       ) : null}
       <div className={styles["movie-page"]}>
         <div className={styles["movie-content"]}>
-          <div className={styles["app-logo"]}>
-            <AppLogo />
-          </div>
           <MainSidebar categories={genres} />
           <div className={styles["movies-list"]}>
             <MoviesList />

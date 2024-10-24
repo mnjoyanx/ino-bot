@@ -9,3 +9,11 @@
 .android .home-page {
   background-image: none !important;
 }
+
+.app-logo {
+  position: fixed;
+  top: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
