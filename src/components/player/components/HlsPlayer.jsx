@@ -49,7 +49,7 @@ export default memo(function HlsPlayer({
 
       hls.on(Hls.Events.SUBTITLE_TRACK_LOADED, function (e, data) {
         console.log(hls.subtitleTracks, "sub data ----");
-        dispatch(setSubtitles(hls.subtitleTracks));
+        // dispatch(setSubtitles(hls.subtitleTracks));
       });
 
       hls.on(Hls.Events.LEVEL_SWITCHED, function (e, data) {

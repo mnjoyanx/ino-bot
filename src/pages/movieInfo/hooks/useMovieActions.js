@@ -11,7 +11,7 @@ export const useMovieActions = (
   id,
   setUrl,
   type,
-  currentEpisode,
+  lastWatchEpisode,
   setMovieInfo,
   isFavorite,
   startTime,
@@ -19,6 +19,8 @@ export const useMovieActions = (
 ) => {
   const dispatch = useDispatch();
   const { showToast } = useToast();
+
+  const { currentEpisode } = useMovieInfo();
 
   const handleWatchClick = useCallback(
     async (fromStart = true) => {
@@ -30,7 +32,7 @@ export const useMovieActions = (
 
       const body = { id };
       if (type === "tv_show") {
-        body.episode_id = currentEpisode;
+        body.episode_id = lastWatchEpisode || currentEpisode;
       }
       const response = await getMovieUrl(body);
       const parsedResponse = JSON.parse(response);
@@ -52,7 +54,7 @@ export const useMovieActions = (
     const body = { movieId: id };
 
     if (type === "tv_show") {
-      body.episodeId = currentEpisode.seasonId;
+      body.episodeId = lastWatchEpisode.seasonId;
     }
 
     setMovieInfo((prev) => ({

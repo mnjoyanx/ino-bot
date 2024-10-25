@@ -10,20 +10,28 @@ import { useMovieInfo } from "@context/movieInfoContext";
 import { selectIsPlayerOpen } from "@app/global";
 
 const SeasonEpisodes = ({
+  allEpisodes,
   episodes,
   activeSeason,
-  setActiveSeason,
-  seasonsLength,
+  activeSeasonIndex,
+  selectedSeason,
+  changeSeason,
   seriesId,
   setUrl,
 }) => {
-  const { setStartTime, setIsLastEpisode, currentEpisode, setCurrentEpisode } =
-    useMovieInfo();
+  const {
+    setStartTime,
+    activeEpisode,
+    setActiveEpisode,
+    setIsLastEpisode,
+    currentEpisode,
+    setCurrentEpisode,
+  } = useMovieInfo();
   const isPlayerOpen = useSelector(selectIsPlayerOpen);
   const ctrl = useSelector(selectCtrl);
   const dispatch = useDispatch();
 
-  const [activeEpisode, setActiveEpisode] = useState(0);
+  // const [activeEpisode, setActiveEpisode] = useState(0);
 
   const { handleEpisodeClick, handleSeasonChange } = useSeasonEpisodeActions(
     seriesId,
@@ -49,6 +57,17 @@ const SeasonEpisodes = ({
   });
 
   const handleNextEpisode = () => {
+    if (activeEpisode + 1 >= episodes.length) {
+      changeSeason(activeSeasonIndex + 1);
+      const nextEpisode = Object.values(allEpisodes)[activeSeasonIndex + 1][0];
+      console.log(nextEpisode, "------ next episode");
+      setCurrentEpisode(nextEpisode);
+      setStartTime(0);
+      setUrl("");
+      handleEpisodeClick(nextEpisode.id);
+      return;
+    }
+
     setActiveEpisode((prev) => Math.min(episodes.length - 1, prev + 1));
 
     setCurrentEpisode(episodes[activeEpisode + 1]);
@@ -71,8 +90,8 @@ const SeasonEpisodes = ({
 
   useEffect(() => {
     setActiveEpisode(0);
-    handleSeasonChange(activeSeason);
-  }, [activeSeason, handleSeasonChange]);
+    console.log(selectedSeason, "------", episodes);
+  }, [selectedSeason, handleSeasonChange]);
 
   useEffect(() => {
     if (currentEpisode && currentEpisode.is_last) {
