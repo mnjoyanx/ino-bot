@@ -23,6 +23,7 @@ export const useSeasonEpisodeActions = (seriesId) => {
           dispatch(setIsPlayerOpen(true));
           dispatch(setPlayerType("vod"));
           dispatch(setCtrl("vodCtrl"));
+          setUrl("");
           setUrl(parsedResponse.message.stream_url);
         } else {
           showToast("Failed to load episode", "error", 3000);

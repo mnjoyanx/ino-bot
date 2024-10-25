@@ -33,8 +33,20 @@ const MovieActions = ({ movie, movieId }) => {
 
   useKeydown({
     isActive: ctrl === "movieInfo",
-    left: () => setActiveButton((prev) => Math.max(0, prev - 1)),
-    right: () => setActiveButton((prev) => Math.min(2, prev + 1)),
+    left: () => {
+      if (movie.watched) {
+        setActiveButton((prev) => Math.max(0, prev - 1));
+      } else {
+        setActiveButton(0);
+      }
+    },
+    right: () => {
+      if (movie.watched) {
+        setActiveButton((prev) => Math.min(2, prev + 1));
+      } else {
+        setActiveButton(2);
+      }
+    },
     down: () => {
       if (movie.type !== "tv_show") return;
 

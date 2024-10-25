@@ -73,11 +73,6 @@ const MovieInfoContent = () => {
     setUrl("");
   };
 
-  // const showNextEpisode =
-  //   movieInfo &&
-  //   movieInfo.type === "tv_show" &&
-  //   currentEpisode < movieInfo.episodes.length - 1;
-
   useEffect(() => {
     fetchMovie();
   }, [id]);
@@ -104,7 +99,7 @@ const MovieInfoContent = () => {
       {movieInfo.type === "tv_show" && (
         <TvShowSeasons seasons={movieInfo.seasons} seriesId={id} />
       )}
-      {isPlayerOpen && url && (
+      {isPlayerOpen && (
         <Player
           type="vod"
           url={url}

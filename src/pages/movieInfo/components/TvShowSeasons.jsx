@@ -11,53 +11,56 @@ import { useMovieInfo } from "@context/movieInfoContext";
 const TvShowSeasons = ({ seasons, seriesId }) => {
   const ctrl = useSelector(selectCtrl);
 
-  const { currentEpisode, setCurrentEpisode } = useMovieInfo();
+  const {
+    currentEpisode,
+    setCurrentEpisode,
+    setUrl,
+    activeSeason,
+    setActiveSeason,
+    selectedSeason,
+    setSelectedSeason,
+  } = useMovieInfo();
 
-  const [activeSeason, setActiveSeason] = useState(0);
   const [allEpisodes, setAllEpisodes] = useState(null);
+  const [activeSeasonIndex, setActiveSeasonIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
 
   const getEpisodeBySeasonId = async (seasonId) => {
     const response = await getEpisodes({ season_id: seasonId });
-    return response;
+    return JSON.parse(response);
   };
 
   const fetchAllEpisodes = async () => {
     try {
       setIsLoading(true);
+      const allEpisodesClone = {};
+
       const res = await Promise.all(
-        seasons.map((season) => getEpisodeBySeasonId(season.id))
+        seasons.map((season) => {
+          allEpisodesClone[season.id] = [];
+          return getEpisodeBySeasonId(season.id);
+        })
       );
-      const parsedRes = JSON.parse(res);
 
-      const { error, message } = parsedRes;
+      let lastWatchedEpisodeId = null;
 
-      if (!error) {
-        const lastWatchedEpisode = message.findLastIndex(
-          (episode) => episode.watched
-        );
+      res.forEach((item) => {
+        // console.log(item, "item");
 
-        const lastWatchedEpisodeIndex = message.findIndex(
-          (episode) => episode.id === message[lastWatchedEpisode].id
-        );
+        if (!item.error) {
+          item.message.forEach((episode, index) => {
+            if (!episode.watched && index === item.message.length - 1) {
+              lastWatchedEpisodeId = res[0].message[0].id;
+            }
+            allEpisodesClone[episode.seasonId].push(episode);
+          });
+        } else {
+        }
 
-        setCurrentEpisode(message[lastWatchedEpisodeIndex]);
-
-        const obj = message.reduce((acc, curr, index) => {
-          if (!acc[curr.seasonId]) {
-            acc[curr.seasonId] = [];
-          }
-
-          if (index === message.length - 1) {
-            curr.is_last = true;
-          }
-          acc[curr.seasonId].push(curr);
-          return acc;
-        }, {});
-
-        setAllEpisodes(obj);
-      }
+        setCurrentEpisode(lastWatchedEpisodeId);
+        setAllEpisodes(allEpisodesClone);
+      });
     } catch (error) {
       console.log(error, "error");
     } finally {
@@ -70,13 +73,29 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
     fetchAllEpisodes();
   }, [seasons]);
 
+  useEffect(() => {
+    if (allEpisodes) {
+      setSelectedSeason(seasons[activeSeason].id);
+    }
+  }, [allEpisodes]);
+
   useKeydown({
     isActive: ctrl === "seasons",
     left: () => setActiveSeason((prev) => Math.max(0, prev - 1)),
     right: () =>
       setActiveSeason((prev) => Math.min(seasons.length - 1, prev + 1)),
-    down: () => dispatch(setCtrl("episodes")),
+    down: () => {
+      if (allEpisodes) {
+        dispatch(setCtrl("episodes"));
+      }
+    },
     up: () => dispatch(setCtrl("movieInfo")),
+    ok: () => {
+      if (allEpisodes) {
+        setSelectedSeason(seasons[activeSeason].id);
+        setActiveSeasonIndex(activeSeason);
+      }
+    },
     back: () => dispatch(setCtrl("movieInfo")),
   });
 
@@ -96,14 +115,28 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
           />
         ))}
       </div>
-      {!isLoading && allEpisodes && (
+      {allEpisodes && Object.keys(allEpisodes).length > 0 && selectedSeason ? (
         <SeasonEpisodes
-          episodes={allEpisodes[seasons[activeSeason].id]}
-          activeSeason={activeSeason}
+          episodes={allEpisodes[selectedSeason]}
+          allEpisodes={allEpisodes}
+          selectedSeason={selectedSeason}
+          changeSeason={(index) => {
+            setSelectedSeason(seasons[index].id);
+          }}
+          activeSeasonIndex={activeSeasonIndex}
           seasonsLength={seasons.length}
           seriesId={seriesId}
           setActiveSeason={setActiveSeason}
+          setUrl={setUrl}
         />
+      ) : (
+        <>
+          {isLoading ? (
+            <div className={styles["loading"]}>Loading...</div>
+          ) : (
+            <div className={styles["no-episodes"]}>No episodes found</div>
+          )}
+        </>
       )}
     </div>
   );
