@@ -39,6 +39,7 @@ const MoviesList = () => {
     },
 
     left: () => {
+      console.log(currentMovies, "currentMovies");
       if (
         currentMovies &&
         !currentMovies.tv_show.length &&

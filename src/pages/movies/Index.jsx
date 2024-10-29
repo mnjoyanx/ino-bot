@@ -18,8 +18,10 @@ import {
 } from "@app/global";
 import Search from "@components/search/Search";
 import BackButton from "@components/common/BackButton";
+import LOCAL_STORAGE from "@utils/localStorage.js";
 
 import "@styles/moviePage.scss";
+import { getAppSettings } from "../../server/requests";
 
 const MoviesPage = () => {
   const isMovieSearchBarOpen = useSelector(selectIsMovieSearchBarOpen);
@@ -31,6 +33,8 @@ const MoviesPage = () => {
     setSelectedGenre,
     moviesByGenre,
     setMoviesByGenre,
+    menuList,
+    setMenuList,
   } = useContext(MoviesContext);
 
   const [url, setUrl] = useState(null);
@@ -154,6 +158,28 @@ const MoviesPage = () => {
     dispatch(setIsMovieSearchBarOpen(!isMovieSearchBarOpen));
   };
 
+  const getConfigsHandler = async () => {
+    const response = await getAppSettings({
+      languageId: LOCAL_STORAGE.LANGUAGE.GET(),
+    });
+
+    const parsedResponse = JSON.parse(response);
+    const { error, message } = parsedResponse;
+
+    if (error) {
+      console.log(error);
+    } else {
+      console.log(message, "message");
+      const menu = message.menu;
+      console.log(menu, "menu");
+      setMenuList(menu);
+    }
+  };
+
+  useEffect(() => {
+    getConfigsHandler();
+  }, []);
+
   useEffect(() => {
     if (selectedGenre) {
       getMoviesByGenreHandler(selectedGenre);
@@ -164,6 +190,7 @@ const MoviesPage = () => {
     if (genres.length === 0 && !alreadyFetched) {
       getGenresHandler();
     } else if (!selectedGenre && genres.length > 0) {
+      console.log(genres, "genres");
       setSelectedGenre(genres[0].id);
     }
   }, [

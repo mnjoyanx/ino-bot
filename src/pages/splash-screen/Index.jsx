@@ -58,6 +58,8 @@ function SplashScreen() {
 
     message.basics = message.basics[0];
 
+    console.log(message, "messsage");
+
     LOCAL_STORAGE.LOGO.SET(message.basics.logo);
 
     setImagesApp((prev) => {

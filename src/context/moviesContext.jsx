@@ -14,6 +14,7 @@ const initialState = {
   recentlyAdded: [],
   lastWatched: [],
   favorites: [],
+  menuList: [],
 };
 
 const filterMoviesAndSeries = (movies) => {
@@ -51,6 +52,11 @@ function moviesReducer(state, action) {
         ...state,
         genres: action.payload,
       };
+    case "SET_MENU_LIST":
+      return {
+        ...state,
+        menuList: action.payload,
+      };
     default:
       return state;
   }
@@ -79,6 +85,13 @@ export const MoviesProvider = ({ children }) => {
     });
   }, []);
 
+  const setMenuList = useCallback((menuList) => {
+    dispatch({
+      type: "SET_MENU_LIST",
+      payload: menuList,
+    });
+  }, []);
+
   const contextValue = useMemo(
     () => ({
       moviesByGenre: state.moviesByGenre,
@@ -87,6 +100,8 @@ export const MoviesProvider = ({ children }) => {
       setGenres,
       selectedGenre,
       setSelectedGenre,
+      menuList: state.menuList,
+      setMenuList,
     }),
     [
       state.moviesByGenre,
@@ -94,6 +109,7 @@ export const MoviesProvider = ({ children }) => {
       selectedGenre,
       setMoviesByGenre,
       setGenres,
+      state.menuList,
     ]
   );
 

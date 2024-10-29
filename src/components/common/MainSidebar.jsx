@@ -12,7 +12,6 @@ import SvgFavorites from "@assets/icons/SvgFavorite";
 import SvgLastWatched from "@assets/icons/SvgLastWatched";
 import SvgRecentlyAdded from "@assets/icons/SvgRecentlyAdded";
 import SvgGenres from "@assets/icons/SvgGenres";
-import AppLogo from "./AppLogo";
 
 import styles from "@styles/components/mainSidebar.module.scss";
 import useKeydown from "@hooks/useKeydown";
@@ -20,7 +19,7 @@ import { setCtrl, setIsMovieSearchBarOpen } from "@app/global";
 
 const MainSidebar = ({ categories }) => {
   const dispatch = useDispatch();
-  const { setSelectedGenre } = useContext(MoviesContext);
+  const { setSelectedGenre, menuList } = useContext(MoviesContext);
 
   const isOpen = useSelector(selectIsOpenMainSidebar);
   const ctrl = useSelector(selectCtrl);
@@ -34,35 +33,69 @@ const MainSidebar = ({ categories }) => {
       name: "Search",
       icon: <SvgSearch />,
     },
-    {
-      name: "Favorites",
-      id: "favorites",
-      icon: <SvgFavorites />,
-    },
-    {
-      name: "Last Watched",
-      id: "lastWatched",
-      icon: <SvgLastWatched />,
-    },
-    {
-      name: "Recently Added",
-      id: "recentlyAdded",
-      icon: <SvgRecentlyAdded />,
-    },
+    // {
+    //   name: "Favorites",
+    //   id: "favorites",
+    //   icon: <SvgFavorites />,
+    // },
+    // {
+    //   name: "Last Watched",
+    //   id: "lastWatched",
+    //   icon: <SvgLastWatched />,
+    // },
+    // {
+    //   name: "Recently Added",
+    //   id: "recentlyAdded",
+    //   icon: <SvgRecentlyAdded />,
+    // },
   ];
 
   useEffect(() => {
-    if (categories) {
-      setSidebarItems([
+    // if (categories) {
+    //   setSidebarItems([
+    //     ...items,
+    //     {
+    //       name: "Genres",
+    //       icon: <SvgGenres />,
+    //       items: categories,
+    //     },
+    //   ]);
+    // }
+
+    if (categories && menuList) {
+      const newItems = [
         ...items,
+        ...menuList
+          .filter(
+            (item) =>
+              item.type === "movies" ||
+              item.type === "tv-shows" ||
+              item.type === "favorites"
+          )
+          .map((item) => ({
+            name: item.name,
+            id: item.id,
+            icon: item.icon ? (
+              <img
+                src={item.icon}
+                alt={item.name}
+                className={styles["main-sidebar-item_icon"]}
+              />
+            ) : (
+              <SvgGenres />
+            ),
+          })),
         {
           name: "Genres",
           icon: <SvgGenres />,
           items: categories,
         },
-      ]);
+      ];
+
+      console.log(newItems, "newItems");
+      setSidebarItems(newItems);
     }
-  }, [categories]);
+  }, [categories, menuList]);
 
   useKeydown({
     isActive: isOpen && ctrl === "mainSidebar",
