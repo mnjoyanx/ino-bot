@@ -1,7 +1,7 @@
 import { constructQueryString } from "@utils/util";
 import LOCAL_STORAGE from "@utils/localStorage";
-// export const baseUrl = "https://api.tctv.ge/";
-export const baseUrl = "https://api.inorain.tv/";
+export const baseUrl = "https://api.tctv.ge/";
+// export const baseUrl = "https://api.inorain.tv/";
 
 export const request = async (
   method = "GET",
