@@ -2,7 +2,6 @@ import { ENV } from "@config/env";
 import { constructQueryString } from "@utils/util";
 import LOCAL_STORAGE from "@utils/localStorage";
 export const baseUrl = ENV.API_HOST;
-console.log(ENV, baseUrl);
 // export const baseUrl = "https://api.inorain.tv/";
 
 export const request = async (
