@@ -14,6 +14,12 @@ WORKDIR /usr/share/nginx/html
 
 COPY --from=builder /app/build .
 
+
+COPY set_api_host.sh /usr/share/nginx/html//set_api_host.sh
+
+RUN chmod +x /usr/share/nginx/html/set_api_host.sh
+
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["sh", "-c", "sh /usr/share/nginx/html/set_api_host.sh && nginx -g 'daemon off;'"]
+
