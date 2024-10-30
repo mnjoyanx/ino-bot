@@ -39,6 +39,7 @@ const MoviesPage = () => {
 
   const [url, setUrl] = useState(null);
   const [alreadyFetched, setAlreadyFetched] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const getGenresHandler = useCallback(async () => {
     try {
@@ -151,7 +152,7 @@ const MoviesPage = () => {
         console.log(error);
       }
     },
-    [fetchFavoritesHandler, setMoviesByGenre]
+    [fetchFavoritesHandler, setMoviesByGenre],
   );
 
   const toggleSearchBar = () => {
@@ -159,20 +160,28 @@ const MoviesPage = () => {
   };
 
   const getConfigsHandler = async () => {
-    const response = await getAppSettings({
-      languageId: LOCAL_STORAGE.LANGUAGE.GET(),
-    });
+    setIsLoading(true);
 
-    const parsedResponse = JSON.parse(response);
-    const { error, message } = parsedResponse;
+    try {
+      const response = await getAppSettings({
+        languageId: LOCAL_STORAGE.LANGUAGE.GET(),
+      });
 
-    if (error) {
+      const parsedResponse = JSON.parse(response);
+      const { error, message } = parsedResponse;
+
+      if (error) {
+        console.log(error);
+      } else {
+        console.log(message, "message");
+        const menu = message.menu;
+        console.log(menu, "menu");
+        setMenuList(menu);
+      }
+    } catch (error) {
       console.log(error);
-    } else {
-      console.log(message, "message");
-      const menu = message.menu;
-      console.log(menu, "menu");
-      setMenuList(menu);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -202,28 +211,38 @@ const MoviesPage = () => {
   ]);
 
   return (
-    <div className="home-page">
-      <BackButton
-        path="Menu"
-        onDownHandler={() => {
-          dispatch(setCtrl("moviesSeries"));
-        }}
-      />
-      <div className="app-logo">
-        <AppLogo />
-      </div>
-      {isMovieSearchBarOpen ? (
-        <Search type={"content"} setUrl={setUrl} setShow={toggleSearchBar} />
-      ) : null}
-      <div className={styles["movie-page"]}>
-        <div className={styles["movie-content"]}>
-          <MainSidebar categories={genres} />
-          <div className={styles["movies-list"]}>
-            <MoviesList />
+    <>
+      {isLoading ? (
+        <div className={styles["loading"]}>Loading...</div>
+      ) : (
+        <div className="home-page">
+          <BackButton
+            path="Menu"
+            onDownHandler={() => {
+              dispatch(setCtrl("moviesSeries"));
+            }}
+          />
+          <div className="app-logo">
+            <AppLogo />
+          </div>
+          {isMovieSearchBarOpen ? (
+            <Search
+              type={"content"}
+              setUrl={setUrl}
+              setShow={toggleSearchBar}
+            />
+          ) : null}
+          <div className={styles["movie-page"]}>
+            <div className={styles["movie-content"]}>
+              <MainSidebar categories={genres} />
+              <div className={styles["movies-list"]}>
+                <MoviesList />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 

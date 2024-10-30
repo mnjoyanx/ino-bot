@@ -5,6 +5,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
+const Dotenv = require("dotenv-webpack");
 
 module.exports = (env, argv) => {
   const { mode } = argv;
@@ -54,13 +55,11 @@ module.exports = (env, argv) => {
         "@server": path.resolve(__dirname, "src/server"),
         "@app": path.resolve(__dirname, "src/app"),
         "@context": path.resolve(__dirname, "src/context"),
+        "@config": path.resolve(__dirname, "src/config"),
       },
     },
 
     plugins: [
-      new webpack.DefinePlugin({
-        "process.env": JSON.stringify(process.env),
-      }),
       new HTMLWebPackPlugin({
         template: "../public/index.html",
       }),
@@ -79,56 +78,11 @@ module.exports = (env, argv) => {
       new webpack.ProvidePlugin({
         React: "react",
       }),
+      new Dotenv({
+        path: "./.env",
+        systemvars: true,
+      }),
     ],
-
-    // module: {
-    //   rules: [
-    //     {
-    //       test: /\.(js|jsx)$/,
-    //       // exclude: /(node_modules|bower_components)/,
-    //       use: {
-    //         loader: "babel-loader",
-    //         options: {
-    //           presets: ["@babel/preset-env", "@babel/preset-react"],
-    //           plugins: [
-    //             "@babel/plugin-syntax-dynamic-import",
-    //             "@babel/plugin-proposal-class-properties",
-    //           ],
-    //         },
-    //       },
-    //     },
-    //     {
-    //       test: /\.(png|jpg|jpeg|svg|gif)$/i,
-    //       type: "asset/resource",
-    //     },
-    //     {
-    //       test: /\.(css|s[ac]ss)$/,
-    //       use: [
-    //         "style-loader",
-    //         {
-    //           loader: "css-loader",
-    //           options: {
-    //             importLoaders: 1,
-    //             modules: true,
-    //           },
-    //         },
-    //         "postcss-loader",
-    //         "sass-loader",
-    //       ],
-    //       include: /\.module\.css$/,
-    //     },
-    //     {
-    //       test: /\.s[ac]ss$/i,
-    //       use: ["style-loader", "css-loader", "postcss-loader", "sass-loader"],
-    //       exclude: /\.module\.css$/,
-    //     },
-    //     {
-    //       test: /\.html$/,
-    //       use: ["html-loader"],
-    //     },
-    //   ],
-    // },
-
     module: {
       rules: [
         {

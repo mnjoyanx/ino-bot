@@ -40,14 +40,12 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
         seasons.map((season) => {
           allEpisodesClone[season.id] = [];
           return getEpisodeBySeasonId(season.id);
-        })
+        }),
       );
 
       let lastWatchedEpisodeId = null;
 
       res.forEach((item) => {
-        // console.log(item, "item");
-
         if (!item.error) {
           item.message.forEach((episode, index) => {
             if (!episode.watched && index === item.message.length - 1) {
@@ -57,6 +55,8 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
           });
         } else {
         }
+
+        console.log(lastWatchedEpisodeId, "lastWatchedEpisodeId-----");
 
         setCurrentEpisode(lastWatchedEpisodeId);
         setAllEpisodes(allEpisodesClone);
@@ -108,14 +108,19 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
             key={season.id}
             onClick={() => setActiveSeason(index)}
             onMouseEnter={() => {}}
-            className={styles["season-button"]}
+            className={`${styles["season-button"]} ${
+              season.id === selectedSeason ? styles["selected"] : ""
+            }`}
             isActive={ctrl === "seasons" && index === activeSeason}
             title={`Season ${season.id}`}
             index={index}
           />
         ))}
       </div>
-      {allEpisodes && Object.keys(allEpisodes).length > 0 && selectedSeason ? (
+      {allEpisodes &&
+      Object.keys(allEpisodes).length > 0 &&
+      selectedSeason &&
+      !isLoading ? (
         <SeasonEpisodes
           episodes={allEpisodes[selectedSeason]}
           allEpisodes={allEpisodes}

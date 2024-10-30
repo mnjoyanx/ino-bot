@@ -54,12 +54,16 @@
     }
   }
 
+  .sidebar-items_wrapper {
+    transition: transform 0.2s linear;
+  }
+
   .items {
     @include flex-column(flex-start, flex-start);
     gap: 5.2rem;
-    position: relative;
     top: 0;
     transform: translateY(0);
+    position: relative;
     transition: transform 0.2s linear;
 
     &.categories-opened {
@@ -145,5 +149,10 @@
   width: 2.6rem;
   height: 2.6rem;
   object-fit: contain;
-  background: red;
+}
+
+.selected-icon {
+  width: 2.6rem;
+  height: 2.6rem;
+  object-fit: contain;
 }

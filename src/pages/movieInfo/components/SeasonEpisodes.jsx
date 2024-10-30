@@ -4,7 +4,8 @@ import useKeydown from "@hooks/useKeydown";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCtrl, setCtrl } from "@app/global";
 import EpisodeCard from "./EpisodeCard";
-import ListView from "ino-listview";
+import { ListView } from "ino-ui-tv";
+
 import { useSeasonEpisodeActions } from "../hooks/useSeasonEpisodeActions";
 import { useMovieInfo } from "@context/movieInfoContext";
 import { selectIsPlayerOpen } from "@app/global";
@@ -36,7 +37,7 @@ const SeasonEpisodes = ({
   const { handleEpisodeClick, handleSeasonChange } = useSeasonEpisodeActions(
     seriesId,
     setUrl,
-    episodes[activeEpisode]?.watched?.time || 0
+    episodes[activeEpisode]?.watched?.time || 0,
   );
 
   useKeydown({
@@ -60,7 +61,6 @@ const SeasonEpisodes = ({
     if (activeEpisode + 1 >= episodes.length) {
       changeSeason(activeSeasonIndex + 1);
       const nextEpisode = Object.values(allEpisodes)[activeSeasonIndex + 1][0];
-      console.log(nextEpisode, "------ next episode");
       setCurrentEpisode(nextEpisode);
       setStartTime(0);
       setUrl("");
@@ -73,7 +73,7 @@ const SeasonEpisodes = ({
     setCurrentEpisode(episodes[activeEpisode + 1]);
 
     const foundNextEpisode = episodes.find(
-      (_episode, index) => index === activeEpisode + 1
+      (_episode, index) => index === activeEpisode + 1,
     );
 
     if (foundNextEpisode) {
@@ -90,7 +90,6 @@ const SeasonEpisodes = ({
 
   useEffect(() => {
     setActiveEpisode(0);
-    console.log(selectedSeason, "------", episodes);
   }, [selectedSeason, handleSeasonChange]);
 
   useEffect(() => {
@@ -116,7 +115,7 @@ const SeasonEpisodes = ({
         }}
       />
     ),
-    [handleEpisodeClick]
+    [handleEpisodeClick],
   );
 
   return (

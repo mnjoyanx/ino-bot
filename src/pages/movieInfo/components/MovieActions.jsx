@@ -12,23 +12,23 @@ import styles from "@styles/components/movieInfo.module.scss";
 import { useMovieInfo } from "@context/movieInfoContext";
 import { formatTime } from "@utils/util";
 
-const MovieActions = ({ movie, movieId }) => {
+const MovieActions = ({ movie, movieId, currentEpisode }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [activeButton, setActiveButton] = useState(0);
   const ctrl = useSelector(selectCtrl);
-  const { setUrl, currentEpisode, movieInfo, setMovieInfo, setStartTime } =
-    useMovieInfo();
+  const { setUrl, movieInfo, setMovieInfo, setStartTime } = useMovieInfo();
+  console.log(currentEpisode, "currentEpssssssisod----e");
   const { handleWatchClick, handleContinueWatchingClick, handleFavoriteClick } =
     useMovieActions(
       movieId,
       setUrl,
       movieInfo.type,
-      movieInfo.watched?.episodeId,
+      movieInfo.watched?.episodeId || currentEpisode,
       setMovieInfo,
       movieInfo.favorite,
       movieInfo.watched?.time || 0,
-      setStartTime
+      setStartTime,
     );
 
   useKeydown({

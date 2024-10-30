@@ -31,8 +31,11 @@ const MovieInfoContent = () => {
     setStartTime,
   } = useMovieInfo();
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const fetchMovie = async () => {
     try {
+      setIsLoading(true);
       const response = await getMovieById({ movie_id: id });
       const parsedResponse = JSON.parse(response);
       if (!parsedResponse.error) {
@@ -43,13 +46,15 @@ const MovieInfoContent = () => {
       }
     } catch (error) {
       console.error("Failed to fetch movie:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const rememberTimeHandler = async (
     currentTime,
     percent,
-    needToRefetch = false
+    needToRefetch = false,
   ) => {
     const body = {
       movieId: id,
@@ -93,25 +98,47 @@ const MovieInfoContent = () => {
 
   return (
     <div className={styles["movie-info"]}>
-      <MovieBackground backdrop={movieInfo.backdrop} />
-      <MovieContent movie={movieInfo} />
-      <MovieActions movie={movieInfo} movieId={id} />
-      {movieInfo.type === "tv_show" && (
-        <TvShowSeasons seasons={movieInfo.seasons} seriesId={id} />
-      )}
-      {isPlayerOpen && (
-        <Player
-          type="vod"
-          url={url}
-          pipMode={false}
-          title={movieInfo.name}
-          setUrl={setUrl}
-          setRetryC={() => {}}
-          onRememberTime={rememberTimeHandler}
-          startTime={startTime}
-          onEnded={onEnded}
-          showNextEpisode={movieInfo.type === "tv_show"}
-        />
+      {isLoading ? (
+        <div className={styles["loading"]}>Loading...</div>
+      ) : (
+        <>
+          <MovieBackground backdrop={movieInfo.backdrop} />
+          <MovieContent movie={movieInfo} />
+          {movieInfo.type === "movie" ? (
+            <MovieActions
+              movie={movieInfo}
+              movieId={id}
+              currentEpisode={null}
+            />
+          ) : (
+            <>
+              {currentEpisode && (
+                <MovieActions
+                  movie={movieInfo}
+                  movieId={id}
+                  currentEpisode={currentEpisode}
+                />
+              )}
+            </>
+          )}
+          {movieInfo.type === "tv_show" && (
+            <TvShowSeasons seasons={movieInfo.seasons} seriesId={id} />
+          )}
+          {isPlayerOpen && (
+            <Player
+              type="vod"
+              url={url}
+              pipMode={false}
+              title={movieInfo.name}
+              setUrl={setUrl}
+              setRetryC={() => {}}
+              onRememberTime={rememberTimeHandler}
+              startTime={startTime}
+              onEnded={onEnded}
+              showNextEpisode={movieInfo.type === "tv_show"}
+            />
+          )}
+        </>
       )}
     </div>
   );

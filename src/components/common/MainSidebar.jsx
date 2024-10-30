@@ -12,6 +12,7 @@ import SvgFavorites from "@assets/icons/SvgFavorite";
 import SvgLastWatched from "@assets/icons/SvgLastWatched";
 import SvgRecentlyAdded from "@assets/icons/SvgRecentlyAdded";
 import SvgGenres from "@assets/icons/SvgGenres";
+import { ListView } from "ino-ui-tv";
 
 import styles from "@styles/components/mainSidebar.module.scss";
 import useKeydown from "@hooks/useKeydown";
@@ -27,6 +28,7 @@ const MainSidebar = ({ categories }) => {
   const [sidebarItems, setSidebarItems] = useState([]);
   const [active, setActive] = useState(0);
   const [isCategoriesOpened, setIsCategoriesOpened] = useState(false);
+  const [translateY, setTranslateY] = useState(0);
 
   const items = [
     {
@@ -51,30 +53,20 @@ const MainSidebar = ({ categories }) => {
   ];
 
   useEffect(() => {
-    // if (categories) {
-    //   setSidebarItems([
-    //     ...items,
-    //     {
-    //       name: "Genres",
-    //       icon: <SvgGenres />,
-    //       items: categories,
-    //     },
-    //   ]);
-    // }
-
     if (categories && menuList) {
       const newItems = [
         ...items,
         ...menuList
-          .filter(
-            (item) =>
-              item.type === "movies" ||
-              item.type === "tv-shows" ||
-              item.type === "favorites"
-          )
+          // .filter(
+          //   (item) =>
+          //     item.type === "movies" ||
+          //     item.type === "tv-shows" ||
+          //     item.type === "favorites",
+          // )
           .map((item) => ({
             name: item.name,
             id: item.id,
+            selectedIcon: item.selectedIcon,
             icon: item.icon ? (
               <img
                 src={item.icon}
@@ -92,7 +84,6 @@ const MainSidebar = ({ categories }) => {
         },
       ];
 
-      console.log(newItems, "newItems");
       setSidebarItems(newItems);
     }
   }, [categories, menuList]);
@@ -106,10 +97,24 @@ const MainSidebar = ({ categories }) => {
     },
 
     up: () => {
-      if (active > 0) setActive(active - 1);
+      if (active > 0) {
+        setActive(active - 1);
+        // if (sidebarItems.length > 6) {
+        if (active < 6) {
+          setTranslateY((prev) => Math.min(prev + 8, 0));
+        }
+        // }
+      }
     },
     down: () => {
-      if (active < sidebarItems.length - 1) setActive(active + 1);
+      if (active < sidebarItems.length - 1) {
+        setActive(active + 1);
+        if (active > 2) {
+          setTranslateY((prev) =>
+            Math.max(prev - 8, -((sidebarItems.length - 1) * 8) + 6),
+          );
+        }
+      }
     },
 
     ok: () => {
@@ -145,29 +150,46 @@ const MainSidebar = ({ categories }) => {
       className={`${styles["main-sidebar"]} ${isOpen ? styles["open"] : ""}`}
     >
       <div className={styles["outline"]}></div>
+
       <div
-        className={`${styles["items"]} ${isCategoriesOpened ? styles["categories-opened"] : ""}`}
+        className={`${styles["sidebar-items_wrapper"]} ${sidebarItems.length > 3 ? styles["hidden"] : ""}`}
       >
-        {sidebarItems.map((item, index) => {
-          return (
-            <div
-              className={`${styles["item"]} ${active === index ? styles["active"] : ""} ${item.items ? styles["parent"] : ""}`}
-              key={index}
-            >
-              <div className={styles["icon"]}>{item.icon}</div>
-              <p className={styles["text"]}>{item.name}</p>
-              {isCategoriesOpened && item.items ? (
-                <CategoriesList
-                  categories={item.items}
-                  isOpen={isCategoriesOpened}
-                  setIsOpen={setIsCategoriesOpened}
-                  ctrl={ctrl}
-                  onSelectCategory={handleCategorySelect}
-                />
-              ) : null}
-            </div>
-          );
-        })}
+        <div
+          className={`${styles["items"]} ${isCategoriesOpened ? styles["categories-opened"] : ""}`}
+          style={{ transform: `translateY(${translateY}rem)` }}
+        >
+          {sidebarItems.map((item, index) => {
+            return (
+              <div
+                className={`${styles["item"]} ${active === index ? styles["active"] : ""} ${item.items ? styles["parent"] : ""}`}
+                key={index}
+              >
+                <div className={styles["icon"]}>
+                  {active === index && item.selectedIcon ? (
+                    <img
+                      src={item.selectedIcon}
+                      alt={item.name}
+                      className={styles["selected-icon"]}
+                    />
+                  ) : (
+                    item.icon
+                  )}
+                </div>
+                <p className={styles["text"]}>{item.name}</p>
+                {isCategoriesOpened && item.items ? (
+                  <CategoriesList
+                    categories={item.items}
+                    isOpen={isCategoriesOpened}
+                    setIsOpen={setIsCategoriesOpened}
+                    ctrl={ctrl}
+                    selectedIcon={item.selectedIcon}
+                    onSelectCategory={handleCategorySelect}
+                  />
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -179,6 +201,7 @@ const CategoriesList = ({
   setIsOpen,
   ctrl,
   onSelectCategory,
+  selectedIcon,
 }) => {
   const dispatch = useDispatch();
 
@@ -203,7 +226,7 @@ const CategoriesList = ({
         setCatActive(catActive + 1);
         if (catActive >= 3) {
           setTranslateY((prev) =>
-            Math.max(prev - 2.8, -((categories.length - 1) * 2.8) + 6)
+            Math.max(prev - 2.8, -((categories.length - 1) * 2.8) + 6),
           );
         }
       }

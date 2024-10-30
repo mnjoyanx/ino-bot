@@ -15,10 +15,12 @@ export const useMovieActions = (
   setMovieInfo,
   isFavorite,
   startTime,
-  setStartTime
+  setStartTime,
 ) => {
   const dispatch = useDispatch();
   const { showToast } = useToast();
+
+  console.warn(lastWatchEpisode, "lastWatchEpisodelastWatchEpisode");
 
   const { currentEpisode } = useMovieInfo();
 
@@ -32,6 +34,7 @@ export const useMovieActions = (
 
       const body = { id };
       if (type === "tv_show") {
+        console.log(lastWatchEpisode, "lastWatchEpisode");
         body.episode_id = lastWatchEpisode || currentEpisode;
       }
       const response = await getMovieUrl(body);
@@ -43,7 +46,7 @@ export const useMovieActions = (
         setUrl(parsedResponse.message.stream_url);
       }
     },
-    [id, dispatch, setUrl, setStartTime, startTime]
+    [id, dispatch, setUrl, setStartTime, startTime],
   );
 
   const handleContinueWatchingClick = useCallback(() => {
@@ -54,6 +57,7 @@ export const useMovieActions = (
     const body = { movieId: id };
 
     if (type === "tv_show") {
+      console.log(lastWatchEpisode, "lastWatchEpisode");
       body.episodeId = lastWatchEpisode.seasonId;
     }
 

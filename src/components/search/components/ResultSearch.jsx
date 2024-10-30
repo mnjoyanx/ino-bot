@@ -4,7 +4,8 @@ import { setCurrentChannel } from "@app/channels/channelsSlice";
 import { channelInfo } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
 
-import ListView from "ino-listview";
+// import ListView from "ino-listview";
+import { ListView } from "ino-ui-tv";
 import CardChannel from "../../cards/CardChannel";
 import MovieCard from "../../../pages/movies/components/MovieCard";
 import { setCtrl } from "../../../app/global";

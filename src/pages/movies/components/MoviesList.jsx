@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useContext, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCtrl } from "@app/global";
-import ListView from "ino-listview";
+import { ListView } from "ino-ui-tv";
+
 import useKeydown from "@hooks/useKeydown";
 import MovieCard from "./MovieCard";
 import { MoviesContext } from "@context/moviesContext";
@@ -88,7 +89,7 @@ const MoviesList = () => {
         poster={item.poster}
       />
     ),
-    []
+    [],
   );
 
   const renderContent = (movieType, movies) => {
