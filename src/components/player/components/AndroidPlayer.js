@@ -11,13 +11,20 @@ window.PLAYER = {
     dispatchEvent(
       new CustomEvent("playerTimeUpdate", {
         detail: { current: currentTime, duration: duration },
-      })
+      }),
     );
   },
 
   isPlayingChanged: () => {},
 
-  vout: () => {},
+  vout: () => {
+    // dispatchEvent(new CustomEvent("playbackLoaded"));
+  },
+
+  seekTo: (direction) => {
+    if (!window.Android) return;
+    window.Android.seekTo(direction);
+  },
 
   getAndroidTracks: () => {},
 
@@ -38,7 +45,7 @@ window.PLAYER = {
     width = window.innerWidth,
     height = window.innerHeight,
     left = 0,
-    top = 0
+    top = 0,
   ) => {
     if (!window.Android) return;
 
@@ -60,7 +67,7 @@ window.PLAYER = {
       _offset_left,
       _offset_top,
       screenWidth,
-      screenHeight
+      screenHeight,
     );
   },
 };
@@ -70,6 +77,9 @@ export default function AndroidPlayer({
   timeUpdate,
   time = 0,
   streamEnd,
+  onSeek,
+  startTime,
+  onLoadedMetadata,
 }) {
   const streamEnded = () => {
     streamEnd();
@@ -81,13 +91,20 @@ export default function AndroidPlayer({
     timeUpdate(currentTime, duration);
   };
 
+  const seekToHandler = (direction) => {
+    onSeek(direction);
+  };
+
   useEffect(() => {
     window.addEventListener("playerTimeUpdate", timeUpdateHandler);
     window.addEventListener("streamEnded", streamEnded);
-
+    window.addEventListener("seekTo", seekToHandler);
+    window.addEventListener("playbackLoaded", onLoadedMetadata);
     return () => {
       window.removeEventListener("playerTimeUpdate", timeUpdateHandler);
       window.removeEventListener("streamEnded", streamEnded);
+      window.removeEventListener("seekTo", seekToHandler);
+      window.removeEventListener("playbackLoaded", onLoadedMetadata);
     };
   }, []);
 

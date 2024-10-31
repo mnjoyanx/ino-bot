@@ -13,7 +13,7 @@ import {
   setIsOpenMainSidebar,
 } from "@app/global";
 
-const MoviesList = () => {
+const MoviesList = ({ isVertical }) => {
   const dispatch = useDispatch();
   const ctrl = useSelector(selectCtrl);
   const { moviesByGenre, selectedGenre } = useContext(MoviesContext);
@@ -87,6 +87,7 @@ const MoviesList = () => {
         isActive={isActive}
         name={item.name}
         poster={item.poster}
+        isVertical={isVertical}
       />
     ),
     [],
@@ -108,8 +109,8 @@ const MoviesList = () => {
         itemsTotal={movies.length}
         itemsCount={2}
         listType="horizontal"
-        itemWidth={24}
-        itemHeight={27}
+        itemWidth={isVertical ? 35 : 20}
+        itemHeight={isVertical ? 20 : 27}
         isActive={
           ctrl === "moviesSeries" && activeRow === movieTypes.indexOf(movieType)
         }

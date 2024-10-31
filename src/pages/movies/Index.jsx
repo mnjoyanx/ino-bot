@@ -40,6 +40,7 @@ const MoviesPage = () => {
   const [url, setUrl] = useState(null);
   const [alreadyFetched, setAlreadyFetched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isVertical, setIsVertical] = useState(true);
 
   const getGenresHandler = useCallback(async () => {
     try {
@@ -92,7 +93,6 @@ const MoviesPage = () => {
       if (error) {
         console.log(error);
       } else {
-        console.log(message, " mess");
         setMoviesByGenre("favorites", message.rows);
       }
     } catch (error) {
@@ -108,7 +108,6 @@ const MoviesPage = () => {
       if (error) {
         console.log(error);
       } else {
-        console.log(message, " message lastWatched");
         setMoviesByGenre("lastWatched", message);
       }
     } catch (error) {
@@ -173,10 +172,9 @@ const MoviesPage = () => {
       if (error) {
         console.log(error);
       } else {
-        console.log(message, "message");
         const menu = message.menu;
-        console.log(menu, "menu");
         setMenuList(menu);
+        setIsVertical(message.app_settings.isPortrait);
       }
     } catch (error) {
       console.log(error);
@@ -199,7 +197,6 @@ const MoviesPage = () => {
     if (genres.length === 0 && !alreadyFetched) {
       getGenresHandler();
     } else if (!selectedGenre && genres.length > 0) {
-      console.log(genres, "genres");
       setSelectedGenre(genres[0].id);
     }
   }, [
@@ -216,12 +213,14 @@ const MoviesPage = () => {
         <div className={styles["loading"]}>Loading...</div>
       ) : (
         <div className="home-page">
-          <BackButton
-            path="Menu"
-            onDownHandler={() => {
-              dispatch(setCtrl("moviesSeries"));
-            }}
-          />
+          {!isMovieSearchBarOpen ? (
+            <BackButton
+              path="Menu"
+              onDownHandler={() => {
+                dispatch(setCtrl("moviesSeries"));
+              }}
+            />
+          ) : null}
           <div className="app-logo">
             <AppLogo />
           </div>
@@ -236,7 +235,7 @@ const MoviesPage = () => {
             <div className={styles["movie-content"]}>
               <MainSidebar categories={genres} />
               <div className={styles["movies-list"]}>
-                <MoviesList />
+                <MoviesList isVertical={isVertical} />
               </div>
             </div>
           </div>

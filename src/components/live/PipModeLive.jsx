@@ -20,6 +20,7 @@ import SearchHandler from "./components/SearchHandler";
 
 import "./styles/PipModeLive.scss";
 import Search from "../search/Search";
+import { setCtrl } from "../../app/global";
 
 export default memo(function PipModeLive({
   setUrl,
@@ -51,6 +52,12 @@ export default memo(function PipModeLive({
       getCategories();
     }
   }, [allChannels]);
+
+  useEffect(() => {
+    if (activeControl === "search") {
+      dispatch(setCtrl("inp"));
+    }
+  }, [activeControl]);
 
   const getCategories = async () => {
     if (Object.keys(channelCategories).length <= 1) {
@@ -93,7 +100,7 @@ export default memo(function PipModeLive({
       };
       for (let i = 0; i < allChannels.length; i++) {
         let channel = allChannels[i].categories.find(
-          (e) => e.id === category.id
+          (e) => e.id === category.id,
         );
 
         if (channel) {

@@ -20,8 +20,6 @@ export const useMovieActions = (
   const dispatch = useDispatch();
   const { showToast } = useToast();
 
-  console.warn(lastWatchEpisode, "lastWatchEpisodelastWatchEpisode");
-
   const { currentEpisode } = useMovieInfo();
 
   const handleWatchClick = useCallback(
@@ -66,19 +64,17 @@ export const useMovieActions = (
       favorite: !prev.favorite,
     }));
 
-    console.log("movieInfo", isFavorite);
     try {
       let response;
       if (isFavorite) {
         response = await removeFavorite(body);
-        console.log("removeFavorite", response);
       } else {
         response = await addFavorite(body);
-        console.log("addFavorite", response);
       }
       const parsedResponse = JSON.parse(response);
       if (!parsedResponse.error) {
-        showToast("Movie added to favorites", "success", 3000);
+        console.log(parsedResponse, "parsedResponse");
+        showToast(parsedResponse.message, "success", 3000);
       } else {
         showToast("Failed to add movie to favorites", "error", 3000);
       }

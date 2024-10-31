@@ -12,6 +12,7 @@ import MoviesPage from "@pages/movies/Index.jsx";
 import MovieInfo from "@pages/movieInfo/Index.jsx";
 import { ToastProvider } from "./hooks/useToast";
 import { MoviesProvider } from "./context/moviesContext";
+import AppsPage from "@pages/apps/Index.jsx";
 
 function App() {
   // useEffect(() => {
@@ -57,6 +58,8 @@ function App() {
           }
         />
         <Route path={PATHS.MOVIE_INFO} element={<MovieInfo />} />
+
+        <Route path={PATHS.APPS} element={<AppsPage />} />
 
         {/* <Route path={PATHS.LOGIN} element={<Login imagesApp={imagesAppObj} />} />
             <Route path={PATHS.SUBUSERS} element={<Subusers imagesApp={imagesAppObj} />} />

@@ -11,6 +11,7 @@ import "./styles/global.css";
 import "./styles/variables.css";
 import "./styles/variables.scss";
 import "./styles/mixins.scss";
+import "ino-ui-tv/dist/styles/styles.css";
 
 import { HashRouter } from "react-router-dom";
 
@@ -19,5 +20,5 @@ createRoot(document.getElementById("root")).render(
     <HashRouter>
       <App />
     </HashRouter>
-  </Provider>
+  </Provider>,
 );

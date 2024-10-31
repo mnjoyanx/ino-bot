@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCtrl, setCtrl } from "@app/global";
 import styles from "@styles/components/tvShowSeasons.module.scss";
@@ -10,7 +11,7 @@ import { useMovieInfo } from "@context/movieInfoContext";
 
 const TvShowSeasons = ({ seasons, seriesId }) => {
   const ctrl = useSelector(selectCtrl);
-
+  const navigate = useNavigate();
   const {
     currentEpisode,
     setCurrentEpisode,
@@ -85,18 +86,28 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
     right: () =>
       setActiveSeason((prev) => Math.min(seasons.length - 1, prev + 1)),
     down: () => {
-      if (allEpisodes) {
+      if (allEpisodes && allEpisodes[selectedSeason]?.length > 0) {
         dispatch(setCtrl("episodes"));
       }
     },
-    up: () => dispatch(setCtrl("movieInfo")),
+    up: () => {
+      if (allEpisodes && allEpisodes[selectedSeason]?.length > 0) {
+        dispatch(setCtrl("movieInfo"));
+      }
+    },
     ok: () => {
       if (allEpisodes) {
         setSelectedSeason(seasons[activeSeason].id);
         setActiveSeasonIndex(activeSeason);
       }
     },
-    back: () => dispatch(setCtrl("movieInfo")),
+    back: () => {
+      if (allEpisodes && allEpisodes[selectedSeason]?.length > 0) {
+        dispatch(setCtrl("movieInfo"));
+      } else {
+        navigate(-1);
+      }
+    },
   });
 
   return (
@@ -118,8 +129,8 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
         ))}
       </div>
       {allEpisodes &&
-      Object.keys(allEpisodes).length > 0 &&
       selectedSeason &&
+      allEpisodes[selectedSeason]?.length > 0 &&
       !isLoading ? (
         <SeasonEpisodes
           episodes={allEpisodes[selectedSeason]}

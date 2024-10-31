@@ -71,6 +71,8 @@ function SplashScreen() {
       };
     });
 
+    console.log(message, "message");
+
     dispatch(setConfigs(message));
 
     setIsLoading(false);
@@ -117,7 +119,7 @@ function SplashScreen() {
           (err) => {
             localStorage.removeItem("TOKEN");
             callbackRoutePage(is_guest);
-          }
+          },
         );
       } else {
         callbackRoutePage(is_guest);
@@ -133,7 +135,7 @@ function SplashScreen() {
   const checkDeviceId = () => {
     if (LOCAL_STORAGE.DEVICE_ID.GET()) {
       LOCAL_STORAGE.MAC_ADDRESS.SET(
-        generateMacAddress(LOCAL_STORAGE.DEVICE_ID.GET())
+        generateMacAddress(LOCAL_STORAGE.DEVICE_ID.GET()),
       );
     }
     setTimeout(() => {

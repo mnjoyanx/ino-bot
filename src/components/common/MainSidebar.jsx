@@ -122,7 +122,7 @@ const MainSidebar = ({ categories }) => {
         setIsCategoriesOpened(!isCategoriesOpened);
         dispatch(setCtrl("movieCategories"));
       } else if (active === 0) {
-        dispatch(setCtrl("moviesSearchKeyboard"));
+        dispatch(setCtrl("inp"));
         dispatch(setIsOpenMainSidebar(false));
         dispatch(setIsMovieSearchBarOpen(true));
       } else {

@@ -71,8 +71,14 @@ export default memo(function Player({
 
   const loadedMetadataHandler = useCallback(() => {
     hideToast();
-    if (startTime && refVideo.current) {
-      refVideo.current.currentTime = startTime;
+    if (startTime) {
+      if (window.Android) {
+        window.Android.seekTo(startTime);
+      } else {
+        if (refVideo.current) {
+          refVideo.current.currentTime = startTime;
+        }
+      }
     }
     play();
   }, [startTime]);
@@ -123,6 +129,10 @@ export default memo(function Player({
     const currentTime = Math.floor(secCurrentTime.current);
     const percent = (currentTime / secDuration.current) * 100;
     onRememberTime(currentTime, percent, true);
+
+    if (window.Android && type === "vod") {
+      window.Android.destroyPlayer();
+    }
   };
 
   // const onErrorHandler = useCallback(
@@ -170,7 +180,7 @@ export default memo(function Player({
     if (retryC < maxRetries) {
       showToast(
         `Attempting to replay... (${retryC + 1}/${maxRetries})`,
-        "retrying"
+        "retrying",
       );
     } else {
       hideToast();
@@ -189,20 +199,22 @@ export default memo(function Player({
     }
   };
 
-  // useEffect(() => {
-  //   return () => {
-  //     // Final remember time update when component unmounts
-  //     if (type === "vod" && secCurrentTime.current > 0) {
-  //       const currentTime = Math.floor(secCurrentTime.current);
-  //       const duration = Math.floor(secDuration.current);
-  //       const percent = duration > 0 ? (currentTime / duration) * 100 : 0;
-  //       onRememberTime(currentTime, percent);
-  //       console.log(
-  //         `Final remember time update: ${currentTime}s, ${percent.toFixed(2)}%`
-  //       );
-  //     }
-  //   };
-  // }, [type, onRememberTime]);
+  const handleSeek = (direction) => {
+    if (window.Android) {
+      const currentTime = window.Android.getCurrentTime();
+      const newTime =
+        direction === "forward" ? currentTime + 10 : currentTime - 10;
+      window.Android.seekTo(newTime);
+    } else {
+      const currentTime = refVideo.current.currentTime;
+      const newTime =
+        direction === "forward" ? currentTime + 10 : currentTime - 10;
+      refVideo.current.currentTime = Math.max(
+        0,
+        Math.min(newTime, refVideo.current.duration),
+      );
+    }
+  };
 
   useEffect(() => {
     console.log("URL in Player:", url);
@@ -215,25 +227,6 @@ export default memo(function Player({
     };
   }, [url]);
 
-  // useEffect(() => {
-  //   if (type !== "vod") return;
-
-  //   if (!refVideo.current) return;
-
-  //   const duration = refVideo.current.duration;
-  //   const currentTime = refVideo.current.currentTime;
-  //   console.log("currentTime", currentTime);
-  //   const percent = (currentTime / duration) * 100;
-
-  //   const intervalId = setInterval(() => {
-  //     onRememberTime(currentTime, percent);
-  //   }, 5000);
-
-  //   return () => {
-  //     clearInterval(intervalId);
-  //   };
-  // }, [type, onRememberTime, refVideo.current]);
-
   const renderPlayer = () => {
     if (!url) return null;
 
@@ -244,6 +237,10 @@ export default memo(function Player({
           timeUpdate={handleTimeUpdate}
           streamEnd={streamEnd}
           startTime={startTime}
+          onBack={onBack}
+          onError={onErrorHandler}
+          onLoadedMetadata={loadedMetadataHandler}
+          onSeek={handleSeek}
         />
       );
     }
@@ -271,7 +268,7 @@ export default memo(function Player({
         onTimeUpdate={() =>
           handleTimeUpdate(
             refVideo.current.currentTime,
-            refVideo.current.duration
+            refVideo.current.duration,
           )
         }
         onEnded={streamEnd}
@@ -315,6 +312,7 @@ export default memo(function Player({
             pause={pause}
             onBack={onBack}
             title={title}
+            seekToHandler={handleSeek}
           />
         )}
       </div>

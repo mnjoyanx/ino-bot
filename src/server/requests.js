@@ -4,7 +4,7 @@ import { CONFIG } from "./config";
 export const getLanguages = () => {
   return request(
     "get",
-    CONFIG.LANGUAGES // -> endpoint
+    CONFIG.LANGUAGES, // -> endpoint
   );
 };
 
@@ -13,7 +13,7 @@ export const getAppSettings = (body) => {
     "get",
     CONFIG.APP_CONFIGS, // -> endpoint
     "",
-    body
+    body,
   );
 };
 
@@ -22,7 +22,7 @@ export const getChannels = (queryParams) => {
     "get",
     CONFIG.GET_CHANNELS, // -> endpoint
     queryParams,
-    ""
+    "",
   );
 };
 
@@ -31,7 +31,7 @@ export const getChannelCategories = (queryParams) => {
     "get",
     CONFIG.CATEGORIES_CHANNEL, // -> endpoint
     queryParams,
-    ""
+    "",
   );
 };
 export const channelInfo = (queryParams) => {
@@ -39,7 +39,7 @@ export const channelInfo = (queryParams) => {
     "get",
     CONFIG.CHANNEL_INFO, // -> endpoint
     queryParams,
-    ""
+    "",
   );
 };
 
@@ -48,7 +48,7 @@ export const launcherRegister = (body) => {
     "post",
     CONFIG.LAUNCHER_REGISTER, // -> endpoint
     "",
-    body
+    body,
   );
 };
 
@@ -57,7 +57,7 @@ export const getlLauncherUser = (body) => {
     "get",
     CONFIG.GET_LAUNCHER_USER, // -> endpoint
     body,
-    ""
+    "",
   );
 };
 
@@ -66,7 +66,7 @@ export const loginUser = (body) => {
     "post",
     CONFIG.LOGIN_USER, // -> endpoint
     "",
-    body
+    body,
   );
 };
 
@@ -75,7 +75,7 @@ export const getEpgList = (body) => {
     "post",
     CONFIG.EPG_LIST, // -> endpoint
     "",
-    body
+    body,
   );
 };
 export const getProfile = (body) => {
@@ -83,7 +83,7 @@ export const getProfile = (body) => {
     "post",
     CONFIG.GET_PROFILE, // -> endpoint
     "",
-    body
+    body,
   );
 };
 
@@ -122,7 +122,7 @@ export const getSearchResults = (queryParams) => {
   return request(
     "get",
     "user/smart/search", // -> endpoint
-    queryParams
+    queryParams,
   );
 };
 
@@ -156,7 +156,7 @@ export const getAllMovies = (queryParams) => {
     "get",
     "v2/api/movies", // -> endpoint
     queryParams,
-    ""
+    "",
   );
 };
 
@@ -246,4 +246,8 @@ export const getMovieUrl = (queryParams) => {
 
 export const getLastWatchedMovies = (queryParams) => {
   return request("get", "v2/api/watch_history/movies", queryParams);
+};
+
+export const getApps = (queryParams) => {
+  return request("get", "launcher/apps", queryParams);
 };

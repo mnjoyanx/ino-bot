@@ -41,7 +41,7 @@
     "@babel/polyfill": "^7.12.1",
     "@reduxjs/toolkit": "^1.0.0",
     "ino-listview": "^1.0.1",
-    "ino-ui-tv": "^1.0.28",
+    "ino-ui-tv": "^1.0.31",
     "lucide-react": "^0.446.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

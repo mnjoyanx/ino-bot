@@ -28,6 +28,11 @@
   padding: 10rem 6.7rem 0;
   max-width: 50%;
   z-index: 1;
+
+  &.hidden {
+    visibility: hidden;
+    background: red;
+  }
 }
 
 .title {
@@ -73,6 +78,10 @@
   gap: 1rem;
   position: relative;
   left: 6.7rem;
+
+  &.hidden {
+    visibility: hidden;
+  }
 }
 
 .action-btn {

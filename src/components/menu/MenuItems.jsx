@@ -58,13 +58,13 @@ export default function MenuItems() {
 
   const onClick = useCallback((path) => {
     // if (path != "/movies") {
-    if (path == "/apps") {
-      if (window.Android) {
-        window.Android.launchApp("org.cyanogenmod.appdrawer");
-      }
-    } else {
-      navigate(path);
-    }
+    // if (path == "/apps") {
+    //   if (window.Android) {
+    //     window.Android.launchApp("org.cyanogenmod.appdrawer");
+    //   }
+    // } else {
+    navigate(path);
+    // }
     // }
   }, []);
 

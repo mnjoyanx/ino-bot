@@ -24,12 +24,13 @@ export default memo(function VodControls({
   pause,
   title,
   onBack,
+  seekToHandler,
 }) {
   const dispatch = useDispatch();
   const isPaused = useSelector(selectIsPaused);
   const ctrl = useSelector(selectCtrl);
 
-  const { isLastEpisode } = useMovieInfo();
+  const { isLastEpisode, movieInfo } = useMovieInfo();
 
   const [hideControls, setHideControls] = useState(false);
   const [activeCtrl, setActiveCtrl] = useState("top");
@@ -69,13 +70,7 @@ export default memo(function VodControls({
   }, [refVideo]);
 
   const handleSeek = (direction) => {
-    const currentTime = refVideo.current.currentTime;
-    const newTime =
-      direction === "forward" ? currentTime + 10 : currentTime - 10;
-    refVideo.current.currentTime = Math.max(
-      0,
-      Math.min(newTime, refVideo.current.duration)
-    );
+    seekToHandler(direction);
     showControl();
   };
 
@@ -110,7 +105,11 @@ export default memo(function VodControls({
     },
     down: () => {
       setActiveCtrl("bottom");
-      setBottomActiveIndex(0);
+      if (movieInfo.type === "tv_show") {
+        setBottomActiveIndex(0);
+      } else {
+        setBottomActiveIndex(1);
+      }
       showControl();
     },
     up: () => {
@@ -183,7 +182,7 @@ export default memo(function VodControls({
               <Duration _ref={durationRef} className="vod_duration" />
             </div>
             <div className="vod-ctrl_btns_right">
-              {!isLastEpisode && (
+              {!isLastEpisode && movieInfo.type === "tv_show" && (
                 <button
                   className={`vod-ctrl_btn next-episode-btn${
                     activeCtrl === "bottom" && bottomActiveIndex === 0

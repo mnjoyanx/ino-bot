@@ -15,6 +15,7 @@ export default memo(function ResultSearch({
   type,
   control,
   setRemove,
+  changeCtrl,
   setShow,
   setUrl,
   refInp,
@@ -83,7 +84,10 @@ export default memo(function ResultSearch({
           itemHeight={type === "live" ? 18 : 30}
           isActive={true}
           initialActiveIndex={0}
-          onUp={() => refInp.current.focus()}
+          onUp={() => {
+            refInp.current.focus();
+            changeCtrl();
+          }}
           onBack={() => {
             setShow(false);
 

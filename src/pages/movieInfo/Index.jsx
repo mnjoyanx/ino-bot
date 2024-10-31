@@ -86,7 +86,13 @@ const MovieInfoContent = () => {
     if (ctrl !== "movieInfo") {
       dispatch(setCtrl("movieInfo"));
     }
-  }, []);
+  }, [currentEpisode]);
+
+  useEffect(() => {
+    if (!currentEpisode && movieInfo?.type === "tv_show") {
+      dispatch(setCtrl("seasons"));
+    }
+  }, [currentEpisode, movieInfo?.type]);
 
   useKeydown({
     back: () => navigate(-1),
@@ -102,13 +108,16 @@ const MovieInfoContent = () => {
         <div className={styles["loading"]}>Loading...</div>
       ) : (
         <>
-          <MovieBackground backdrop={movieInfo.backdrop} />
-          <MovieContent movie={movieInfo} />
+          {!isPlayerOpen ? (
+            <MovieBackground backdrop={movieInfo.backdrop} />
+          ) : null}
+          <MovieContent movie={movieInfo} isPlayerOpen={isPlayerOpen} />
           {movieInfo.type === "movie" ? (
             <MovieActions
               movie={movieInfo}
               movieId={id}
               currentEpisode={null}
+              isPlayerOpen={isPlayerOpen}
             />
           ) : (
             <>
@@ -117,6 +126,7 @@ const MovieInfoContent = () => {
                   movie={movieInfo}
                   movieId={id}
                   currentEpisode={currentEpisode}
+                  isPlayerOpen={isPlayerOpen}
                 />
               )}
             </>

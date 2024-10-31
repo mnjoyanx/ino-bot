@@ -12,13 +12,12 @@ import styles from "@styles/components/movieInfo.module.scss";
 import { useMovieInfo } from "@context/movieInfoContext";
 import { formatTime } from "@utils/util";
 
-const MovieActions = ({ movie, movieId, currentEpisode }) => {
+const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [activeButton, setActiveButton] = useState(0);
   const ctrl = useSelector(selectCtrl);
   const { setUrl, movieInfo, setMovieInfo, setStartTime } = useMovieInfo();
-  console.log(currentEpisode, "currentEpssssssisod----e");
   const { handleWatchClick, handleContinueWatchingClick, handleFavoriteClick } =
     useMovieActions(
       movieId,
@@ -70,7 +69,11 @@ const MovieActions = ({ movie, movieId, currentEpisode }) => {
   });
 
   return (
-    <div className={styles["actions-container"]}>
+    <div
+      className={`${styles["actions-container"]} ${
+        window.Android && isPlayerOpen ? styles["hidden"] : ""
+      }`}
+    >
       {movie.canWatch && (
         <Button
           className={styles["action-btn"]}

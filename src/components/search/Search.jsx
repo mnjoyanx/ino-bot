@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import { selectCtrl } from "@app/global";
 
@@ -11,6 +11,7 @@ import HeadSearch from "./components/HeadSearch";
 import ResultSearch from "./components/ResultSearch";
 
 import "./styles/Search.scss";
+import { setCtrl } from "@app/global";
 
 export default memo(function Search({
   type,
@@ -19,6 +20,7 @@ export default memo(function Search({
   setPipMode = () => {},
 }) {
   const ctrl = useSelector(selectCtrl);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const refInp = useRef(null);
@@ -151,19 +153,47 @@ export default memo(function Search({
     },
     up: () => {
       if (type === "live") {
-        refInp.current.focus();
+        if (ctrl === "inp") {
+          refInp.current.blur();
+          dispatch(setCtrl("backBtn"));
+        } else if (ctrl === "result") {
+          refInp.current.focus();
+          dispatch(setCtrl("inp"));
+        }
       } else if (type === "content") {
-        refContentInp.current.focus();
+        if (ctrl === "inp") {
+          dispatch(setCtrl("backBtn"));
+          refContentInp.current.blur();
+        } else if (ctrl === "result") {
+          dispatch(setCtrl("inp"));
+          refContentInp.current.focus();
+        }
       }
     },
     down: () => {
       if (type === "live") {
-        refInp.current.blur();
+        if (ctrl === "inp") {
+          if (empty) return;
+          refInp.current.blur();
+          dispatch(setCtrl("result"));
+        } else if (ctrl === "backBtn") {
+          dispatch(setCtrl("inp"));
+          refInp.current.focus();
+        }
       } else if (type === "content") {
-        refContentInp.current.blur();
+        if (ctrl === "inp") {
+          if (empty) return;
+          refContentInp.current.blur();
+          dispatch(setCtrl("result"));
+        } else if (ctrl === "backBtn") {
+          dispatch(setCtrl("inp"));
+          refContentInp.current.focus();
+        }
       }
     },
     handleKeyPress: (key) => {
+      if (ctrl !== "inp") return;
+
       if (["Backspace", "Delete"].includes(key)) return setRemove();
 
       if (/^[a-zA-Z]$/.test(key)) {
@@ -176,7 +206,11 @@ export default memo(function Search({
 
   return (
     <div className="parent-search">
-      <HeadSearch />
+      <HeadSearch
+        setShowSearchHandler={setShow}
+        setControl={setControl}
+        control={control === "result"}
+      />
       <input
         type="text"
         ref={type === "live" ? refInp : refContentInp}
@@ -198,6 +232,7 @@ export default memo(function Search({
         setRemove={setRemove}
         setControl={setControl}
         control={control === "result"}
+        changeCtrl={() => dispatch(setCtrl("inp"))}
       />
     </div>
   );
