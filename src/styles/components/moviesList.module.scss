@@ -2,8 +2,12 @@
 @import "../mixins.scss";
 
 .movies-list {
+  width: 100%;
+  min-width: 100vw;
+  height: 100%;
   position: relative;
   transition: transform 0.5s cubic-bezier(0.4, 0.8, 0.5, 1);
+  overflow: hidden;
 
   &.up {
     transform: translateY(-33rem);
@@ -26,4 +30,37 @@
   color: #ccc;
   text-align: center;
   margin-top: 2rem;
+}
+
+.movies-list_title {
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.category-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.category-wrapper {
+  min-width: 40rem;
+  width: 100%;
+}
+
+.no-movies-button {
+  background: #000;
+  font-size: 2.2rem;
+  padding: 1rem 2rem;
+  border-radius: 0.5rem;
+  color: #fff;
+  outline: none;
+  border: none;
+}
+
+.no-content_button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }

@@ -20,7 +20,8 @@ import { setCtrl, setIsMovieSearchBarOpen } from "@app/global";
 
 const MainSidebar = ({ categories }) => {
   const dispatch = useDispatch();
-  const { setSelectedGenre, menuList } = useContext(MoviesContext);
+  const { setSelectedGenre, setSelectedType, menuList } =
+    useContext(MoviesContext);
 
   const isOpen = useSelector(selectIsOpenMainSidebar);
   const ctrl = useSelector(selectCtrl);
@@ -54,39 +55,46 @@ const MainSidebar = ({ categories }) => {
 
   useEffect(() => {
     if (categories && menuList) {
+      console.log(menuList, "menuList", categories);
       const newItems = [
         ...items,
-        ...menuList
-          // .filter(
-          //   (item) =>
-          //     item.type === "movies" ||
-          //     item.type === "tv-shows" ||
-          //     item.type === "favorites",
-          // )
-          .map((item) => ({
-            name: item.name,
-            id: item.id,
-            selectedIcon: item.selectedIcon,
-            icon: item.icon ? (
-              <img
-                src={item.icon}
-                alt={item.name}
-                className={styles["main-sidebar-item_icon"]}
-              />
-            ) : (
-              <SvgGenres />
-            ),
-          })),
-        {
-          name: "Genres",
-          icon: <SvgGenres />,
-          items: categories,
-        },
+        ...menuList.map((item) => ({
+          name: item.name,
+          id: item.id,
+          selectedIcon: item.selectedIcon,
+          type:
+            item.type === "movies"
+              ? "movie"
+              : item.type === "tv-shows"
+                ? "tv_show"
+                : item.type,
+          icon: item.icon ? (
+            <img
+              src={item.icon}
+              alt={item.name}
+              className={styles["main-sidebar-item_icon"]}
+            />
+          ) : (
+            <SvgGenres />
+          ),
+        })),
       ];
 
       setSidebarItems(newItems);
     }
   }, [categories, menuList]);
+
+  useEffect(() => {
+    if (sidebarItems.length > 0) {
+      const foundMovieType = sidebarItems.find((item) => item.type === "movie");
+
+      if (foundMovieType) {
+        setSelectedType(foundMovieType.type);
+      } else {
+        setSelectedType(sidebarItems[1].type);
+      }
+    }
+  }, [sidebarItems]);
 
   useKeydown({
     isActive: isOpen && ctrl === "mainSidebar",
@@ -99,11 +107,9 @@ const MainSidebar = ({ categories }) => {
     up: () => {
       if (active > 0) {
         setActive(active - 1);
-        // if (sidebarItems.length > 6) {
         if (active < 6) {
           setTranslateY((prev) => Math.min(prev + 8, 0));
         }
-        // }
       }
     },
     down: () => {
@@ -118,15 +124,12 @@ const MainSidebar = ({ categories }) => {
     },
 
     ok: () => {
-      if (active === sidebarItems.length - 1 && sidebarItems[active].items) {
-        setIsCategoriesOpened(!isCategoriesOpened);
-        dispatch(setCtrl("movieCategories"));
-      } else if (active === 0) {
+      if (active === 0) {
         dispatch(setCtrl("inp"));
         dispatch(setIsOpenMainSidebar(false));
         dispatch(setIsMovieSearchBarOpen(true));
       } else {
-        handleCategorySelect(sidebarItems[active].id);
+        handleCategorySelect(sidebarItems[active].type);
         dispatch(setIsOpenMainSidebar(false));
       }
     },
@@ -138,8 +141,8 @@ const MainSidebar = ({ categories }) => {
     },
   });
 
-  const handleCategorySelect = (categoryId) => {
-    setSelectedGenre(categoryId);
+  const handleCategorySelect = (type) => {
+    setSelectedType(type);
     setIsCategoriesOpened(false);
     dispatch(setIsOpenMainSidebar(false));
     dispatch(setCtrl("moviesSeries"));
@@ -176,16 +179,6 @@ const MainSidebar = ({ categories }) => {
                   )}
                 </div>
                 <p className={styles["text"]}>{item.name}</p>
-                {isCategoriesOpened && item.items ? (
-                  <CategoriesList
-                    categories={item.items}
-                    isOpen={isCategoriesOpened}
-                    setIsOpen={setIsCategoriesOpened}
-                    ctrl={ctrl}
-                    selectedIcon={item.selectedIcon}
-                    onSelectCategory={handleCategorySelect}
-                  />
-                ) : null}
               </div>
             );
           })}

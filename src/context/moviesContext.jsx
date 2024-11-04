@@ -15,20 +15,24 @@ const initialState = {
   lastWatched: [],
   favorites: [],
   menuList: [],
+  rowsCount: 0,
 };
 
-const filterMoviesAndSeries = (movies) => {
-  return movies.reduce(
-    (acc, item) => {
-      if (item.type === "movie") {
-        acc.movies.push(item);
-      } else if (item.type === "tv_show") {
-        acc.tv_show.push(item);
-      }
-      return acc;
-    },
-    { movies: [], tv_show: [] }
-  );
+const filterMoviesAndSeries = (movies, genres) => {
+  const genreMovies = genres.filter((genre) => {
+    return movies.some((movie) => movie.genres.some((g) => g.id === genre.id));
+  });
+
+  const moviesByGenre = genreMovies.map((genre) => {
+    return {
+      ...genre,
+      list: movies.filter((movie) =>
+        movie.genres.some((g) => g.id === genre.id),
+      ),
+    };
+  });
+
+  return moviesByGenre;
 };
 
 function moviesReducer(state, action) {
@@ -42,8 +46,9 @@ function moviesReducer(state, action) {
         ...state,
         moviesByGenre: {
           ...state.moviesByGenre,
-          [action.payload.genreId]: filterMoviesAndSeries(
-            action.payload.movies
+          [action.payload.type]: filterMoviesAndSeries(
+            action.payload.movies,
+            state.genres,
           ),
         },
       };
@@ -65,12 +70,13 @@ function moviesReducer(state, action) {
 export const MoviesProvider = ({ children }) => {
   const [state, dispatch] = useReducer(moviesReducer, initialState);
   const [selectedGenre, setSelectedGenre] = useState(null);
+  const [selectedType, setSelectedType] = useState(null);
   const [recentlyAdded, setRecentlyAdded] = useState([]);
 
-  const setMoviesByGenre = useCallback((genreId, movies) => {
+  const setMoviesByGenre = useCallback((type, movies) => {
     dispatch({
       type: "SET_MOVIES_BY_GENRE",
-      payload: { genreId, movies },
+      payload: { type, movies },
     });
   }, []);
 
@@ -100,6 +106,8 @@ export const MoviesProvider = ({ children }) => {
       setGenres,
       selectedGenre,
       setSelectedGenre,
+      selectedType,
+      setSelectedType,
       menuList: state.menuList,
       setMenuList,
     }),
@@ -110,7 +118,9 @@ export const MoviesProvider = ({ children }) => {
       setMoviesByGenre,
       setGenres,
       state.menuList,
-    ]
+      setSelectedType,
+      selectedType,
+    ],
   );
 
   return (

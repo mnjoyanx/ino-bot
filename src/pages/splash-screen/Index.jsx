@@ -11,7 +11,7 @@ import PATHS from "@utils/paths.js";
 import { generateMacAddress } from "@utils/util.js";
 
 import Loading from "@components/common/Loading.jsx";
-import TimeWrapper from "@components/splash-screen/TimeWrapper.jsx";
+import TimeWrapper from "@components/splash-screen/TimeWrapper.tsx";
 
 // import { setTranslations } from "../../app/translations/translationsSlice.js";
 import { setConfigs } from "@app/configs/configsSlice.js";

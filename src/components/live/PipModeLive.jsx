@@ -12,7 +12,7 @@ import LOCAL_STORAGE from "@utils/localStorage";
 
 import useKeydown from "@hooks/useKeydown";
 
-import TimeWrapper from "@components/splash-screen/TimeWrapper.jsx";
+import TimeWrapper from "@components/splash-screen/TimeWrapper.tsx";
 import CategoriesWrapper from "./components/CategoriesWrapper";
 import ChannelsWrapper from "./components/ChannelsWrapper";
 import EpgListWrapper from "./components/EpgListWrapper";

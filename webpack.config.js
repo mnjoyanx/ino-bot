@@ -44,7 +44,7 @@ module.exports = (env, argv) => {
     },
 
     resolve: {
-      extensions: [".js", ".jsx"],
+      extensions: [".js", ".jsx", ".ts", ".tsx"],
       alias: {
         "@components": path.resolve(__dirname, "src/components"),
         "@pages": path.resolve(__dirname, "src/pages"),
@@ -98,12 +98,16 @@ module.exports = (env, argv) => {
           ],
         },
         {
-          test: /\.(js|jsx)$/,
+          test: /\.(js|jsx|ts|tsx)$/,
           // exclude: /(node_modules|bower_components)/,
           use: {
             loader: "babel-loader",
             options: {
-              presets: ["@babel/preset-env", "@babel/preset-react"],
+              presets: [
+                "@babel/preset-env",
+                "@babel/preset-react",
+                "@babel/preset-typescript",
+              ],
               plugins: [
                 "@babel/plugin-syntax-dynamic-import",
                 "@babel/plugin-proposal-class-properties",

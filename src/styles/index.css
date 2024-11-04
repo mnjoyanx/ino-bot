@@ -83,3 +83,7 @@ p {
 .back-button.active svg path {
   stroke: #ccc;
 }
+
+#categories_list {
+  width: 100%;
+}
