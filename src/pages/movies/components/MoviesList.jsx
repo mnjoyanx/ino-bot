@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useContext, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCtrl, setIsMovieSearchBarOpen } from "@app/global";
-import { InoButton, ListView } from "ino-ui-tv";
+import { GridView, InoButton, ListView } from "ino-ui-tv";
 
 import useKeydown from "@hooks/useKeydown";
 import MovieCard from "./MovieCard";
@@ -16,7 +16,8 @@ import {
 const MoviesList = ({ isVertical, isLoading }) => {
   const dispatch = useDispatch();
   const ctrl = useSelector(selectCtrl);
-  const { moviesByGenre, selectedType } = useContext(MoviesContext);
+  const { moviesByGenre, selectedType, dynamicContent } =
+    useContext(MoviesContext);
   const isMovieSearchBarOpen = useSelector(selectIsMovieSearchBarOpen);
 
   const [activeCategory, setActiveCategory] = useState(0);
@@ -94,26 +95,76 @@ const MoviesList = ({ isVertical, isLoading }) => {
 
   return (
     <>
-      {currentMovies && currentMovies.length && !isLoading ? (
+      {selectedType === "movie" || selectedType === "tv_show" ? (
+        <>
+          {currentMovies && currentMovies.length && !isLoading ? (
+            <div className={styles["movies-list"]}>
+              <ListView
+                id="categories_list"
+                uniqueKey="categories-list"
+                className={styles["categories-list"]}
+                itemsTotal={currentMovies.length}
+                itemsCount={1}
+                listType="vertical"
+                itemHeight={35}
+                isActive={ctrl === "moviesSeries"}
+                buffer={2}
+                debounce={100}
+                nativeControle={true}
+                renderItem={({ index, style, isActive, item }) => (
+                  <div style={style} className={styles["category-wrapper"]}>
+                    {renderCategoryContent(item, index)}
+                  </div>
+                )}
+                data={currentMovies}
+              />
+            </div>
+          ) : (
+            <InoButton
+              classNames={styles["no-content_button"]}
+              size="large"
+              onClick={() => {
+                dispatch(setCtrl("inp"));
+                dispatch(setIsOpenMainSidebar(false));
+                dispatch(setIsMovieSearchBarOpen(true));
+              }}
+              isActive={ctrl === "moviesSeries"}
+              onLeft={() => {
+                dispatch(setCtrl("mainSidebar"));
+                dispatch(setIsOpenMainSidebar(true));
+              }}
+            >
+              Search
+            </InoButton>
+          )}
+        </>
+      ) : dynamicContent && dynamicContent.length ? (
         <div className={styles["movies-list"]}>
-          <ListView
-            id="categories_list"
-            uniqueKey="categories-list"
-            className={styles["categories-list"]}
-            itemsTotal={currentMovies.length}
-            itemsCount={1}
-            listType="vertical"
-            itemHeight={35}
+          <GridView
+            id="gridview-1"
+            uniqueKey="gridview-1"
             isActive={ctrl === "moviesSeries"}
-            buffer={2}
-            debounce={100}
+            data={dynamicContent}
+            rowItemsCount={3}
+            rowCount={1}
+            itemsTotal={1}
+            itemWidth={20}
+            itemHeight={27}
+            gap={1}
+            onLeft={() => {
+              dispatch(setCtrl("mainSidebar"));
+              dispatch(setIsOpenMainSidebar(true));
+            }}
+            bufferStart={10}
+            bufferEnd={10}
             nativeControle={true}
-            renderItem={({ index, style, isActive, item }) => (
-              <div style={style} className={styles["category-wrapper"]}>
-                {renderCategoryContent(item, index)}
-              </div>
-            )}
-            data={currentMovies}
+            renderItem={({ index, style, isActive, item }) => {
+              return (
+                <div style={style} className={styles["category-wrapper"]}>
+                  {renderMovieCard({ index, style, isActive, item })}
+                </div>
+              );
+            }}
           />
         </div>
       ) : (
@@ -124,11 +175,6 @@ const MoviesList = ({ isVertical, isLoading }) => {
             dispatch(setCtrl("inp"));
             dispatch(setIsOpenMainSidebar(false));
             dispatch(setIsMovieSearchBarOpen(true));
-          }}
-          isActive={ctrl === "moviesSeries"}
-          onLeft={() => {
-            dispatch(setCtrl("mainSidebar"));
-            dispatch(setIsOpenMainSidebar(true));
           }}
         >
           Search

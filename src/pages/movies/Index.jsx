@@ -33,6 +33,7 @@ const MoviesPage = () => {
     setSelectedGenre,
     moviesByGenre,
     setMoviesByGenre,
+    setDynamicContent,
     menuList,
     setMenuList,
     selectedType,
@@ -97,7 +98,7 @@ const MoviesPage = () => {
       if (error) {
         console.log(error);
       } else {
-        setMoviesByGenre("favorites", message.rows);
+        setDynamicContent(message.rows);
       }
     } catch (error) {
       console.log(error);
@@ -122,10 +123,6 @@ const MoviesPage = () => {
 
   const getMoviesByGenreHandler = useCallback(async (type) => {
     setIsMoviesLoading(true);
-    const defaultGenres = ["favorites", "lastWatched", "recentlyAdded"];
-    if (selectedType && !defaultGenres.includes(type)) {
-      return; // Movies for this genre are already fetched
-    }
 
     if (type === "favorites") {
       fetchFavoritesHandler();
@@ -205,19 +202,10 @@ const MoviesPage = () => {
     }
   }, [genres, getGenresHandler]);
 
-  useEffect(() => {
-    if (selectedType) {
-      getMoviesByGenreHandler(selectedType);
-    }
-  }, [selectedType, getMoviesByGenreHandler]);
-
-  useEffect(() => {
-    console.log(moviesByGenre, "moviesByGenremoviesByGenre");
-  }, [moviesByGenre]);
-
   return (
     <>
-      {moviesByGenre && Object.keys(moviesByGenre).length ? (
+      {/* {moviesByGenre && Object.keys(moviesByGenre).length ? ( */}
+      {selectedType ? (
         <div className="home-page">
           {!isMovieSearchBarOpen ? (
             <BackButton

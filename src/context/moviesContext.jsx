@@ -10,15 +10,17 @@ export const MoviesContext = createContext();
 
 const initialState = {
   moviesByGenre: {},
+  dynamicContent: [],
   genres: [],
-  recentlyAdded: [],
-  lastWatched: [],
   favorites: [],
   menuList: [],
-  rowsCount: 0,
 };
 
-const filterMoviesAndSeries = (movies, genres) => {
+const filterMoviesAndSeries = (movies, genres, type) => {
+  if (type !== "movie" && type !== "tv_show") {
+    return [];
+  }
+
   const genreMovies = genres.filter((genre) => {
     return movies.some((movie) => movie.genres.some((g) => g.id === genre.id));
   });
@@ -42,6 +44,7 @@ function moviesReducer(state, action) {
         console.error("SET_MOVIES_BY_GENRE payload.movies must be an array");
         return state;
       }
+
       return {
         ...state,
         moviesByGenre: {
@@ -49,9 +52,23 @@ function moviesReducer(state, action) {
           [action.payload.type]: filterMoviesAndSeries(
             action.payload.movies,
             state.genres,
+            action.payload.type,
           ),
         },
       };
+
+    case "SET_DYNAMIC_CONTENT":
+      return {
+        ...state,
+        dynamicContent: action.payload,
+      };
+
+    case "SET_FAVORITES":
+      return {
+        ...state,
+        favorites: action.payload,
+      };
+
     case "SET_GENRES":
       return {
         ...state,
@@ -71,7 +88,6 @@ export const MoviesProvider = ({ children }) => {
   const [state, dispatch] = useReducer(moviesReducer, initialState);
   const [selectedGenre, setSelectedGenre] = useState(null);
   const [selectedType, setSelectedType] = useState(null);
-  const [recentlyAdded, setRecentlyAdded] = useState([]);
 
   const setMoviesByGenre = useCallback((type, movies) => {
     dispatch({
@@ -80,8 +96,18 @@ export const MoviesProvider = ({ children }) => {
     });
   }, []);
 
-  const setRecentlyAddedHandler = useCallback((movies) => {
-    setRecentlyAdded(movies);
+  const setDynamicContent = useCallback((content) => {
+    dispatch({
+      type: "SET_DYNAMIC_CONTENT",
+      payload: content,
+    });
+  }, []);
+
+  const setFavorites = useCallback((favorites) => {
+    dispatch({
+      type: "SET_FAVORITES",
+      payload: favorites,
+    });
   }, []);
 
   const setGenres = useCallback((genres) => {
@@ -108,8 +134,12 @@ export const MoviesProvider = ({ children }) => {
       setSelectedGenre,
       selectedType,
       setSelectedType,
+      favorites: state.favorites,
+      setFavorites,
       menuList: state.menuList,
       setMenuList,
+      dynamicContent: state.dynamicContent,
+      setDynamicContent,
     }),
     [
       state.moviesByGenre,
@@ -120,6 +150,10 @@ export const MoviesProvider = ({ children }) => {
       state.menuList,
       setSelectedType,
       selectedType,
+      state.favorites,
+      setFavorites,
+      state.dynamicContent,
+      setDynamicContent,
     ],
   );
 

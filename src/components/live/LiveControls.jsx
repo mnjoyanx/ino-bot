@@ -45,6 +45,7 @@ export default memo(function LiveControls({
   refVideo,
   play,
   pause,
+  seekToHandler,
 }) {
   const dispatch = useDispatch();
 
@@ -195,11 +196,14 @@ export default memo(function LiveControls({
   const clickFrwdRewd = () => {
     if (secCurrentTime.current === 0) return;
     if (playerType !== "live") {
-      if (!window.Android) refVideo.current.pause();
-      else window.Android.pause();
-      currentTimeSeekto.current = Math.floor(secCurrentTime.current);
-      refVal.current.innerText = formatTime(currentTimeSeekto.current);
-      dispatch(setShowPreviewImages(true));
+      seekToHandler("forward");
+      // if (!window.Android) refVideo.current.pause();
+      // else window.Android.pause();
+
+      // currentTimeSeekto.current = Math.floor(secCurrentTime.current);
+      // refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration.current) * 100}%`;
+      // refVal.current.innerText = formatTime(currentTimeSeekto.current);
+      // dispatch(setShowPreviewImages(true));
     }
   };
 
@@ -449,7 +453,11 @@ export default memo(function LiveControls({
         if (isPaused) play();
         else pause();
       } else if (active === 1 || active === 3) {
-        clickFrwdRewd();
+        if (active === 1) {
+          seekToHandler("rewind");
+        } else if (active === 3) {
+          seekToHandler("forward");
+        }
       } else if (active === 4) {
         setActive(0);
         setUrl(refUrlLive.current);
@@ -476,7 +484,7 @@ export default memo(function LiveControls({
             refProgress={refProgress}
             refVal={refVal}
           />
-          
+
           {playerType === "live" ? (
             <>
               <LiveIcon type={playerType} />

@@ -14,32 +14,42 @@ import { ToastProvider } from "./hooks/useToast";
 import { MoviesProvider } from "./context/moviesContext";
 import AppsPage from "@pages/apps/Index.jsx";
 
+const getVersion = () => {
+  var req = new XMLHttpRequest();
+
+  req.onreadystatechange = function () {
+    if (this.readyState == 4 && this.status == 200) {
+      console.log(this.responseText, "responseText");
+      let data = JSON.parse(this.responseText);
+
+      let VERSION = data.version;
+
+      if (localStorage.getItem("app_version") == VERSION) {
+        localStorage.setItem("app_version", VERSION);
+      } else {
+        localStorage.setItem("app_version", VERSION);
+        if (window.Android) {
+          window.Android.reload();
+        } else {
+          window.location.reload();
+        }
+      }
+    }
+  };
+  req.onerror = function () {};
+
+  // req.open("GET", HOST + "js/version.json?time=" + Math.random(), true);
+  req.open("GET", "version.json", true);
+  req.send();
+
+  setTimeout(function () {
+    getVersion();
+  }, 300000);
+};
+
+getVersion();
+
 function App() {
-  // useEffect(() => {
-  //   const useResize = () => {
-  //     let fontSize = 10; // 1rem = 10px (default) 1920x1080
-
-  //     let k = window.innerWidth / 1920;
-
-  //     fontSize = fontSize * k;
-
-  //     console.log(fontSize, "size");
-
-  //     document.documentElement.style.fontSize = fontSize + "px";
-  //   };
-
-  //   useResize();
-
-  //   window.addEventListener("load", useResize);
-
-  //   window.addEventListener("resize", useResize);
-
-  //   return () => {
-  //     window.removeEventListener("load", useResize);
-  //     window.removeEventListener("resize", useResize);
-  //   };
-  // }, []);
-
   return (
     <ToastProvider>
       <Routes>

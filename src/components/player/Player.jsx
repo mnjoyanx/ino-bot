@@ -298,6 +298,7 @@ export default memo(function Player({
             refVideo={refVideo}
             play={play}
             pause={pause}
+            seekToHandler={handleSeek}
           />
         )}
         {type === "vod" && !pipMode && (
