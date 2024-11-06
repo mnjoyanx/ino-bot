@@ -89,6 +89,7 @@
   gap: 1rem;
   position: relative;
   left: 6.7rem;
+  z-index: 1;
 
   &.hidden {
     visibility: hidden;
