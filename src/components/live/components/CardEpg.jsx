@@ -34,8 +34,8 @@ export default memo(function CardEpg({
       </div>
       <p className="date_time">
         {formatDate(new Date(item.start_ut * 1000), "dd/MM")} |{" "}
-        {formatDate(new Date(item.start_ut * 1000), "hh:mm")} {" - "}
-        {formatDate(new Date(item.stop_ut * 1000), "hh:mm")}
+        {formatDate(new Date(item.start_ut * 1000), "hh:mm aaa")} {" - "}
+        {formatDate(new Date(item.stop_ut * 1000), "hh:mm aaa")}
       </p>
       <p className="title">{item.name}</p>
     </div>

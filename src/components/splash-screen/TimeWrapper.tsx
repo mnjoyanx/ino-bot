@@ -17,7 +17,7 @@ export default function TimeWrapper() {
 
   return (
     <div className="time-wrapper">
-      <p className="time">{formatDate(new Date(time), "HH:mm")}</p>
+      <p className="time">{formatDate(new Date(time), "hh:mm aaa")}</p>
       <p className="day">{formatDate(new Date(time), "MMM dd - EEEE")}</p>
     </div>
   );

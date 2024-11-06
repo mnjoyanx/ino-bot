@@ -140,7 +140,7 @@ export const constructQueryString = (queryParams) => {
   return Object.keys(queryParams)
     .map(
       (key) =>
-        encodeURIComponent(key) + "=" + encodeURIComponent(queryParams[key])
+        encodeURIComponent(key) + "=" + encodeURIComponent(queryParams[key]),
     )
     .join("&");
 };
@@ -196,7 +196,7 @@ export const scrollElement = (
   element,
   type = "X",
   size = "0rem",
-  duration = 0
+  duration = 0,
 ) => {
   if (!element) return;
 
