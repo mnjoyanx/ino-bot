@@ -6,7 +6,7 @@ import MovieContent from "./components/MovieContent";
 import MovieActions from "./components/MovieActions";
 import TvShowSeasons from "./components/TvShowSeasons";
 import Player from "@components/player/Player";
-import { getMovieById, rememberTime } from "@server/requests";
+import { getMovieById, getMovieCasts, rememberTime } from "@server/requests";
 import useKeydown from "@hooks/useKeydown";
 import { selectIsPlayerOpen, selectCtrl, setCtrl } from "@app/global";
 import { MovieInfoProvider, useMovieInfo } from "@context/movieInfoContext";
@@ -41,7 +41,12 @@ const MovieInfoContent = () => {
       const parsedResponse = JSON.parse(response);
       if (!parsedResponse.error) {
         setStartTime(parsedResponse.message.watched?.time || 0);
-        setMovieInfo(parsedResponse.message);
+        const castsResponse = await getMovieCasts({ movie_id: id });
+        const parsedCastsResponse = JSON.parse(castsResponse);
+        setMovieInfo({
+          ...parsedResponse.message,
+          casts: parsedCastsResponse.message,
+        });
       } else {
         console.error(parsedResponse.error);
       }

@@ -168,6 +168,10 @@ export const getMovieById = (queryParams) => {
   return request("get", "v2/api/movies/info", queryParams);
 };
 
+export const getMovieCasts = (queryParams) => {
+  return request("get", "v2/api/cast/by_movie_id", queryParams);
+};
+
 // export const getAdsMovie = queryParams => {
 //   return request("get", "v2/api/ads/by_movie_id", queryParams);
 // };

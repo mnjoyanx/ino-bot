@@ -16,7 +16,6 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [activeButton, setActiveButton] = useState(0);
-  console.log(movie, "mooooofie is favorite");
   const ctrl = useSelector(selectCtrl);
   const { setUrl, movieInfo, setMovieInfo, setStartTime } = useMovieInfo();
   const { handleWatchClick, handleContinueWatchingClick, handleFavoriteClick } =
