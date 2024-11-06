@@ -8,7 +8,6 @@ import { GridView } from "ino-ui-tv";
 import { getApps } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
 import Loading from "@components/common/Loading";
-import YoutubeImage from "@assets/images/youtube.jpg";
 
 import styles from "@styles/components/appsPage.module.scss";
 
@@ -99,7 +98,7 @@ export default function AppsPage() {
                       className={`${styles["app-item"]} ${isActive ? styles["active"] : ""}`}
                     >
                       <img
-                        src={item.icon || YoutubeImage}
+                        src={item.icon || LOCAL_STORAGE.LOGO.GET()}
                         alt={item.name}
                         className={styles["image"]}
                       />

@@ -4,6 +4,7 @@ import styles from "@styles/components/movieCard.module.scss";
 import useKeydown from "@hooks/useKeydown";
 import { setCtrl } from "@app/global";
 import { useDispatch } from "react-redux";
+
 const MovieCard = React.memo(({ style, isActive, name, poster, id }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
