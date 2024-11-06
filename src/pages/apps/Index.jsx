@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import AppLogo from "@components/common/AppLogo";
 import BackButton from "@components/common/BackButton";
-import { setCtrl } from "@app/global";
+import { selectCtrl, setCtrl } from "@app/global";
 import { GridView } from "ino-ui-tv";
 import { getApps } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
@@ -14,6 +14,7 @@ import styles from "@styles/components/appsPage.module.scss";
 
 export default function AppsPage() {
   const dispatch = useDispatch();
+  const ctrl = useSelector(selectCtrl);
   const [isAndroid, setIsAndroid] = useState(false);
 
   const [apps, setApps] = useState([]);
@@ -29,12 +30,7 @@ export default function AppsPage() {
       const parsedRes = JSON.parse(res);
 
       if (!parsedRes.error) {
-        console.log(parsedRes.message, "parsedRes");
-        setApps([
-          ...parsedRes.message,
-          ...parsedRes.message,
-          ...parsedRes.message,
-        ]);
+        setApps(parsedRes.message);
       }
     } catch (err) {
       console.log(err);
@@ -70,7 +66,7 @@ export default function AppsPage() {
           </div>
           <div className={styles["apps-content"]}>
             <h2 className={styles["apps-title"]}>Apps Launcher</h2>
-            {isAndroid ? (
+            {!isAndroid ? (
               <div className={styles["grid-view_container"]}>
                 <GridView
                   id="apps-grid"
@@ -83,7 +79,7 @@ export default function AppsPage() {
                   itemsTotal={apps.length}
                   itemWidth={35}
                   itemHeight={25}
-                  isActive={true}
+                  isActive={ctrl !== "backBtn"}
                   onOk={(index) => {
                     if (apps[index]?.app_id) {
                       window.Android.launchApp(apps[index].app_id);

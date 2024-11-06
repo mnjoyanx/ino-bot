@@ -97,13 +97,13 @@ export default function MenuItems() {
 
     back: () => {
       ///
-      setShow(true);
+      // setShow(true);
     },
   });
 
   return (
     <div className="menu-list_wrapper">
-      <MainModal show={show} setShow={setShow}>
+      {/* <MainModal show={show} setShow={setShow}>
         <AppExit
           onCancel={() => setShow(false)}
           onConfirm={() => {
@@ -112,7 +112,7 @@ export default function MenuItems() {
             }
           }}
         />
-      </MainModal>
+      </MainModal> */}
       {listMenu.map((item, index) => {
         return (
           <MenuItem
