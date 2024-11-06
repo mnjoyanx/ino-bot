@@ -20,10 +20,11 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
     setActiveSeason,
     selectedSeason,
     setSelectedSeason,
+    activeSeasonIndex,
+    setActiveSeasonIndex,
   } = useMovieInfo();
 
   const [allEpisodes, setAllEpisodes] = useState(null);
-  const [activeSeasonIndex, setActiveSeasonIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
 
@@ -98,7 +99,6 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
     ok: () => {
       if (allEpisodes) {
         setSelectedSeason(seasons[activeSeason].id);
-        setActiveSeasonIndex(activeSeason);
       }
     },
     back: () => {
@@ -144,6 +144,7 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
           seriesId={seriesId}
           setActiveSeason={setActiveSeason}
           setUrl={setUrl}
+          setActiveSeasonIndex={setActiveSeasonIndex}
         />
       ) : (
         <>

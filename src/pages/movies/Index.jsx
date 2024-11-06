@@ -15,6 +15,7 @@ import {
   setCtrl,
   selectIsMovieSearchBarOpen,
   setIsMovieSearchBarOpen,
+  selectIsPlayerOpen,
 } from "@app/global";
 import Search from "@components/search/Search";
 import BackButton from "@components/common/BackButton";
@@ -40,11 +41,13 @@ const MoviesPage = () => {
     setSelectedType,
   } = useContext(MoviesContext);
 
+  const isPlayerOpen = useSelector(selectIsPlayerOpen);
+
   const [url, setUrl] = useState(null);
   const [isVertical, setIsVertical] = useState(true);
-  const [isGenresLoading, setIsGenresLoading] = useState(false);
-  const [isMoviesLoading, setIsMoviesLoading] = useState(false);
-  const [isConfigsLoading, setIsConfigsLoading] = useState(false);
+  const [isGenresLoading, setIsGenresLoading] = useState(true);
+  const [isMoviesLoading, setIsMoviesLoading] = useState(true);
+  const [isConfigsLoading, setIsConfigsLoading] = useState(true);
 
   const getGenresHandler = useCallback(async () => {
     setIsGenresLoading(true);
@@ -102,6 +105,8 @@ const MoviesPage = () => {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsMoviesLoading(false);
     }
   }, []);
 
@@ -187,6 +192,14 @@ const MoviesPage = () => {
   };
 
   useEffect(() => {
+    if (isPlayerOpen) {
+      document.body.classList.add("player-open");
+    } else {
+      document.body.classList.remove("player-open");
+    }
+  }, [isPlayerOpen]);
+
+  useEffect(() => {
     getConfigsHandler();
   }, []);
 
@@ -231,7 +244,9 @@ const MoviesPage = () => {
               <div className={styles["movies-list"]}>
                 <MoviesList
                   isVertical={isVertical}
-                  isLoading={isGenresLoading || isMoviesLoading}
+                  isLoading={
+                    isGenresLoading || isMoviesLoading || isConfigsLoading
+                  }
                 />
               </div>
             </div>

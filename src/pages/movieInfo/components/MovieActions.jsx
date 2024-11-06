@@ -16,6 +16,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [activeButton, setActiveButton] = useState(0);
+  console.log(movie, "mooooofie is favorite");
   const ctrl = useSelector(selectCtrl);
   const { setUrl, movieInfo, setMovieInfo, setStartTime } = useMovieInfo();
   const { handleWatchClick, handleContinueWatchingClick, handleFavoriteClick } =
@@ -101,7 +102,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
         onClick={handleFavoriteClick}
         onMouseEnter={() => setActiveButton(2)}
         isActive={activeButton === 2 && ctrl === "movieInfo"}
-        icon={movie.favorite ? <SvgFavFill /> : <SvgFav />}
+        icon={movie.favorites ? <SvgFavFill /> : <SvgFav />}
       />
     </div>
   );

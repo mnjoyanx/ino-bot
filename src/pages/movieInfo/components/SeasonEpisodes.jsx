@@ -14,7 +14,6 @@ const SeasonEpisodes = ({
   allEpisodes,
   episodes,
   activeSeason,
-  activeSeasonIndex,
   selectedSeason,
   changeSeason,
   seriesId,
@@ -27,6 +26,8 @@ const SeasonEpisodes = ({
     setIsLastEpisode,
     currentEpisode,
     setCurrentEpisode,
+    activeSeasonIndex,
+    setActiveSeasonIndex,
   } = useMovieInfo();
   const isPlayerOpen = useSelector(selectIsPlayerOpen);
   const ctrl = useSelector(selectCtrl);
@@ -60,6 +61,7 @@ const SeasonEpisodes = ({
   const handleNextEpisode = () => {
     if (activeEpisode + 1 >= episodes.length) {
       changeSeason(activeSeasonIndex + 1);
+      setActiveSeasonIndex(activeSeasonIndex + 1);
       const nextEpisode = Object.values(allEpisodes)[activeSeasonIndex + 1][0];
       setCurrentEpisode(nextEpisode);
       setStartTime(0);

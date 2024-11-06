@@ -12,6 +12,7 @@ import {
   setCtrl,
   setIsOpenMainSidebar,
 } from "@app/global";
+import Loading from "@components/common/Loading";
 
 const MoviesList = ({ isVertical, isLoading }) => {
   const dispatch = useDispatch();
@@ -23,8 +24,12 @@ const MoviesList = ({ isVertical, isLoading }) => {
   const [activeCategory, setActiveCategory] = useState(0);
 
   useEffect(() => {
-    dispatch(setCtrl("moviesSeries"));
-  }, []);
+    if (isMovieSearchBarOpen) {
+      dispatch(setCtrl("inp"));
+    } else {
+      dispatch(setCtrl("moviesSeries"));
+    }
+  }, [isMovieSearchBarOpen]);
 
   const currentMovies = selectedType ? moviesByGenre[selectedType] || [] : [];
 
@@ -95,90 +100,105 @@ const MoviesList = ({ isVertical, isLoading }) => {
 
   return (
     <>
-      {selectedType === "movie" || selectedType === "tv_show" ? (
+      {isLoading ? (
+        <div className={styles["loading-container"]}>
+          <Loading />
+        </div>
+      ) : (
         <>
-          {currentMovies && currentMovies.length && !isLoading ? (
+          {selectedType === "movie" || selectedType === "tv_show" ? (
+            <>
+              {currentMovies && currentMovies.length && !isLoading ? (
+                <div className={styles["movies-list"]}>
+                  <ListView
+                    id="categories_list"
+                    uniqueKey="categories-list"
+                    className={styles["categories-list"]}
+                    itemsTotal={currentMovies.length}
+                    itemsCount={1}
+                    listType="vertical"
+                    itemHeight={35}
+                    isActive={ctrl === "moviesSeries"}
+                    buffer={2}
+                    debounce={100}
+                    nativeControle={true}
+                    renderItem={({ index, style, isActive, item }) => (
+                      <div style={style} className={styles["category-wrapper"]}>
+                        {renderCategoryContent(item, index)}
+                      </div>
+                    )}
+                    data={currentMovies}
+                  />
+                </div>
+              ) : (
+                <InoButton
+                  classNames={styles["no-content_button"]}
+                  size="large"
+                  onClick={() => {
+                    dispatch(setCtrl("inp"));
+                    dispatch(setIsOpenMainSidebar(false));
+                    dispatch(setIsMovieSearchBarOpen(true));
+                  }}
+                  isActive={ctrl === "moviesSeries"}
+                  onLeft={() => {
+                    dispatch(setCtrl("mainSidebar"));
+                    dispatch(setIsOpenMainSidebar(true));
+                  }}
+                >
+                  Search
+                </InoButton>
+              )}
+            </>
+          ) : dynamicContent && dynamicContent.length ? (
             <div className={styles["movies-list"]}>
-              <ListView
-                id="categories_list"
-                uniqueKey="categories-list"
-                className={styles["categories-list"]}
-                itemsTotal={currentMovies.length}
-                itemsCount={1}
-                listType="vertical"
-                itemHeight={35}
+              <GridView
+                id="gridview-1"
+                uniqueKey="gridview-1"
                 isActive={ctrl === "moviesSeries"}
-                buffer={2}
-                debounce={100}
+                data={dynamicContent}
+                rowItemsCount={3}
+                rowCount={1}
+                itemsTotal={1}
+                itemWidth={20}
+                itemHeight={27}
+                gap={1}
+                onLeft={() => {
+                  dispatch(setCtrl("mainSidebar"));
+                  dispatch(setIsOpenMainSidebar(true));
+                }}
+                bufferStart={10}
+                bufferEnd={10}
                 nativeControle={true}
-                renderItem={({ index, style, isActive, item }) => (
-                  <div style={style} className={styles["category-wrapper"]}>
-                    {renderCategoryContent(item, index)}
-                  </div>
-                )}
-                data={currentMovies}
+                renderItem={({ index, style, isActive, item }) => {
+                  return (
+                    <div style={style} className={styles["category-wrapper"]}>
+                      {renderMovieCard({ index, style, isActive, item })}
+                    </div>
+                  );
+                }}
               />
             </div>
           ) : (
-            <InoButton
-              classNames={styles["no-content_button"]}
-              size="large"
-              onClick={() => {
-                dispatch(setCtrl("inp"));
-                dispatch(setIsOpenMainSidebar(false));
-                dispatch(setIsMovieSearchBarOpen(true));
-              }}
-              isActive={ctrl === "moviesSeries"}
-              onLeft={() => {
-                dispatch(setCtrl("mainSidebar"));
-                dispatch(setIsOpenMainSidebar(true));
-              }}
-            >
-              Search
-            </InoButton>
+            <>
+              <InoButton
+                classNames={styles["no-content_button"]}
+                size="large"
+                isActive={ctrl === "moviesSeries"}
+                onLeft={() => {
+                  dispatch(setCtrl("mainSidebar"));
+                  dispatch(setIsOpenMainSidebar(true));
+                }}
+                onClick={() => {
+                  dispatch(setCtrl("inp"));
+                  dispatch(setIsOpenMainSidebar(false));
+                  dispatch(setIsMovieSearchBarOpen(true));
+                }}
+              >
+                Search
+              </InoButton>
+            </>
           )}
         </>
-      ) : dynamicContent && dynamicContent.length ? (
-        <div className={styles["movies-list"]}>
-          <GridView
-            id="gridview-1"
-            uniqueKey="gridview-1"
-            isActive={ctrl === "moviesSeries"}
-            data={dynamicContent}
-            rowItemsCount={3}
-            rowCount={1}
-            itemsTotal={1}
-            itemWidth={20}
-            itemHeight={27}
-            gap={1}
-            onLeft={() => {
-              dispatch(setCtrl("mainSidebar"));
-              dispatch(setIsOpenMainSidebar(true));
-            }}
-            bufferStart={10}
-            bufferEnd={10}
-            nativeControle={true}
-            renderItem={({ index, style, isActive, item }) => {
-              return (
-                <div style={style} className={styles["category-wrapper"]}>
-                  {renderMovieCard({ index, style, isActive, item })}
-                </div>
-              );
-            }}
-          />
-        </div>
-      ) : (
-        <InoButton
-          classNames={styles["no-content_button"]}
-          size="large"
-          onClick={() => {
-            dispatch(setCtrl("inp"));
-            dispatch(setIsOpenMainSidebar(false));
-            dispatch(setIsMovieSearchBarOpen(true));
-          }}
-        >
-          Search
-        </InoButton>
       )}
     </>
   );

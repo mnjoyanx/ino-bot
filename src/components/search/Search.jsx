@@ -45,6 +45,14 @@ export default memo(function Search({
     }
   }, [location.search, type]);
 
+  useEffect(() => {
+    if (result.length === 0) {
+      setEmpty(true);
+    } else {
+      setEmpty(false);
+    }
+  }, [result]);
+
   const getResultChannels = async (query) => {
     setEmpty(false);
     const response = await getChannels({
@@ -144,13 +152,14 @@ export default memo(function Search({
   useKeydown({
     // isActive: control === "keyboard",
     isActive: true,
-    ok: () => {
-      if (type === "live") {
-        refInp.current.blur();
-      } else if (type === "content") {
-        refContentInp.current.blur();
-      }
-    },
+    // ok: () => {
+    //   alert("ioj");
+    //   if (type === "live") {
+    //     refInp.current.blur();
+    //   } else if (type === "content") {
+    //     refContentInp.current.blur();
+    //   }
+    // },
     up: () => {
       if (type === "live") {
         if (ctrl === "inp") {
@@ -231,7 +240,9 @@ export default memo(function Search({
         setUrl={setUrl}
         setRemove={setRemove}
         setControl={setControl}
-        control={control === "result"}
+        control={
+          control === "result" && !empty && ctrl !== "inp" && ctrl !== "backBtn"
+        }
         changeCtrl={() => dispatch(setCtrl("inp"))}
       />
     </div>

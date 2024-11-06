@@ -29,6 +29,7 @@ const MovieInfoContent = () => {
     setCurrentEpisode,
     startTime,
     setStartTime,
+    isLastEpisode,
   } = useMovieInfo();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +62,11 @@ const MovieInfoContent = () => {
       time: currentTime,
       percent,
     };
+
+    if (movieInfo.type === "tv_show") {
+      body.episodeId = currentEpisode.id;
+    }
+
     try {
       const response = await rememberTime(body);
       if (needToRefetch) {
@@ -73,9 +79,22 @@ const MovieInfoContent = () => {
   };
 
   const onEnded = () => {
-    dispatch(setCtrl("movieInfo"));
-    dispatch(setIsPlayerOpen(false));
-    setUrl("");
+    if (movieInfo.type === "tv_show") {
+      if (!isLastEpisode) {
+        // Trigger the next episode event which is handled by SeasonEpisodes component
+        document.dispatchEvent(new Event("next-episode"));
+      } else {
+        // If it's the last episode, close the player
+        dispatch(setCtrl("movieInfo"));
+        dispatch(setIsPlayerOpen(false));
+        setUrl("");
+      }
+    } else {
+      // For movies, simply close the player
+      dispatch(setCtrl("movieInfo"));
+      dispatch(setIsPlayerOpen(false));
+      setUrl("");
+    }
   };
 
   useEffect(() => {
@@ -93,6 +112,14 @@ const MovieInfoContent = () => {
       dispatch(setCtrl("seasons"));
     }
   }, [currentEpisode, movieInfo?.type]);
+
+  useEffect(() => {
+    if (isPlayerOpen) {
+      document.body.classList.add("player-open");
+    } else {
+      document.body.classList.remove("player-open");
+    }
+  }, [isPlayerOpen]);
 
   useKeydown({
     back: () => navigate(-1),

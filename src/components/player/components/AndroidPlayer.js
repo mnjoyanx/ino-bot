@@ -18,7 +18,7 @@ window.PLAYER = {
   isPlayingChanged: () => {},
 
   vout: () => {
-    // dispatchEvent(new CustomEvent("playbackLoaded"));
+    dispatchEvent(new CustomEvent("playbackLoaded"));
   },
 
   seekTo: (direction) => {

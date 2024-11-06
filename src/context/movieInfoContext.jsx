@@ -12,6 +12,7 @@ export const MovieInfoProvider = ({ children }) => {
   const [currentEpisode, setCurrentEpisode] = useState(null);
   const [startTime, setStartTime] = useState(0);
   const [isLastEpisode, setIsLastEpisode] = useState(false);
+  const [activeSeasonIndex, setActiveSeasonIndex] = useState(0);
 
   const value = {
     url,
@@ -32,6 +33,8 @@ export const MovieInfoProvider = ({ children }) => {
     setIsLastEpisode,
     activeEpisode,
     setActiveEpisode,
+    activeSeasonIndex,
+    setActiveSeasonIndex,
   };
 
   return (
