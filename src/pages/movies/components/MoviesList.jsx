@@ -33,6 +33,10 @@ const MoviesList = ({ isVertical, isLoading }) => {
 
   const currentMovies = selectedType ? moviesByGenre[selectedType] || [] : [];
 
+  useEffect(() => {
+    setActiveCategory(0);
+  }, [selectedType]);
+
   useKeydown({
     isActive: ctrl === "moviesSeries" && !isMovieSearchBarOpen,
     down: () => {

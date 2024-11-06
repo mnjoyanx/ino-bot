@@ -6,6 +6,7 @@ const MovieContent = ({ movie, isPlayerOpen }) => {
     <div
       className={`${styles["content"]} ${window.Android && isPlayerOpen ? styles["hidden"] : ""} ${movie.type === "tv_show" ? styles["tv-show"] : ""}`}
     >
+      <div className={styles["shadow"]}></div>
       <h1 className={styles["title"]}>{movie.name}</h1>
       <div className={styles["metadata"]}>
         <span>{movie.year}</span>

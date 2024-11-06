@@ -123,3 +123,20 @@
   text-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.9);
   white-space: nowrap;
 }
+
+.shadow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120rem;
+  height: 72rem;
+  background-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.8) 10%,
+    rgba(0, 0, 0, 0.6) 25%,
+    rgba(0, 0, 0, 0.4) 60%,
+    rgba(0, 0, 0, 0.1) 80%,
+    transparent 100%
+  );
+  z-index: -1;
+}
