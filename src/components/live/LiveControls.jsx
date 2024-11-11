@@ -66,6 +66,8 @@ export default memo(function LiveControls({
   const [active, setActive] = useState(0);
   const [hideControls, setHideControls] = useState(false);
 
+  const channelChangeTimeout = useRef(null);
+
   const findChannel = () => {
     if (allChannels.length <= 1) return;
     for (let i = 0; i < allChannels.length; i++) {
@@ -187,20 +189,6 @@ export default memo(function LiveControls({
     }
   };
 
-  const clickFrwdRewd = () => {
-    if (secCurrentTime.current === 0) return;
-    if (playerType !== "live") {
-      seekToHandler("forward");
-      // if (!window.Android) refVideo.current.pause();
-      // else window.Android.pause();
-
-      // currentTimeSeekto.current = Math.floor(secCurrentTime.current);
-      // refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration.current) * 100}%`;
-      // refVal.current.innerText = formatTime(currentTimeSeekto.current);
-      // dispatch(setShowPreviewImages(true));
-    }
-  };
-
   useEffect(() => {
     return () => {
       dispatch(setShowPreviewImages(false));
@@ -258,8 +246,14 @@ export default memo(function LiveControls({
     showControl();
     if (hideControls) return;
     if (refNextChannel.current) {
+      if (channelChangeTimeout.current) {
+        clearTimeout(channelChangeTimeout.current);
+      }
+
       setActive(0);
-      getChannelInfo(refNextChannel.current.id);
+      channelChangeTimeout.current = setTimeout(() => {
+        getChannelInfo(refNextChannel.current.id);
+      }, 200);
     }
   };
 
@@ -267,8 +261,14 @@ export default memo(function LiveControls({
     showControl();
     if (hideControls) return;
     if (refPrevChannel.current) {
+      if (channelChangeTimeout.current) {
+        clearTimeout(channelChangeTimeout.current);
+      }
+
       setActive(0);
-      getChannelInfo(refPrevChannel.current.id);
+      channelChangeTimeout.current = setTimeout(() => {
+        getChannelInfo(refPrevChannel.current.id);
+      }, 200);
     }
   };
 
@@ -502,6 +502,14 @@ export default memo(function LiveControls({
       }
     },
   });
+
+  useEffect(() => {
+    return () => {
+      if (channelChangeTimeout.current) {
+        clearTimeout(channelChangeTimeout.current);
+      }
+    };
+  }, []);
 
   return (
     <>
