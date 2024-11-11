@@ -49,6 +49,10 @@ export default function LivePage() {
     } else {
       getFirstChannel(allChannels);
     }
+
+    if (window.Android) {
+      document.body.classList.add("playing");
+    }
   }, []);
 
   const getAllChannels = async () => {
@@ -111,6 +115,7 @@ export default function LivePage() {
   useKeydown({
     isActive: !pipMode && !showPreviewImages,
     back: () => {
+      document.body.classList.remove("playing");
       window.PLAYER.destroyPlayer();
       navigate(PATH.MENU);
     },

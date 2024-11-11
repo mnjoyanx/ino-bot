@@ -68,6 +68,8 @@ export default memo(function LiveControls({
 
   const channelChangeTimeout = useRef(null);
 
+  const [displayChannel, setDisplayChannel] = useState(null);
+
   const findChannel = () => {
     if (allChannels.length <= 1) return;
     for (let i = 0; i < allChannels.length; i++) {
@@ -250,8 +252,11 @@ export default memo(function LiveControls({
         clearTimeout(channelChangeTimeout.current);
       }
 
+      setDisplayChannel(refNextChannel.current.position);
       setActive(0);
+
       channelChangeTimeout.current = setTimeout(() => {
+        setDisplayChannel(null);
         getChannelInfo(refNextChannel.current.id);
       }, 200);
     }
@@ -265,8 +270,11 @@ export default memo(function LiveControls({
         clearTimeout(channelChangeTimeout.current);
       }
 
+      setDisplayChannel(refPrevChannel.current.position);
       setActive(0);
+
       channelChangeTimeout.current = setTimeout(() => {
+        setDisplayChannel(null);
         getChannelInfo(refPrevChannel.current.id);
       }, 200);
     }
@@ -513,7 +521,9 @@ export default memo(function LiveControls({
 
   return (
     <>
-      {number ? <p className="num-change-channel">{number}</p> : null}
+      {number || displayChannel ? (
+        <p className="num-change-channel">{number || displayChannel}</p>
+      ) : null}
       <div
         className={`live-control${hideControls ? " hide" : ""}${showPreviewImages ? " preview" : ""}`}
       >
