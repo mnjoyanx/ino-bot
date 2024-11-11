@@ -13,13 +13,15 @@ import MovieInfo from "@pages/movieInfo/Index.jsx";
 import { ToastProvider } from "./hooks/useToast";
 import { MoviesProvider } from "./context/moviesContext";
 import AppsPage from "@pages/apps/Index.jsx";
+import { selectIsPlayerOpen } from "@app/global";
+import { useSelector } from "react-redux";
+import "./styles/global.css";
 
 const getVersion = () => {
   var req = new XMLHttpRequest();
 
   req.onreadystatechange = function () {
     if (this.readyState == 4 && this.status == 200) {
-      console.log(this.responseText, "responseText");
       let data = JSON.parse(this.responseText);
 
       let VERSION = data.version;
@@ -50,6 +52,21 @@ const getVersion = () => {
 getVersion();
 
 function App() {
+  const isPlayerOpen = useSelector(selectIsPlayerOpen);
+
+  useEffect(() => {
+    if (window.Android) {
+      if (isPlayerOpen) {
+        document.body.classList.add("playing");
+      } else {
+        document.body.classList.remove("playing");
+        if (window.Android) {
+          window.Android.destroyPlayer();
+        }
+      }
+    }
+  }, [isPlayerOpen]);
+
   return (
     <ToastProvider>
       <Routes>

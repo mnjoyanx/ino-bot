@@ -58,7 +58,9 @@ function SplashScreen() {
 
     message.basics = message.basics[0];
 
-    console.log(message, "messsage");
+    if (!localStorage.getItem("crop_host")) {
+      localStorage.setItem("crop_host", message.app_settings.image_crop_host);
+    }
 
     LOCAL_STORAGE.LOGO.SET(message.basics.logo);
 
@@ -71,28 +73,10 @@ function SplashScreen() {
       };
     });
 
-    console.log(message, "message");
-
     dispatch(setConfigs(message));
 
     setIsLoading(false);
     checkDeviceId();
-    // get_configs({ languageId: languageRef.current.id }, (res) => {
-    //   res.basics = res.basics[0];
-
-    //   setImagesApp((prev) => {
-    //     return {
-    //       ...prev,
-    //       bg: res.basics.background_image,
-    //       logo: res.basics.logo,
-    //       host: res.app_settings.web_host,
-    //     };
-    //   });
-
-    //   // dispatch(setConfigs({}));
-
-    //   // getTranslatedWords(!res.app_settings.is_authorization_enabled);
-    // });
   };
 
   const getTranslatedWords = (is_guest) => {

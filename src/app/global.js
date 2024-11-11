@@ -10,6 +10,7 @@ const initialState = {
   selectedQuality: "Auto",
   selectedSubtitle: "Off",
   selectedPlaybackSpeed: "1x",
+  cropHost: "",
 };
 
 const globalSlice = createSlice({
@@ -17,7 +18,6 @@ const globalSlice = createSlice({
   initialState,
   reducers: {
     setCtrl: (state, action) => {
-      console.warn("setCtrl", action.payload);
       state.ctrl = action.payload;
     },
     setIsOpenMainSidebar: (state, action) => {
@@ -44,6 +44,9 @@ const globalSlice = createSlice({
     setSelectedPlaybackSpeed: (state, action) => {
       state.selectedPlaybackSpeed = action.payload;
     },
+    setCropHost: (state, action) => {
+      state.cropHost = action.payload;
+    },
   },
 });
 
@@ -57,6 +60,7 @@ export const {
   setSelectedQuality,
   setSelectedSubtitle,
   setSelectedPlaybackSpeed,
+  setCropHost,
 } = globalSlice.actions;
 
 export const selectCtrl = (state) => state.global.ctrl;
@@ -71,4 +75,6 @@ export const selectSelectedQuality = (state) => state.global.selectedQuality;
 export const selectSelectedSubtitle = (state) => state.global.selectedSubtitle;
 export const selectSelectedPlaybackSpeed = (state) =>
   state.global.selectedPlaybackSpeed;
+export const selectCropHost = (state) => state.global.cropHost;
+
 export default globalSlice.reducer;

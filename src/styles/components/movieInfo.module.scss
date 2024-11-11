@@ -7,6 +7,13 @@
   height: 100%;
   color: white;
   font-family: Arial, sans-serif;
+  background-color: black;
+  z-index: 9999999;
+
+  &.hidden {
+    background-color: transparent !important;
+    z-index: 1 !important;
+  }
 }
 
 .background-image {
@@ -19,7 +26,7 @@
   background-position: center;
 }
 
-#root.android .background-image {
+body.player-open .background-image {
   background-image: none !important;
 }
 
@@ -140,4 +147,15 @@
     transparent 100%
   );
   z-index: -1;
+}
+// jersey girl
+
+.movie-loading {
+  width: 128rem;
+  height: 72rem;
+  background-color: black;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99999999999;
 }

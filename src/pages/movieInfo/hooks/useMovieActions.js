@@ -32,7 +32,6 @@ export const useMovieActions = (
 
       const body = { id };
       if (type === "tv_show") {
-        console.log(lastWatchEpisode, "lastWatchEpisode");
         body.episode_id = lastWatchEpisode || currentEpisode;
       }
       const response = await getMovieUrl(body);
@@ -55,7 +54,6 @@ export const useMovieActions = (
     const body = { movieId: id };
 
     if (type === "tv_show") {
-      console.log(lastWatchEpisode, "lastWatchEpisode");
       body.episodeId = lastWatchEpisode.seasonId;
     }
 
@@ -73,7 +71,6 @@ export const useMovieActions = (
       }
       const parsedResponse = JSON.parse(response);
       if (!parsedResponse.error) {
-        console.log(parsedResponse, "parsedResponse");
         showToast(parsedResponse.message, "success", 3000);
       } else {
         showToast("Failed to add movie to favorites", "error", 3000);

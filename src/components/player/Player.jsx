@@ -135,25 +135,6 @@ export default memo(function Player({
     }
   };
 
-  // const onErrorHandler = useCallback(
-  //   async (error) => {
-  //     try {
-  //       await retryOperation(retryPlayback, {
-  //         maxRetries: 3,
-  //         retryDelay: 2000,
-  //         onSuccess: () => {
-  //           showToast("Playback resumed successfully", "success", 3000);
-  //         },
-  //         onError: () => "Unable to play channel. Please try again later.",
-  //         errorDuration: 5000,
-  //       });
-  //     } catch (error) {
-  //       console.error("All retry attempts failed:", error);
-  //     }
-  //   },
-  //   [retryOperation, showToast]
-  // );
-
   const retryPlayback = useCallback(async () => {
     if (!refVideo.current) return;
 
@@ -175,8 +156,6 @@ export default memo(function Player({
   }, [refVideo.current]);
 
   const onErrorHandler = async (err) => {
-    console.warn("----------errrorrr---------", err);
-
     if (retryC < maxRetries) {
       showToast(
         `Attempting to replay... (${retryC + 1}/${maxRetries})`,
@@ -209,6 +188,7 @@ export default memo(function Player({
       const currentTime = refVideo.current.currentTime;
       const newTime =
         direction === "forward" ? currentTime + 10 : currentTime - 10;
+
       refVideo.current.currentTime = Math.max(
         0,
         Math.min(newTime, refVideo.current.duration),
@@ -217,7 +197,6 @@ export default memo(function Player({
   };
 
   useEffect(() => {
-    console.log("URL in Player:", url);
     document.addEventListener("playerError", onErrorHandler);
     setRetryC(0);
     hideToast();

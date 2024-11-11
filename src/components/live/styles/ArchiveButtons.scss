@@ -1,33 +1,33 @@
 @import "@styles/variables.scss";
 
 .buttons-group-live {
-    display: flex;
-    justify-content: center;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 1rem;
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 1rem;
 
-    .btn-group-live {
-        width: 4rem;
-        height: 4rem;
-        margin: 0 1rem;
-        svg {
-            width: 100%;
-            height: 100%;
-        }
+  .btn-group-live {
+    width: 4rem;
+    height: 4rem;
+    margin: 0 1rem;
+    // svg {
+    //   width: 100%;
+    //   height: 100%;
+    // }
 
-        &.active {
-            svg {
-                fill: $active-color;
-                transition: 0.1s linear;
-            }
-        }
+    &.active {
+      svg {
+        fill: $active-color;
+        transition: 0.1s linear;
+      }
     }
-    .rewind {
-    }
-    .play-pause {
-    }
-    .forward {
-    }
+  }
+  .rewind {
+  }
+  .play-pause {
+  }
+  .forward {
+  }
 }

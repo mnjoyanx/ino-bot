@@ -142,7 +142,6 @@ export default memo(function LiveControls({
   };
 
   const setUrlTimeshift = () => {
-    console.log(currentChannel);
     if (currentChannel.cdn_url) {
       let _url =
         currentChannel.cdn_url +
@@ -162,8 +161,6 @@ export default memo(function LiveControls({
           "/index.m3u8";
       }
 
-      console.log(_url);
-
       setUrl(_url);
     }
   };
@@ -174,7 +171,6 @@ export default memo(function LiveControls({
         dispatch(setCurrentChannel({ ...currentChannel, favorite: true }));
         const res = await addLiveFavorite({ channel_id: currentChannel.id });
         const parsedRes = JSON.parse(res);
-        console.log(parsedRes, "parsedRes");
         if (parsedRes.error) {
           dispatch(setCurrentChannel({ ...currentChannel, favorite: false }));
         }
@@ -185,10 +181,8 @@ export default memo(function LiveControls({
         if (parsedRes.error) {
           dispatch(setCurrentChannel({ ...currentChannel, favorite: true }));
         }
-        console.log(parsedRes, "parsedRes");
       }
     } catch (err) {
-      console.log(err);
       dispatch(setCurrentChannel({ ...currentChannel, favorite: !isAdd }));
     }
   };
@@ -248,6 +242,15 @@ export default memo(function LiveControls({
       currentTimeSeekto.current = currentTimeSeekto.current + 10;
       refVal.current.innerText = formatTime(currentTimeSeekto.current);
       refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration.current) * 100}%`;
+    }
+  };
+
+  const imitateTimeUpdate = (currentTime, duration) => {
+    if (currentTimeRef.current) {
+      currentTimeRef.current.innerHTML = formatTime(currentTime);
+    }
+    if (durationRef.current) {
+      durationRef.current.innerHTML = formatTime(duration);
     }
   };
 
@@ -351,13 +354,33 @@ export default memo(function LiveControls({
         setPipMode(true);
         window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
       } else if (active === 1) {
-        // show timeshift
-        if (playerType == "live") refUrlLive.current = url;
+        // Store current channel info before switching to timeshift
+        if (playerType === "live") {
+          refUrlLive.current = {
+            url: url,
+            channelId: currentChannel.id,
+          };
+        }
         setUrlTimeshift();
         setActive(2);
         dispatch(setPlayerType("timeshift"));
       } else if (active === 2) {
         toggleFavorite(!currentChannel.favorite);
+      } else if (active === 4) {
+        setActive(0);
+        if (currentChannel) {
+          if (
+            refUrlLive.current &&
+            refUrlLive.current.channelId === currentChannel.id
+          ) {
+            // Same channel, can use stored URL
+            setUrl(refUrlLive.current.url);
+          } else {
+            // Channel changed or no stored URL, get fresh channel info
+            getChannelInfo(currentChannel.id);
+          }
+        }
+        dispatch(setPlayerType("live"));
       }
     },
   });
@@ -454,13 +477,27 @@ export default memo(function LiveControls({
         else pause();
       } else if (active === 1 || active === 3) {
         if (active === 1) {
-          seekToHandler("rewind");
+          if (window.Android) {
+            const currentTime = window.Android.getCurrentTime();
+            const duration = window.Android.getVideoDuration();
+            imitateTimeUpdate(currentTime, duration);
+            seekToHandler("rewind");
+          } else {
+            seekToHandler("rewind");
+          }
         } else if (active === 3) {
+          if (window.Android) {
+            const currentTime = window.Android.getCurrentTime();
+            const duration = window.Android.getVideoDuration();
+            imitateTimeUpdate(currentTime, duration);
+          }
           seekToHandler("forward");
         }
       } else if (active === 4) {
         setActive(0);
-        setUrl(refUrlLive.current);
+        if (currentChannel) {
+          getChannelInfo(currentChannel.id);
+        }
         dispatch(setPlayerType("live"));
       }
     },

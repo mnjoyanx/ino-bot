@@ -1,7 +1,11 @@
 import React, { useState, useCallback, useContext, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { selectCtrl, setIsMovieSearchBarOpen } from "@app/global";
-import { GridView, InoButton, ListView } from "ino-ui-tv";
+import {
+  selectCropHost,
+  selectCtrl,
+  setIsMovieSearchBarOpen,
+} from "@app/global";
+import { GridView, InoButton, ListView, ListGridView } from "ino-ui-tv";
 
 import useKeydown from "@hooks/useKeydown";
 import MovieCard from "./MovieCard";
@@ -13,10 +17,13 @@ import {
   setIsOpenMainSidebar,
 } from "@app/global";
 import Loading from "@components/common/Loading";
+import { imageResizer } from "@utils/util";
 
 const MoviesList = ({ isVertical, isLoading }) => {
   const dispatch = useDispatch();
   const ctrl = useSelector(selectCtrl);
+  const cropHost = useSelector(selectCropHost);
+
   const { moviesByGenre, selectedType, dynamicContent } =
     useContext(MoviesContext);
   const isMovieSearchBarOpen = useSelector(selectIsMovieSearchBarOpen);
@@ -48,7 +55,9 @@ const MoviesList = ({ isVertical, isLoading }) => {
       if (activeCategory > 0) {
         setActiveCategory(activeCategory - 1);
       } else {
-        dispatch(setCtrl("backBtn"));
+        if (selectedType === "movie" || selectedType === "tv_show") {
+          dispatch(setCtrl("backBtn"));
+        }
       }
     },
   });
@@ -62,45 +71,13 @@ const MoviesList = ({ isVertical, isLoading }) => {
           style={style}
           isActive={isActive}
           name={item.name}
-          poster={item.poster}
+          poster={`${imageResizer(cropHost, item.poster, 200, 300, "0", "jpg")}`}
           isVertical={isVertical}
         />
       );
     },
-    [isVertical],
+    [isVertical, cropHost],
   );
-
-  const renderCategoryContent = (category, categoryIndex) => {
-    if (!category?.list || category.list.length === 0) return null;
-
-    return (
-      <div className={styles["category-container"]}>
-        <h2 className={styles["movies-list_title"]}>{category.title}</h2>
-        <ListView
-          id={`movie_list_${category.id}`}
-          uniqueKey={`movies-${category.id}-list`}
-          itemsTotal={category.list.length}
-          itemsCount={5}
-          listType="horizontal"
-          itemWidth={isVertical ? 35 : 20}
-          itemHeight={isVertical ? 20 : 27}
-          isActive={ctrl === "moviesSeries" && activeCategory === categoryIndex}
-          gap={1}
-          buffer={5}
-          onLeft={() => {
-            dispatch(setCtrl("mainSidebar"));
-            dispatch(setIsOpenMainSidebar(true));
-          }}
-          arrows={{ show: true }}
-          debounce={100}
-          nativeControle={true}
-          renderItem={renderMovieCard}
-          data={category.list}
-          onBackScrollIndex={0}
-        />
-      </div>
-    );
-  };
 
   return (
     <>
@@ -114,24 +91,24 @@ const MoviesList = ({ isVertical, isLoading }) => {
             <>
               {currentMovies && currentMovies.length && !isLoading ? (
                 <div className={styles["movies-list"]}>
-                  <ListView
-                    id="categories_list"
-                    uniqueKey="categories-list"
-                    className={styles["categories-list"]}
-                    itemsTotal={currentMovies.length}
-                    itemsCount={1}
-                    listType="vertical"
-                    itemHeight={35}
-                    isActive={ctrl === "moviesSeries"}
-                    buffer={2}
-                    debounce={100}
-                    nativeControle={true}
-                    renderItem={({ index, style, isActive, item }) => (
-                      <div style={style} className={styles["category-wrapper"]}>
-                        {renderCategoryContent(item, index)}
-                      </div>
-                    )}
+                  <ListGridView
+                    id="movies-grid"
                     data={currentMovies}
+                    rowsCount={currentMovies.length}
+                    itemsTotal={currentMovies.length}
+                    itemsCount={3}
+                    itemWidth={20}
+                    itemHeight={30}
+                    withTitle={true}
+                    buffer={3}
+                    gap={2}
+                    rowGap={10}
+                    isActive={ctrl === "moviesSeries"}
+                    renderItem={renderMovieCard}
+                    onLeft={() => {
+                      dispatch(setCtrl("mainSidebar"));
+                      dispatch(setIsOpenMainSidebar(true));
+                    }}
                   />
                 </div>
               ) : (
@@ -158,14 +135,16 @@ const MoviesList = ({ isVertical, isLoading }) => {
               <GridView
                 id="gridview-1"
                 uniqueKey="gridview-1"
-                isActive={ctrl === "moviesSeries"}
-                data={dynamicContent}
-                rowItemsCount={3}
-                rowCount={1}
-                itemsTotal={1}
-                itemWidth={20}
-                itemHeight={27}
+                isActive={false}
+                data={[...dynamicContent, ...dynamicContent, ...dynamicContent]}
+                itemWidth={isVertical ? 35 : 20}
+                itemHeight={isVertical ? 20 : 27}
+                scrollOffset={10}
                 gap={1}
+                rowGap={4}
+                onUp={() => {
+                  dispatch(setCtrl("backBtn"));
+                }}
                 onLeft={() => {
                   dispatch(setCtrl("mainSidebar"));
                   dispatch(setIsOpenMainSidebar(true));
@@ -175,7 +154,7 @@ const MoviesList = ({ isVertical, isLoading }) => {
                 nativeControle={true}
                 renderItem={({ index, style, isActive, item }) => {
                   return (
-                    <div style={style} className={styles["category-wrapper"]}>
+                    <div className={styles["category-wrapper"]}>
                       {renderMovieCard({ index, style, isActive, item })}
                     </div>
                   );

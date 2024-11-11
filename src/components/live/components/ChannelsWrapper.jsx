@@ -41,7 +41,7 @@ export default memo(function ChannelsWrapper({
       getChannelInfo(id);
       dispatch(setPlayerType("live"));
     },
-    [currentChannel, playerType]
+    [currentChannel, playerType],
   );
 
   const handleUp = () => {
@@ -114,9 +114,7 @@ export default memo(function ChannelsWrapper({
     }
   }, [categories, currentChannel]);
 
-  useEffect(() => {
-    console.log("ChannelsWrapper", active, start);
-  }, [active, start, selectedCategory]);
+  useEffect(() => {}, [active, start, selectedCategory]);
 
   useEffect(() => {
     if (refSetIndex.current) {

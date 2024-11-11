@@ -8,6 +8,7 @@ export default memo(function Progress({
   refVal = null,
   classNames = "",
   duration = 0,
+  currentTime = 0,
   onSeekTo,
 }) {
   const styleProgress = {
@@ -16,6 +17,7 @@ export default memo(function Progress({
 
   const styleProgressBar = {
     backgroundColor: color,
+    width: `${currentTime}px`,
   };
 
   const handleProgressClick = useCallback(
@@ -31,7 +33,7 @@ export default memo(function Progress({
 
       onSeekTo(seekTime);
     },
-    [duration, onSeekTo]
+    [duration, onSeekTo],
   );
 
   return (

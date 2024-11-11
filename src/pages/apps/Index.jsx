@@ -16,6 +16,8 @@ export default function AppsPage() {
   const ctrl = useSelector(selectCtrl);
   const [isAndroid, setIsAndroid] = useState(false);
 
+  const navigate = useNavigate();
+
   const [apps, setApps] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -75,7 +77,6 @@ export default function AppsPage() {
                   rowCount={Math.ceil(apps.length / 3)}
                   bufferStart={10}
                   bufferEnd={10}
-                  itemsTotal={apps.length}
                   itemWidth={35}
                   itemHeight={25}
                   isActive={ctrl !== "backBtn"}
@@ -90,7 +91,9 @@ export default function AppsPage() {
                   onChangeRow={() => {}}
                   onUp={() => dispatch(setCtrl("backBtn"))}
                   onDown={() => {}}
-                  onBack={() => {}}
+                  onBack={() => {
+                    navigate("/menu");
+                  }}
                   //   onBackScrollIndex={0}
                   renderItem={({ item, index, style, isActive }) => (
                     <div

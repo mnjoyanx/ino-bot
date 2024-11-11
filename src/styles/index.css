@@ -54,13 +54,19 @@ p {
   display: flex;
   align-items: center;
   gap: 1rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
   background-color: transparent;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
   outline: none;
   position: absolute;
   top: 3rem;
   left: 20rem;
+}
+
+.back-button.active {
+  border-color: #ccc;
 }
 
 .back-button svg {
@@ -76,7 +82,7 @@ p {
 
 .back-button:hover,
 .back-button.active .back-button-text {
-  color: #ccc;
+  /* color: #ccc; */
 }
 
 .back-button:hover svg,

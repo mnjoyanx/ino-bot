@@ -74,9 +74,16 @@
     .item {
       @include flex(flex-start, center);
       gap: 1.6rem;
+      border-left: 0.4rem solid transparent;
+      transition: border-color 0.2s linear;
+      padding-left: 1.6rem;
 
       &.parent {
         position: relative;
+      }
+
+      &.selected {
+        border-color: #fff;
       }
 
       &.active {

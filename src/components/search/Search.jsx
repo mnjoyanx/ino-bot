@@ -200,6 +200,23 @@ export default memo(function Search({
         }
       }
     },
+
+    ok: () => {
+      if (ctrl === "inp") {
+        if (type === "live") {
+          refInp.current?.blur();
+        } else if (type === "content") {
+          refContentInp.current?.blur();
+        }
+
+        if (empty) {
+          dispatch(setCtrl("backBtn"));
+        } else {
+          dispatch(setCtrl("result"));
+        }
+      }
+    },
+
     handleKeyPress: (key) => {
       if (ctrl !== "inp") return;
 
@@ -240,6 +257,7 @@ export default memo(function Search({
         setUrl={setUrl}
         setRemove={setRemove}
         setControl={setControl}
+        ctrl={ctrl}
         control={
           control === "result" && !empty && ctrl !== "inp" && ctrl !== "backBtn"
         }

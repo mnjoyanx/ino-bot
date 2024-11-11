@@ -16,6 +16,7 @@ import {
   selectIsMovieSearchBarOpen,
   setIsMovieSearchBarOpen,
   selectIsPlayerOpen,
+  setCropHost,
 } from "@app/global";
 import Search from "@components/search/Search";
 import BackButton from "@components/common/BackButton";
@@ -183,6 +184,7 @@ const MoviesPage = () => {
         setSelectedType(firstItem.type);
         setMenuList(menu);
         setIsVertical(message.app_settings.isPortrait);
+        dispatch(setCropHost(message.app_settings.image_crop_host));
       }
     } catch (error) {
       console.log(error);
@@ -219,7 +221,7 @@ const MoviesPage = () => {
     <>
       {/* {moviesByGenre && Object.keys(moviesByGenre).length ? ( */}
       {selectedType ? (
-        <div className="home-page">
+        <div className={`home-page ${isPlayerOpen ? "hidden" : ""}`}>
           {!isMovieSearchBarOpen ? (
             <BackButton
               path="Menu"
@@ -253,7 +255,7 @@ const MoviesPage = () => {
           </div>
         </div>
       ) : (
-        <div className={styles["loading"]}>Loading...</div>
+        <div className={styles["movies-loading"]}></div>
       )}
     </>
   );

@@ -85,7 +85,6 @@ export default function AndroidPlayer({
     streamEnd();
   };
   const timeUpdateHandler = () => {
-    console.log("time update");
     const currentTime = window.Android.getCurrentTime();
     const duration = window.Android.getVideoDuration();
     timeUpdate(currentTime, duration);

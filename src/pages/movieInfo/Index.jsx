@@ -8,11 +8,18 @@ import TvShowSeasons from "./components/TvShowSeasons";
 import Player from "@components/player/Player";
 import { getMovieById, getMovieCasts, rememberTime } from "@server/requests";
 import useKeydown from "@hooks/useKeydown";
-import { selectIsPlayerOpen, selectCtrl, setCtrl } from "@app/global";
+import {
+  selectIsPlayerOpen,
+  selectCtrl,
+  setCtrl,
+  selectCropHost,
+  setCropHost,
+} from "@app/global";
 import { MovieInfoProvider, useMovieInfo } from "@context/movieInfoContext";
 
 import styles from "@styles/components/movieInfo.module.scss";
 import { setIsPlayerOpen } from "../../app/global";
+import { imageResizer } from "@utils/util";
 
 const MovieInfoContent = () => {
   const { id } = useParams();
@@ -33,7 +40,8 @@ const MovieInfoContent = () => {
   } = useMovieInfo();
 
   const [isLoading, setIsLoading] = useState(false);
-
+  const [isCropHostLoading, setIsCropHostLoading] = useState(false);
+  const cropHost = useSelector(selectCropHost);
   const fetchMovie = async () => {
     try {
       setIsLoading(true);
@@ -46,6 +54,7 @@ const MovieInfoContent = () => {
         setMovieInfo({
           ...parsedResponse.message,
           casts: parsedCastsResponse.message,
+          favorite: !!parsedResponse.message.favorites,
         });
       } else {
         console.error(parsedResponse.error);
@@ -77,7 +86,6 @@ const MovieInfoContent = () => {
       if (needToRefetch) {
         fetchMovie();
       }
-      console.log("rememberTimeHandler", response);
     } catch (error) {
       console.error("Failed to remember time:", error);
     }
@@ -107,6 +115,12 @@ const MovieInfoContent = () => {
   }, [id]);
 
   useEffect(() => {
+    if (!cropHost) {
+      dispatch(setCropHost(localStorage.getItem("crop_host")));
+    }
+  }, [cropHost]);
+
+  useEffect(() => {
     if (ctrl !== "movieInfo") {
       dispatch(setCtrl("movieInfo"));
     }
@@ -123,6 +137,9 @@ const MovieInfoContent = () => {
       document.body.classList.add("player-open");
     } else {
       document.body.classList.remove("player-open");
+      if (window.Android) {
+        window.Android.destroyPlayer();
+      }
     }
   }, [isPlayerOpen]);
 
@@ -131,17 +148,28 @@ const MovieInfoContent = () => {
   });
 
   if (!movieInfo) {
-    return <div>Loading...</div>;
+    return <div className={styles["movie-loading"]}></div>;
   }
 
   return (
-    <div className={styles["movie-info"]}>
+    <div
+      className={`${styles["movie-info"]} ${isPlayerOpen ? styles["hidden"] : ""}`}
+    >
       {isLoading ? (
         <div className={styles["loading"]}>Loading...</div>
       ) : (
         <>
-          {!isPlayerOpen ? (
-            <MovieBackground backdrop={movieInfo.backdrop} />
+          {!isPlayerOpen && movieInfo.backdrop ? (
+            <MovieBackground
+              backdrop={imageResizer(
+                cropHost,
+                movieInfo.backdrop,
+                1280,
+                720,
+                "0",
+                "jpg",
+              )}
+            />
           ) : null}
           <MovieContent movie={movieInfo} isPlayerOpen={isPlayerOpen} />
           {movieInfo.type === "movie" ? (

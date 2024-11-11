@@ -41,7 +41,7 @@ export const formatDate = (date, patternStr) => {
     minute = date.getMinutes(),
     second = date.getSeconds(),
     miliseconds = date.getMilliseconds(),
-    h = hour % 12,
+    h = hour % 12 || 12, // Use 12 instead of 0 for midnight/noon
     hh = twoDigitPad(h),
     HH = twoDigitPad(hour),
     mm = twoDigitPad(minute),
@@ -201,4 +201,42 @@ export const scrollElement = (
   if (!element) return;
 
   element.style.transform = `translate${type.toUpperCase()}(${size})`;
+};
+
+export const imageResizer = (host, imageUrl, width, height, type, format) => {
+  let url = "";
+
+  if (!host) return;
+  try {
+    let newurl = btoa(imageUrl);
+    let newhost = host;
+    let size = "";
+
+    if (height) {
+      size = width + "x" + height;
+    } else {
+      size = width;
+    }
+
+    let hash = "btoa";
+    let is_blured = "";
+
+    if (format) {
+      is_blured += "&format=" + format;
+    }
+
+    url =
+      newhost +
+      "/?url=" +
+      newurl +
+      "&size=" +
+      size +
+      "&hash=" +
+      hash +
+      is_blured;
+  } catch (error) {
+    console.log(error, "error");
+  }
+
+  return url;
 };

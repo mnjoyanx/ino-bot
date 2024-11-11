@@ -55,8 +55,10 @@
     }
   }
   .parent-result {
-    width: 112rem;
+    width: 115rem;
     margin: 5rem auto 0;
+    overflow: hidden;
+    padding-bottom: 4rem;
     .empty-result {
       width: 100%;
       padding-top: 10rem;

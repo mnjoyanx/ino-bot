@@ -12,6 +12,7 @@ import SvgNextEpisode from "@assets/icons/SvgNextEpisode";
 import { useMovieInfo } from "@context/movieInfoContext";
 
 import "@styles/components/vodControl.scss";
+import { formatTime } from "@utils/util";
 
 let hideControlsTimer = null;
 
@@ -46,7 +47,18 @@ export default memo(function VodControls({
     clearTimeout(hideControlsTimer);
     hideControlsTimer = setTimeout(() => {
       setHideControls(true);
+      setShowSettings(false);
+      dispatch(setCtrl("vodCtrl"));
     }, 3000);
+  };
+
+  const imitateTimeUpdate = (currentTime, duration) => {
+    if (currentTimeRef.current) {
+      currentTimeRef.current.innerHTML = formatTime(currentTime);
+    }
+    if (durationRef.current) {
+      durationRef.current.innerHTML = formatTime(duration);
+    }
   };
 
   useEffect(() => {
@@ -119,9 +131,32 @@ export default memo(function VodControls({
     },
     ok: () => {
       if (activeCtrl === "top") {
-        if (topActiveIndex === 0) handleSeek("backward");
-        else if (topActiveIndex === 1) isPaused ? play() : pause();
-        else if (topActiveIndex === 2) handleSeek("forward");
+        if (topActiveIndex === 0) {
+          if (window.Android) {
+            const currentTime = window.Android.getCurrentTime();
+            const duration = window.Android.getVideoDuration();
+            imitateTimeUpdate(currentTime, duration);
+          } else {
+            imitateTimeUpdate(
+              refVideo.current.currentTime,
+              refVideo.current.duration,
+            );
+          }
+          handleSeek("backward");
+        } else if (topActiveIndex === 1) isPaused ? play() : pause();
+        else if (topActiveIndex === 2) {
+          if (window.Android) {
+            const currentTime = window.Android.getCurrentTime();
+            const duration = window.Android.getVideoDuration();
+            imitateTimeUpdate(currentTime, duration);
+          } else {
+            imitateTimeUpdate(
+              refVideo.current.currentTime,
+              refVideo.current.duration,
+            );
+          }
+          handleSeek("forward");
+        }
       } else {
         if (bottomActiveIndex === 0 && !isLastEpisode) {
           handleNextEpisode();
@@ -175,6 +210,7 @@ export default memo(function VodControls({
             classNames="vod_progress"
             duration={refVideo.current ? refVideo.current.duration : 0}
             onSeekTo={handleSeekTo}
+            currentTime={refVideo.current ? refVideo.current.currentTime : 0}
           />
           <div className="vod-actions_wrapper">
             <div className="vod-ctrl_times">

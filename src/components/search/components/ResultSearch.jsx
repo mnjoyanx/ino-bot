@@ -21,6 +21,7 @@ export default memo(function ResultSearch({
   refInp,
   setPipMode,
   empty,
+  ctrl,
 }) {
   const dispatch = useDispatch();
   const [active, setActive] = useState(0);
@@ -80,9 +81,10 @@ export default memo(function ResultSearch({
           itemsCount={5}
           itemsTotal={result.length}
           buffer={2}
+          gap={2}
           itemWidth={type === "live" ? 18 : 21}
           itemHeight={type === "live" ? 18 : 30}
-          isActive={true}
+          isActive={control && !empty}
           initialActiveIndex={0}
           onUp={() => {
             refInp.current.focus();

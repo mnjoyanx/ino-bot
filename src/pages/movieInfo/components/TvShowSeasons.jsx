@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { selectCtrl, setCtrl } from "@app/global";
+import { selectCtrl, selectIsPlayerOpen, setCtrl } from "@app/global";
 import styles from "@styles/components/tvShowSeasons.module.scss";
 import SeasonEpisodes from "./SeasonEpisodes";
 import { getEpisodes } from "@server/requests";
@@ -23,6 +23,7 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
     activeSeasonIndex,
     setActiveSeasonIndex,
   } = useMovieInfo();
+  const isPlayerOpen = useSelector(selectIsPlayerOpen);
 
   const [allEpisodes, setAllEpisodes] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,8 +58,6 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
           });
         } else {
         }
-
-        console.log(lastWatchedEpisodeId, "lastWatchedEpisodeId-----");
 
         setCurrentEpisode(lastWatchedEpisodeId);
         setAllEpisodes(allEpisodesClone);
@@ -111,7 +110,9 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
   });
 
   return (
-    <div className={styles["seasons-container"]}>
+    <div
+      className={`${styles["seasons-container"]} ${isPlayerOpen ? styles["hidden"] : ""}`}
+    >
       <h2>Seasons</h2>
       <div className={styles["seasons-list"]}>
         {seasons.map((season, index) => (

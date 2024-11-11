@@ -5,8 +5,22 @@
   height: 100%;
   min-height: 72rem;
   min-width: 128rem;
-  @include bg-img;
   background-color: black;
+  @include bg-img;
+
+  &.hidden {
+    background-color: transparent;
+  }
+}
+
+.movies-loading {
+  width: 128rem;
+  height: 72rem;
+  background-color: black;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99999999999;
 }
 
 body.player-open .home-page {

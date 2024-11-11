@@ -20,7 +20,7 @@ import { setCtrl, setIsMovieSearchBarOpen } from "@app/global";
 
 const MainSidebar = ({ categories }) => {
   const dispatch = useDispatch();
-  const { setSelectedGenre, setSelectedType, menuList } =
+  const { setSelectedGenre, setSelectedType, menuList, selectedType } =
     useContext(MoviesContext);
 
   const isOpen = useSelector(selectIsOpenMainSidebar);
@@ -30,32 +30,17 @@ const MainSidebar = ({ categories }) => {
   const [active, setActive] = useState(0);
   const [isCategoriesOpened, setIsCategoriesOpened] = useState(false);
   const [translateY, setTranslateY] = useState(0);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const items = [
     {
       name: "Search",
       icon: <SvgSearch />,
     },
-    // {
-    //   name: "Favorites",
-    //   id: "favorites",
-    //   icon: <SvgFavorites />,
-    // },
-    // {
-    //   name: "Last Watched",
-    //   id: "lastWatched",
-    //   icon: <SvgLastWatched />,
-    // },
-    // {
-    //   name: "Recently Added",
-    //   id: "recentlyAdded",
-    //   icon: <SvgRecentlyAdded />,
-    // },
   ];
 
   useEffect(() => {
     if (categories && menuList) {
-      console.log(menuList, "menuList", categories);
       const newItems = [
         ...items,
         ...menuList.map((item) => ({
@@ -148,6 +133,10 @@ const MainSidebar = ({ categories }) => {
     dispatch(setCtrl("moviesSeries"));
   };
 
+  useEffect(() => {
+    setSelectedItem(selectedType);
+  }, [selectedType]);
+
   return (
     <div
       className={`${styles["main-sidebar"]} ${isOpen ? styles["open"] : ""}`}
@@ -164,7 +153,7 @@ const MainSidebar = ({ categories }) => {
           {sidebarItems.map((item, index) => {
             return (
               <div
-                className={`${styles["item"]} ${active === index ? styles["active"] : ""} ${item.items ? styles["parent"] : ""}`}
+                className={`${styles["item"]} ${active === index ? styles["active"] : ""} ${item.items ? styles["parent"] : ""} ${item.type === selectedItem ? styles["selected"] : ""}`}
                 key={index}
               >
                 <div className={styles["icon"]}>

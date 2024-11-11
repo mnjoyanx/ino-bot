@@ -101,7 +101,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
         onClick={handleFavoriteClick}
         onMouseEnter={() => setActiveButton(2)}
         isActive={activeButton === 2 && ctrl === "movieInfo"}
-        icon={movie.favorites ? <SvgFavFill /> : <SvgFav />}
+        icon={movie.favorite ? <SvgFavFill /> : <SvgFav />}
       />
     </div>
   );

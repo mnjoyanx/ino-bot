@@ -27,11 +27,9 @@ export default memo(function HlsPlayer({
   const hlsRef = useRef(null);
 
   useEffect(() => {
-    console.log("URL changed:", url);
     let hls = null;
 
     if (Hls.isSupported()) {
-      console.log("Hls is supported");
       hls = new Hls();
       hlsRef.current = hls;
 
@@ -39,8 +37,6 @@ export default memo(function HlsPlayer({
       hls.attachMedia(refVideo.current);
 
       hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-        console.log("Manifest parsed, attempting to play", data);
-
         const resolutions = hls.levels.map((level) => level.height);
         const uniqueResolutions = [...new Set(resolutions)];
         dispatch(setResolutions(uniqueResolutions));
@@ -48,26 +44,22 @@ export default memo(function HlsPlayer({
       });
 
       hls.on(Hls.Events.SUBTITLE_TRACK_LOADED, function (e, data) {
-        console.log(hls.subtitleTracks, "sub data ----");
         // dispatch(setSubtitles(hls.subtitleTracks));
       });
 
       hls.on(Hls.Events.LEVEL_SWITCHED, function (e, data) {
-        console.log(data, "level switched");
+        // console.log(data, "level switched");
       });
 
       hls.on(Hls.Events.ERROR, function (err, data) {
-        console.error("Hls error:", err, data);
         error(err);
       });
     } else {
-      console.warn("Hls is not supported");
       refVideo.current.src = url;
     }
 
     return () => {
       if (hls) {
-        console.log("Cleaning up Hls");
         hls.stopLoad();
         hls.detachMedia();
         hls.destroy();
@@ -82,7 +74,7 @@ export default memo(function HlsPlayer({
         hls.currentLevel = -1; // Auto quality
       } else {
         const qualityLevel = hls.levels.findIndex(
-          (level) => `${level.height}p` === selectedQuality
+          (level) => `${level.height}p` === selectedQuality,
         );
         if (qualityLevel !== -1) {
           hls.currentLevel = qualityLevel;
@@ -98,7 +90,7 @@ export default memo(function HlsPlayer({
         hls.subtitleTrack = -1;
       } else {
         const subtitleTrack = hls.subtitleTracks.findIndex(
-          (track) => track.name === selectedSubtitle
+          (track) => track.name === selectedSubtitle,
         );
         if (subtitleTrack !== -1) {
           hls.subtitleTrack = subtitleTrack;
