@@ -57,6 +57,7 @@ export default memo(function Player({
     if (!window.Android) {
       refVideo.current.play();
     } else {
+      console.log("play");
       window.Android.play();
     }
     dispatch(setPaused(false));
@@ -72,7 +73,7 @@ export default memo(function Player({
   };
 
   const loadedMetadataHandler = useCallback(() => {
-    console.log("loadedMetadataHandler", startTime, "start");
+    console.log("loadedMetadataHandler", movieInfo);
     hideToast();
     if (window.Android) {
       const time = movieInfo?.watched?.time || 0;
