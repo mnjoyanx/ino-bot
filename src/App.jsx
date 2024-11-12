@@ -46,7 +46,7 @@ const getVersion = () => {
 
   setTimeout(function () {
     getVersion();
-  }, 300000);
+  }, 30000);
 };
 
 getVersion();
