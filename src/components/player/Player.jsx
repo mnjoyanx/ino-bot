@@ -71,6 +71,7 @@ export default memo(function Player({
   };
 
   const loadedMetadataHandler = useCallback(() => {
+    console.log("loadedMetadataHandler", startTime, "start");
     hideToast();
     if (startTime) {
       if (window.Android) {

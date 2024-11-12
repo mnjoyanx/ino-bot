@@ -1,12 +1,31 @@
 import styles from "@styles/components/movieInfo.module.scss";
-
+import { imageResizer } from "@utils/util";
+import { selectCropHost } from "@app/global";
+import { useSelector } from "react-redux";
 const MovieContent = ({ movie, isPlayerOpen }) => {
+  const cropHost = useSelector(selectCropHost);
+
   return (
     <div
       className={`${styles["content"]} ${window.Android && isPlayerOpen ? styles["hidden"] : ""} ${movie.type === "tv_show" ? styles["tv-show"] : ""}`}
     >
       <div className={styles["shadow"]}></div>
-      <h1 className={styles["title"]}>{movie.name}</h1>
+      {movie.image_title ? (
+        <img
+          src={imageResizer(
+            cropHost,
+            movie.image_title,
+            760,
+            230,
+            "cover",
+            "png",
+          )}
+          alt={movie.name}
+          className={styles["image-title"]}
+        />
+      ) : (
+        <h1 className={styles["title"]}>{movie.name}</h1>
+      )}
       <div className={styles["metadata"]}>
         <span>{movie.year}</span>
         <span>{movie.pg}+</span>

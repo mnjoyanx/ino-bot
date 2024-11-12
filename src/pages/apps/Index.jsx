@@ -80,9 +80,9 @@ export default function AppsPage() {
                   itemWidth={35}
                   itemHeight={25}
                   isActive={ctrl !== "backBtn"}
-                  onOk={(index) => {
+                  onOk={(item) => {
                     if (apps[index]?.app_id) {
-                      window.Android.launchApp(apps[index].app_id);
+                      window.Android.launchApp(item.app_id);
                     }
                   }}
                   initialActiveIndex={0}

@@ -203,12 +203,12 @@ export const scrollElement = (
   element.style.transform = `translate${type.toUpperCase()}(${size})`;
 };
 
-export const imageResizer = (host, imageUrl, width, height, type, format) => {
+export const imageResizer = (host, imageUrl, width, height, fit, format) => {
   let url = "";
 
   if (!host) return;
   try {
-    let newurl = btoa(imageUrl);
+    let newurl = btoa(unescape(encodeURIComponent(imageUrl)));
     let newhost = host;
     let size = "";
 
@@ -218,7 +218,7 @@ export const imageResizer = (host, imageUrl, width, height, type, format) => {
       size = width;
     }
 
-    let hash = "btoa";
+    let hash = "btoa_escape";
     let is_blured = "";
 
     if (format) {
@@ -231,6 +231,8 @@ export const imageResizer = (host, imageUrl, width, height, type, format) => {
       newurl +
       "&size=" +
       size +
+      "&fit=" +
+      fit +
       "&hash=" +
       hash +
       is_blured;
