@@ -18,7 +18,7 @@ window.PLAYER = {
   isPlayingChanged: () => {},
 
   vout: () => {
-    dispatchEvent(new CustomEvent("playbackLoaded"));
+    // dispatchEvent(new CustomEvent("playbackLoaded"));
   },
 
   seekTo: (direction) => {
@@ -110,12 +110,12 @@ export default function AndroidPlayer({
   useEffect(() => {
     window.Android.destroyPlayer();
 
-    window.Android.initPlayer(url, time);
-  }, [url]);
-
-  //   useEffect(() => {
-  //     timeUpdateHandler();
-  //   }, [window.Android.getCurrentTime()]);
+    if (time) {
+      window.Android.initPlayer(url, +time);
+    } else {
+      window.Android.initPlayer(url);
+    }
+  }, [url, time]);
 
   useEffect(() => {
     const state = window.Android.getSate();

@@ -5,6 +5,8 @@ import { useSelector } from "react-redux";
 const MovieContent = ({ movie, isPlayerOpen }) => {
   const cropHost = useSelector(selectCropHost);
 
+  const width = window.Android ? 500 : 760;
+  const height = window.Android ? 155 : 230;
   return (
     <div
       className={`${styles["content"]} ${window.Android && isPlayerOpen ? styles["hidden"] : ""} ${movie.type === "tv_show" ? styles["tv-show"] : ""}`}
@@ -15,8 +17,8 @@ const MovieContent = ({ movie, isPlayerOpen }) => {
           src={imageResizer(
             cropHost,
             movie.image_title,
-            760,
-            230,
+            width,
+            height,
             "cover",
             "png",
           )}

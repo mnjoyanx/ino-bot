@@ -16,7 +16,7 @@ const MovieCard = React.memo(({ style, isActive, name, poster, id }) => {
 
   useKeydown({
     isActive,
-    ok: handleNavigation,
+    // ok: handleNavigation,
   });
 
   return (

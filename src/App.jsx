@@ -41,7 +41,12 @@ const getVersion = () => {
   req.onerror = function () {};
 
   // req.open("GET", HOST + "js/version.json?time=" + Math.random(), true);
-  req.open("GET", "version.json", true);
+  let host = "";
+  const sriptEl = document.getElementById("bundlejs");
+  if (sriptEl) {
+    host = sriptEl.src.split("bundle.js")[0];
+  }
+  req.open("GET", host + "/version.json", true);
   req.send();
 
   setTimeout(function () {

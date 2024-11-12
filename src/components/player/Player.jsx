@@ -9,7 +9,6 @@ import AndroidPlayer from "./components/AndroidPlayer";
 import { selectPlayerType } from "@app/channels/channelsSlice";
 import { useToast } from "@hooks/useToast";
 import VodControls from "./components/VodControl";
-import { selectMovieInfo } from "@context/movieInfoContext";
 
 import "./styles/player.scss";
 
@@ -41,7 +40,6 @@ export default memo(function Player({
   const refCurrentTime = useRef(null);
   const refProgress = useRef(null);
   const { retryOperation, showToast, hideToast } = useToast();
-  const movieInfo = useSelector(selectMovieInfo);
   const secCurrentTime = useRef(0);
   // const secDuration = useRef(0);
   const lastRememberTimeUpdate = useRef(0);
@@ -57,7 +55,6 @@ export default memo(function Player({
     if (!window.Android) {
       refVideo.current.play();
     } else {
-      console.log("play");
       window.Android.play();
     }
     dispatch(setPaused(false));
@@ -73,19 +70,14 @@ export default memo(function Player({
   };
 
   const loadedMetadataHandler = useCallback(() => {
-    console.log("loadedMetadataHandler", movieInfo);
     hideToast();
-    if (window.Android) {
-      const time = movieInfo?.watched?.time || 0;
-      window.Android.seekTo(time);
-    }
     if (startTime) {
       if (refVideo.current) {
         refVideo.current.currentTime = startTime;
       }
     }
     play();
-  }, [startTime, movieInfo]);
+  }, [startTime]);
 
   const handleTimeUpdate = (currentTime, duration) => {
     secCurrentTime.current = currentTime;
@@ -232,6 +224,7 @@ export default memo(function Player({
           url={url}
           timeUpdate={handleTimeUpdate}
           streamEnd={streamEnd}
+          time={startTime}
           startTime={startTime}
           onBack={onBack}
           onError={onErrorHandler}

@@ -48,7 +48,6 @@ const MovieInfoContent = () => {
       const response = await getMovieById({ movie_id: id });
       const parsedResponse = JSON.parse(response);
       if (!parsedResponse.error) {
-        console.log(parsedResponse.message, "parsedResponse.message");
         setStartTime(parsedResponse.message.watched?.time || 0);
         const castsResponse = await getMovieCasts({ movie_id: id });
         const parsedCastsResponse = JSON.parse(castsResponse);
@@ -204,7 +203,7 @@ const MovieInfoContent = () => {
               setUrl={setUrl}
               setRetryC={() => {}}
               onRememberTime={rememberTimeHandler}
-              startTime={startTime}
+              startTime={movieInfo?.watched?.time || startTime || 0}
               onEnded={onEnded}
               showNextEpisode={movieInfo.type === "tv_show"}
             />

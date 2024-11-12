@@ -103,6 +103,9 @@ const MoviesList = ({ isVertical, isLoading }) => {
                     buffer={3}
                     debounce={200}
                     gap={2}
+                    onOk={() => {
+                      console.log("ok");
+                    }}
                     rowGap={10}
                     isActive={ctrl === "moviesSeries"}
                     renderItem={renderMovieCard}
