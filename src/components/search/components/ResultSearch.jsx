@@ -81,6 +81,7 @@ export default memo(function ResultSearch({
           itemsCount={5}
           itemsTotal={result.length}
           buffer={2}
+          debounce={300}
           gap={2}
           itemWidth={type === "live" ? 18 : 21}
           itemHeight={type === "live" ? 18 : 30}

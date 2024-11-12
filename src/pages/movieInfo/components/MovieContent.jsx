@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import styles from "@styles/components/movieInfo.module.scss";
 
 const MovieContent = ({ movie, isPlayerOpen }) => {
@@ -15,9 +14,9 @@ const MovieContent = ({ movie, isPlayerOpen }) => {
         <span>{movie.type}</span>
       </div>
       {movie.casts.length > 0 && (
-        <div className={styles["casts"]}>
+        <div className={styles["casts"]} key={movie.id}>
           {movie.casts.map((cast) => (
-            <div className={styles["cast"]}>
+            <div className={styles["cast"]} key={cast.id}>
               <p className={styles["cast-name"]}>{cast.name}</p>
             </div>
           ))}

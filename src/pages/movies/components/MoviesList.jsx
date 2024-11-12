@@ -101,6 +101,7 @@ const MoviesList = ({ isVertical, isLoading }) => {
                     itemHeight={30}
                     withTitle={true}
                     buffer={3}
+                    debounce={200}
                     gap={2}
                     rowGap={10}
                     isActive={ctrl === "moviesSeries"}
@@ -135,8 +136,8 @@ const MoviesList = ({ isVertical, isLoading }) => {
               <GridView
                 id="gridview-1"
                 uniqueKey="gridview-1"
-                isActive={false}
-                data={[...dynamicContent, ...dynamicContent, ...dynamicContent]}
+                isActive={ctrl === "moviesSeries"}
+                data={dynamicContent}
                 itemWidth={isVertical ? 35 : 20}
                 itemHeight={isVertical ? 20 : 27}
                 scrollOffset={10}
