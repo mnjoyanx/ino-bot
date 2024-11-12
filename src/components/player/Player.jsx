@@ -9,6 +9,7 @@ import AndroidPlayer from "./components/AndroidPlayer";
 import { selectPlayerType } from "@app/channels/channelsSlice";
 import { useToast } from "@hooks/useToast";
 import VodControls from "./components/VodControl";
+import { selectMovieInfo } from "@context/movieInfoContext";
 
 import "./styles/player.scss";
 
@@ -40,7 +41,7 @@ export default memo(function Player({
   const refCurrentTime = useRef(null);
   const refProgress = useRef(null);
   const { retryOperation, showToast, hideToast } = useToast();
-
+  const movieInfo = useSelector(selectMovieInfo);
   const secCurrentTime = useRef(0);
   // const secDuration = useRef(0);
   const lastRememberTimeUpdate = useRef(0);
@@ -73,17 +74,17 @@ export default memo(function Player({
   const loadedMetadataHandler = useCallback(() => {
     console.log("loadedMetadataHandler", startTime, "start");
     hideToast();
+    if (window.Android) {
+      const time = movieInfo?.watched?.time || 0;
+      window.Android.seekTo(time);
+    }
     if (startTime) {
-      if (window.Android) {
-        window.Android.seekTo(startTime);
-      } else {
-        if (refVideo.current) {
-          refVideo.current.currentTime = startTime;
-        }
+      if (refVideo.current) {
+        refVideo.current.currentTime = startTime;
       }
     }
     play();
-  }, [startTime]);
+  }, [startTime, movieInfo]);
 
   const handleTimeUpdate = (currentTime, duration) => {
     secCurrentTime.current = currentTime;
