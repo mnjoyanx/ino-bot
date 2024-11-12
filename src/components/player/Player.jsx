@@ -9,7 +9,6 @@ import AndroidPlayer from "./components/AndroidPlayer";
 import { selectPlayerType } from "@app/channels/channelsSlice";
 import { useToast } from "@hooks/useToast";
 import VodControls from "./components/VodControl";
-import { useMovieInfo } from "@context/movieInfoContext";
 
 import "./styles/player.scss";
 
@@ -43,10 +42,11 @@ export default memo(function Player({
   const { retryOperation, showToast, hideToast } = useToast();
 
   const secCurrentTime = useRef(0);
-  const secDuration = useRef(0);
+  // const secDuration = useRef(0);
   const lastRememberTimeUpdate = useRef(0);
   const maxRetries = 3;
 
+  const [secDuration, setSecDuration] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
   const [alreadyRetryed, setAlreadyRetryed] = useState(false);
 
@@ -86,13 +86,18 @@ export default memo(function Player({
 
   const handleTimeUpdate = (currentTime, duration) => {
     secCurrentTime.current = currentTime;
-    secDuration.current = duration;
+    // secDuration.current = duration;
+    setSecDuration(duration);
 
     if (Math.floor(currentTime) >= duration - 1) {
       if (type === "vod") {
         onEnded();
       } else {
-        endedArchive();
+        if (onNextArchive) {
+          onNextArchive();
+        } else {
+          endedArchive();
+        }
       }
     } else {
       if (refDuration.current) {
@@ -128,7 +133,7 @@ export default memo(function Player({
 
   const onBack = () => {
     const currentTime = Math.floor(secCurrentTime.current);
-    const percent = (currentTime / secDuration.current) * 100;
+    const percent = (currentTime / secDuration) * 100;
     onRememberTime(currentTime, percent, true);
 
     if (window.Android && type === "vod") {
@@ -176,6 +181,14 @@ export default memo(function Player({
       setRetryC(0);
     } catch (error) {
       console.error("All retry attempts failed:", error);
+    }
+  };
+
+  const seekByClick = (time) => {
+    if (window.Android) {
+      window.Android.seekTo(time);
+    } else {
+      refVideo.current.currentTime = time;
     }
   };
 
@@ -279,6 +292,7 @@ export default memo(function Player({
             play={play}
             pause={pause}
             seekToHandler={handleSeek}
+            seekByClick={seekByClick}
           />
         )}
         {type === "vod" && !pipMode && (

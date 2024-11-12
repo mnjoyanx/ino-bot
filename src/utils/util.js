@@ -240,3 +240,29 @@ export const imageResizer = (host, imageUrl, width, height, type, format) => {
 
   return url;
 };
+
+export const setUrlArchive = (item, currentChannel) => {
+  const { start_ut, stop_ut } = item;
+
+  let __host = "";
+  let _url = "";
+  let ip = currentChannel.archived_channel.archiver.ip;
+
+  if (ip.indexOf("http") == -1) ip = "http://" + ip;
+
+  if (ip.indexOf("https") > -1) __host = ip;
+  else __host = ip + ":" + currentChannel.archived_channel.archiver.port;
+
+  _url =
+    __host +
+    "/archive/" +
+    currentChannel.archived_channel.channelId +
+    "/index.m3u8" +
+    "?start=" +
+    start_ut +
+    "&duration=" +
+    (stop_ut - start_ut);
+
+  return _url;
+  // setUrl(_url);
+};

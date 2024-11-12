@@ -10,7 +10,10 @@ import {
   selectPlayerType,
   setPlayerType,
 } from "@app/channels/channelsSlice";
-import { selectShowPreviewImages } from "@app/player/playerSlice";
+import {
+  selectNextArchive,
+  selectShowPreviewImages,
+} from "@app/player/playerSlice";
 import { getChannels, channelInfo } from "@server/requests";
 
 import useKeydown from "@hooks/useKeydown";
@@ -21,16 +24,16 @@ import Player from "@components/player/Player.jsx";
 import PipModeLive from "@components/live/PipModeLive.jsx";
 
 import "@styles/components/livePage.scss";
+import { setUrlArchive } from "@utils/util";
 
 export default function LivePage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const allChannels = useSelector(selectAllChannels);
-  const categoriesChannels = useSelector(selectChannels);
   const currentChannel = useSelector(selectCurrentChannel);
   const showPreviewImages = useSelector(selectShowPreviewImages);
-  const playerType = useSelector(selectPlayerType);
+  const nextArchive = useSelector(selectNextArchive);
 
   const [pipMode, setPipMode] = useState(false);
   const [url, setUrl] = useState(null);
@@ -121,6 +124,15 @@ export default function LivePage() {
     },
   });
 
+  const handleNextArchive = () => {
+    if (nextArchive) {
+      const url = setUrlArchive(nextArchive, currentChannel);
+      setUrl(url);
+    } else {
+      endedArchive();
+    }
+  };
+
   return (
     <div className={`parent-live-page${pipMode ? " pip-mode" : ""}`}>
       <Player
@@ -133,6 +145,7 @@ export default function LivePage() {
         endedArchive={endedArchive}
         retryC={retryC}
         setRetryC={setRetryC}
+        onNextArchive={handleNextArchive}
       />
       {pipMode ? (
         <PipModeLive

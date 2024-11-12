@@ -46,6 +46,7 @@ export default memo(function LiveControls({
   play,
   pause,
   seekToHandler,
+  seekByClick,
 }) {
   const dispatch = useDispatch();
 
@@ -220,7 +221,7 @@ export default memo(function LiveControls({
     if (currentTimeSeekto.current - 10 >= 0) {
       currentTimeSeekto.current = currentTimeSeekto.current - 10;
       refVal.current.innerText = formatTime(currentTimeSeekto.current);
-      refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration.current) * 100}%`;
+      refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration) * 100}%`;
     }
   };
 
@@ -228,10 +229,10 @@ export default memo(function LiveControls({
     if (!window.Android) refVideo.current.pause();
     else window.Android.pause();
 
-    if (currentTimeSeekto.current + 10 <= secDuration.current) {
+    if (currentTimeSeekto.current + 10 <= secDuration) {
       currentTimeSeekto.current = currentTimeSeekto.current + 10;
       refVal.current.innerText = formatTime(currentTimeSeekto.current);
-      refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration.current) * 100}%`;
+      refProgress.current.style.width = `${(currentTimeSeekto.current / secDuration) * 100}%`;
     }
   };
 
@@ -538,6 +539,10 @@ export default memo(function LiveControls({
             color="#FFFFFF"
             refProgress={refProgress}
             refVal={refVal}
+            duration={secDuration}
+            currentTime={currentTimeSeekto.current}
+            onSeekTo={seekToHandler}
+            seekByClick={seekByClick}
           />
 
           {playerType === "live" ? (

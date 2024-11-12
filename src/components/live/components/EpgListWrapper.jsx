@@ -14,6 +14,8 @@ import CardEpg from "./CardEpg";
 
 import "../styles/EpgListWrapper.scss";
 import ArrowButton from "../../common/ArrowButton";
+import { setArchives, setCurrentArchive } from "@app/player/playerSlice";
+import { setUrlArchive } from "@utils/util";
 
 export default memo(function EpgListWrapper({
   control,
@@ -68,6 +70,7 @@ export default memo(function EpgListWrapper({
       }
 
       setEpgList([...message]);
+      dispatch(setArchives([...message]));
     }
   };
 
@@ -96,7 +99,12 @@ export default memo(function EpgListWrapper({
             : "past";
 
       if (type == "past" && currentChannel?.has_archive) {
-        setUrlArchive(item);
+        if (currentChannel?.archived_channel?.archiver) {
+          const url = setUrlArchive(item, currentChannel);
+          setUrl(url);
+        }
+        // setUrlArchive(item);
+        dispatch(setCurrentArchive(item));
         if (playerType === "live") refUrlLive.current = url;
         dispatch(setPlayerType("archive"));
         setPipMode(false);
@@ -106,32 +114,32 @@ export default memo(function EpgListWrapper({
     [currentChannel],
   );
 
-  const setUrlArchive = (item) => {
-    const { start_ut, stop_ut } = item;
+  // const setUrlArchive = (item) => {
+  //   const { start_ut, stop_ut } = item;
 
-    if (currentChannel?.archived_channel?.archiver) {
-      let __host = "";
-      let _url = "";
-      let ip = currentChannel.archived_channel.archiver.ip;
+  //   if (currentChannel?.archived_channel?.archiver) {
+  //     let __host = "";
+  //     let _url = "";
+  //     let ip = currentChannel.archived_channel.archiver.ip;
 
-      if (ip.indexOf("http") == -1) ip = "http://" + ip;
+  //     if (ip.indexOf("http") == -1) ip = "http://" + ip;
 
-      if (ip.indexOf("https") > -1) __host = ip;
-      else __host = ip + ":" + currentChannel.archived_channel.archiver.port;
+  //     if (ip.indexOf("https") > -1) __host = ip;
+  //     else __host = ip + ":" + currentChannel.archived_channel.archiver.port;
 
-      _url =
-        __host +
-        "/archive/" +
-        currentChannel.archived_channel.channelId +
-        "/index.m3u8" +
-        "?start=" +
-        start_ut +
-        "&duration=" +
-        (stop_ut - start_ut);
+  //     _url =
+  //       __host +
+  //       "/archive/" +
+  //       currentChannel.archived_channel.channelId +
+  //       "/index.m3u8" +
+  //       "?start=" +
+  //       start_ut +
+  //       "&duration=" +
+  //       (stop_ut - start_ut);
 
-      setUrl(_url);
-    }
-  };
+  //     setUrl(_url);
+  //   }
+  // };
 
   useKeydown({
     isActive: control,

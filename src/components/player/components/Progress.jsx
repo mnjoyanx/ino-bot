@@ -10,6 +10,7 @@ export default memo(function Progress({
   duration = 0,
   currentTime = 0,
   onSeekTo,
+  seekByClick,
 }) {
   const styleProgress = {
     backgroundColor: placeholderColor,
@@ -22,6 +23,7 @@ export default memo(function Progress({
 
   const handleProgressClick = useCallback(
     (e) => {
+      console.log(duration, "---", seekByClick);
       if (!duration || !onSeekTo) return;
 
       const progressBar = e.currentTarget;
@@ -31,9 +33,9 @@ export default memo(function Progress({
       const seekPercentage = clickPosition / progressWidth;
       const seekTime = seekPercentage * duration;
 
-      onSeekTo(seekTime);
+      seekByClick(seekTime);
     },
-    [duration, onSeekTo],
+    [duration, seekByClick],
   );
 
   return (
