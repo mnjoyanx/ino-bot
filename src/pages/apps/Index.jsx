@@ -81,7 +81,7 @@ export default function AppsPage() {
                   itemHeight={25}
                   isActive={ctrl !== "backBtn"}
                   onOk={(item) => {
-                    if (apps[index]?.app_id) {
+                    if (item?.app_id) {
                       window.Android.launchApp(item.app_id);
                     }
                   }}
