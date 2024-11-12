@@ -33,6 +33,7 @@ export default memo(function Player({
   onEnded,
   onRememberTime,
   startTime,
+  onNextArchive,
 }) {
   const dispatch = useDispatch();
   const refVideo = useRef(null);
