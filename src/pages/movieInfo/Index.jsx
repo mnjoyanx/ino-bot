@@ -156,7 +156,7 @@ const MovieInfoContent = () => {
       className={`${styles["movie-info"]} ${isPlayerOpen ? styles["hidden"] : ""}`}
     >
       {isLoading ? (
-        <div className={styles["loading"]}>Loading...</div>
+        <div className={styles["loading"]}></div>
       ) : (
         <>
           {!isPlayerOpen && movieInfo.backdrop ? (
