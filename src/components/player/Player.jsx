@@ -318,16 +318,7 @@ export default memo(function Player({
         <>
           {window.Android ? (
             <>
-              {androidAdContainer.current && (
-                <ImaAdsPlayer
-                  videoElement={androidAdContainer.current}
-                  adTagUrl={adTagUrl}
-                  onAdComplete={() => {
-                    setShowAds(false);
-                    play();
-                  }}
-                />
-              )}
+              {androidAdContainer.current}
             </>
           ) : (
             <>
