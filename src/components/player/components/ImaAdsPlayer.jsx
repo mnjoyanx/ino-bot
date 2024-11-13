@@ -6,6 +6,7 @@ const ImaAdsPlayer = ({ videoElement, adTagUrl, onAdComplete }) => {
 
   useEffect(() => {
     // Pause the main video when component mounts (ad starts)
+    if(window.Android) return;
     if (videoElement) {
       videoElement.pause();
     }
