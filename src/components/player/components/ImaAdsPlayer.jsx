@@ -6,7 +6,7 @@ const ImaAdsPlayer = ({ videoElement, adTagUrl, onAdComplete }) => {
 
   useEffect(() => {
     // Pause the main video when component mounts (ad starts)
-    if(window.Android) return;
+    if (window.Android) return;
     if (videoElement) {
       videoElement.pause();
     }
@@ -29,6 +29,7 @@ const ImaAdsPlayer = ({ videoElement, adTagUrl, onAdComplete }) => {
 
   const initializeIMA = () => {
     // Initialize IMA SDK
+    if (window.Android) return;
     const adDisplayContainer = new google.ima.AdDisplayContainer(
       document.getElementById("adContainer"),
       videoElement,
