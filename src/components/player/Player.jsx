@@ -9,6 +9,7 @@ import AndroidPlayer from "./components/AndroidPlayer";
 import { selectPlayerType } from "@app/channels/channelsSlice";
 import { useToast } from "@hooks/useToast";
 import VodControls from "./components/VodControl";
+import ImaAdsPlayer from "./components/ImaAdsPlayer";
 
 import "./styles/player.scss";
 
@@ -48,6 +49,10 @@ export default memo(function Player({
   const [secDuration, setSecDuration] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
   const [alreadyRetryed, setAlreadyRetryed] = useState(false);
+  const [showAds, setShowAds] = useState(true);
+  const [adTagUrl, setAdTagUrl] = useState(
+    "https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=",
+  ); // Set this from your ad server
 
   const playerType = useSelector(selectPlayerType);
 
@@ -307,6 +312,16 @@ export default memo(function Player({
           />
         )}
       </div>
+      {showAds && refVideo?.current && (
+        <ImaAdsPlayer
+          videoElement={refVideo.current}
+          adTagUrl={adTagUrl}
+          onAdComplete={() => {
+            setShowAds(false);
+            play();
+          }}
+        />
+      )}
       {renderPlayer()}
     </>
   );

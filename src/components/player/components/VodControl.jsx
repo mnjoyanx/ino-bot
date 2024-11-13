@@ -249,13 +249,13 @@ export default memo(function VodControls({
         </div>
       </div>
 
-      {/* {showSettings && (
+      {showSettings && (
         <ControlSettings
           isVisible={showSettings}
           onClose={handleCloseSettings}
           showControl={showControl}
         />
-      )} */}
+      )}
     </>
   );
 });

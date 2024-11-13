@@ -161,3 +161,13 @@
   // width: 5.5rem !important;
   // height: 5.5rem !important;
 }
+
+#adContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  background-color: black;
+}
