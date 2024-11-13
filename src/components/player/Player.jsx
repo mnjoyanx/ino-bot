@@ -50,7 +50,7 @@ export default memo(function Player({
   const [secDuration, setSecDuration] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
   const [alreadyRetryed, setAlreadyRetryed] = useState(false);
-  const [showAds, setShowAds] = useState(true);
+  const [showAds, setShowAds] = useState(false);
   const [adTagUrl, setAdTagUrl] = useState(
     "https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=",
   ); // Set this from your ad server
@@ -318,7 +318,16 @@ export default memo(function Player({
         <>
           {window.Android ? (
             <>
-              {androidAdContainer.current}
+              {androidAdContainer.current && (
+                <ImaAdsPlayer
+                  videoElement={androidAdContainer.current}
+                  adTagUrl={adTagUrl}
+                  onAdComplete={() => {
+                    setShowAds(false);
+                    play();
+                  }}
+                />
+              )}
             </>
           ) : (
             <>

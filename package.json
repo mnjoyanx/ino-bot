@@ -2,6 +2,7 @@
   "name": "tstv",
   "version": "1.0.0",
   "main": "index.js",
+  
   "scripts": {
     "build": "webpack --mode=production",
     "start": "webpack serve --mode=development --port=3001",
