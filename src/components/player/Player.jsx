@@ -45,6 +45,7 @@ export default memo(function Player({
   // const secDuration = useRef(0);
   const lastRememberTimeUpdate = useRef(0);
   const maxRetries = 3;
+  const androidAdContainer = useRef(null);
 
   const [secDuration, setSecDuration] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
@@ -277,6 +278,7 @@ export default memo(function Player({
 
   return (
     <>
+      <div ref={androidAdContainer} id="adnroidAdContainer"></div>
       <div id="controls_player">
         {type === "live" && !pipMode && (
           <LiveControls
@@ -312,15 +314,36 @@ export default memo(function Player({
           />
         )}
       </div>
-      {showAds && refVideo?.current && (
-        <ImaAdsPlayer
-          videoElement={refVideo.current}
-          adTagUrl={adTagUrl}
-          onAdComplete={() => {
-            setShowAds(false);
-            play();
-          }}
-        />
+      {showAds && (
+        <>
+          {window.Android ? (
+            <>
+              {androidAdContainer.current && (
+                <ImaAdsPlayer
+                  videoElement={androidAdContainer.current}
+                  adTagUrl={adTagUrl}
+                  onAdComplete={() => {
+                    setShowAds(false);
+                    play();
+                  }}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              {refVideo.current && (
+                <ImaAdsPlayer
+                  videoElement={refVideo.current}
+                  adTagUrl={adTagUrl}
+                  onAdComplete={() => {
+                    setShowAds(false);
+                    play();
+                  }}
+                />
+              )}
+            </>
+          )}
+        </>
       )}
       {renderPlayer()}
     </>

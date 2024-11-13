@@ -80,7 +80,6 @@ export default function AndroidPlayer({
   onSeek,
   startTime,
   onLoadedMetadata,
-  adTagUrl,
 }) {
   const streamEnded = () => {
     streamEnd();
@@ -109,38 +108,14 @@ export default function AndroidPlayer({
   }, []);
 
   useEffect(() => {
-    if (adTagUrl && window.Android?.playAd) {
-      // Play ad first, then initialize the player
-      window.Android.playAd(
-        adTagUrl,
-        () => {
-          // Ad completed callback
-          if (time) {
-            window.Android.initPlayer(url, +time);
-          } else {
-            window.Android.initPlayer(url);
-          }
-        },
-        (error) => {
-          // Ad error callback - proceed to content
-          console.error("Ad error:", error);
-          if (time) {
-            window.Android.initPlayer(url, +time);
-          } else {
-            window.Android.initPlayer(url);
-          }
-        },
-      );
+    window.Android.destroyPlayer();
+
+    if (time) {
+      window.Android.initPlayer(url, +time);
     } else {
-      // No ad, play content directly
-      window.Android.destroyPlayer();
-      if (time) {
-        window.Android.initPlayer(url, +time);
-      } else {
-        window.Android.initPlayer(url);
-      }
+      window.Android.initPlayer(url);
     }
-  }, [url, time, adTagUrl]);
+  }, [url, time]);
 
   useEffect(() => {
     const state = window.Android.getSate();
