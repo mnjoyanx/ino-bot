@@ -1,4 +1,5 @@
 @import "@styles/variables.scss";
+@import "@styles/mixins.scss";
 
 .buttons-group-live {
   display: flex;
@@ -9,25 +10,61 @@
   top: 1rem;
 
   .btn-group-live {
-    width: 4rem;
-    height: 4rem;
+    // margin: 0 1rem;
+  }
+  .rewind, .forward {
+    border: 1px solid transparent;
+    @include flex(center, center);
+    flex-wrap: nowrap;
     margin: 0 1rem;
-    // svg {
-    //   width: 100%;
-    //   height: 100%;
-    // }
+
 
     &.active {
-      svg {
-        fill: $active-color;
-        transition: 0.1s linear;
-      }
+      border: 1px solid #fff;
     }
   }
-  .rewind {
-  }
   .play-pause {
+    @include flex(center, center);
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 1px solid $dark;
+    cursor: pointer;
+    transition: all 0.1s ease;
+
+    svg {
+      fill: #000;
+    }
+
+    &:active {
+      transform: scale(0.9);
+    }
+
+    &.active {
+      transform: scale(1.1);
+    }
   }
   .forward {
   }
+}
+
+.archive-btn_text {
+  display: flex;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.ino-element-wrapper {
+  border: 1px solid transparent;
+  @include flex(center, center);
+  flex-wrap: nowrap;
+}
+.ino-element-wrapper.active {
+  border-color: #fff;
+  border-radius: 3rem;
+}
+
+.archive-buttons_wrapper .ino-row {
+  padding-top: 3rem;
 }

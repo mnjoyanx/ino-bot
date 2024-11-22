@@ -54,6 +54,10 @@ export default memo(function Player({
   const [adTagUrl, setAdTagUrl] = useState(
     "https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=",
   ); // Set this from your ad server
+  const [cTime, setCTime] = useState(0);
+  const cTimeRef = useRef(0);
+
+  const [movieCurrentTime, setMovieCurrentTime] = useState(0);
 
   const playerType = useSelector(selectPlayerType);
 
@@ -89,7 +93,8 @@ export default memo(function Player({
     secCurrentTime.current = currentTime;
     // secDuration.current = duration;
     setSecDuration(duration);
-
+    setMovieCurrentTime(currentTime);
+    cTimeRef.current = currentTime;
     if (Math.floor(currentTime) >= duration - 1) {
       if (type === "vod") {
         onEnded();
@@ -191,25 +196,46 @@ export default memo(function Player({
     } else {
       refVideo.current.currentTime = time;
     }
+
+    setMovieCurrentTime(time);
   };
 
-  const handleSeek = (direction) => {
-    if (window.Android) {
-      const currentTime = window.Android.getCurrentTime();
-      const newTime =
-        direction === "forward" ? currentTime + 10 : currentTime - 10;
-      window.Android.seekTo(newTime);
-    } else {
-      const currentTime = refVideo.current.currentTime;
-      const newTime =
-        direction === "forward" ? currentTime + 10 : currentTime - 10;
+  const updateSeekTimeDelayed = (time) => {
+    timeout = setTimeout(() => {
+      seekByClick(time)
+      play()
+    }, 1000)
+  }
 
-      refVideo.current.currentTime = Math.max(
-        0,
-        Math.min(newTime, refVideo.current.duration),
-      );
-    }
+  const handleSeek = (direction, seconds = 10) => {
+    pause()
+    clearTimeout(timeout)
+
+    setCTime(old => direction === 'forward' ? old + seconds : old - seconds);
+    cTimeRef.current = direction === 'forward' ? cTimeRef.current + seconds : cTimeRef.current - seconds;
+
+    updateSeekTimeDelayed(cTimeRef.current)
+
+
+    // if (window.Android) {
+    //   const currentTime = window.Android.getCurrentTime();
+    //   const newTime =
+    //     direction === "forward" ? currentTime + 10 : currentTime - 10;
+    //   window.Android.seekTo(newTime);
+    // } else {
+    //   const currentTime = refVideo.current.currentTime;
+    //   const newTime =
+    //     direction === "forward" ? currentTime + 10 : currentTime - 10;
+
+    //   refVideo.current.currentTime = Math.max(
+    //     0,
+    //     Math.min(newTime, refVideo.current.duration),
+    //   );
+    // }
+
   };
+
+
 
   useEffect(() => {
     document.addEventListener("playerError", onErrorHandler);
@@ -291,6 +317,8 @@ export default memo(function Player({
             refProgress={refProgress}
             secCurrentTime={secCurrentTime}
             secDuration={secDuration}
+            cTime={cTimeRef.current}
+            changeCTime={seekByClick}
             refVideo={refVideo}
             play={play}
             pause={pause}
@@ -311,6 +339,8 @@ export default memo(function Player({
             onBack={onBack}
             title={title}
             seekToHandler={handleSeek}
+            movieCurrentTime={cTimeRef.current}
+            setMovieCurrentTime={seekByClick}
           />
         )}
       </div>

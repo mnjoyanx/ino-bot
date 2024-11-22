@@ -11,6 +11,7 @@ const initialState = {
   selectedSubtitle: "Off",
   selectedPlaybackSpeed: "1x",
   cropHost: "",
+  isConnected: true,
 };
 
 const globalSlice = createSlice({
@@ -47,6 +48,9 @@ const globalSlice = createSlice({
     setCropHost: (state, action) => {
       state.cropHost = action.payload;
     },
+    setConnection: (state, action) => {
+      state.isConnected = action.payload;
+    },
   },
 });
 
@@ -61,6 +65,7 @@ export const {
   setSelectedSubtitle,
   setSelectedPlaybackSpeed,
   setCropHost,
+  setConnection,
 } = globalSlice.actions;
 
 export const selectCtrl = (state) => state.global.ctrl;
@@ -76,5 +81,6 @@ export const selectSelectedSubtitle = (state) => state.global.selectedSubtitle;
 export const selectSelectedPlaybackSpeed = (state) =>
   state.global.selectedPlaybackSpeed;
 export const selectCropHost = (state) => state.global.cropHost;
+export const selectIsConnected = (state) => state.global.isConnected
 
 export default globalSlice.reducer;

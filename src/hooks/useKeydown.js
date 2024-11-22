@@ -1,15 +1,22 @@
 import { useEffect } from "react";
 import check_key from "../utils/keys";
+import store from "@app/store";
+
+let isConnected = true;
+
+store.subscribe(() => {
+  console.log(store.getState().global.isConnected, '----')
+  isConnected = store.getState().global.isConnected;
+});
 
 function useKeydown(props) {
+
+
   useEffect(() => {
     const handleKeydown = (e) => {
       event.preventDefault();
       let key = check_key(e);
 
-      // if (props.move) {
-      //   props.move(e);
-      // }
 
       if (key && !isNaN(key) && props["number"]) key = "number";
 
@@ -20,7 +27,8 @@ function useKeydown(props) {
       }
     };
 
-    if (props.isActive) {
+
+    if (props.isActive && isConnected) {
       window.addEventListener("keydown", handleKeydown);
     } else {
       window.removeEventListener("keydown", handleKeydown);
@@ -29,7 +37,7 @@ function useKeydown(props) {
     return () => {
       window.removeEventListener("keydown", handleKeydown);
     };
-  }, [props]);
+  }, [props, isConnected]);
 }
 
 export default useKeydown;

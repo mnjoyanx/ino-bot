@@ -23,7 +23,6 @@ export default memo(function Progress({
 
   const handleProgressClick = useCallback(
     (e) => {
-      console.log(duration, "---", seekByClick);
       if (!duration || !onSeekTo) return;
 
       const progressBar = e.currentTarget;

@@ -2,7 +2,6 @@
   "name": "tstv",
   "version": "1.0.0",
   "main": "index.js",
-  
   "scripts": {
     "build": "webpack --mode=production",
     "start": "webpack serve --mode=development --port=3001",
@@ -31,6 +30,7 @@
     "html-webpack-plugin": "^5.5.0",
     "mini-css-extract-plugin": "^2.7.2",
     "postcss": "^8.4.21",
+    "postcss-import": "^16.1.0",
     "postcss-loader": "^7.0.2",
     "postcss-preset-env": "^8.0.1",
     "prettier": "^3.2.5",
@@ -47,7 +47,7 @@
     "@babel/polyfill": "^7.12.1",
     "@reduxjs/toolkit": "^1.0.0",
     "ino-listview": "^1.0.1",
-    "ino-ui-tv": "^1.8.48",
+    "ino-ui-tv": "^5.0.10",
     "lucide-react": "^0.446.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -58,7 +58,8 @@
   "postcss": {
     "plugins": {
       "autoprefixer": {},
-      "postcss-preset-env": {}
+      "postcss-preset-env": {},
+      "postcss-import": {}
     }
   },
   "browserslist": {

@@ -10,22 +10,24 @@ import PlaybackActions from "./PlaybackActions";
 import ControlSettings from "./ControlSettings";
 import SvgNextEpisode from "@assets/icons/SvgNextEpisode";
 import { useMovieInfo } from "@context/movieInfoContext";
+import { InoPlayerProgress } from "ino-ui-tv";
 
 import "@styles/components/vodControl.scss";
 import { formatTime } from "@utils/util";
 
 let hideControlsTimer = null;
 
-export default memo(function VodControls({
+export default function VodControls({
   durationRef,
   currentTimeRef,
-  refProgress,
   refVideo,
   play,
   pause,
   title,
   onBack,
   seekToHandler,
+  movieCurrentTime,
+  setMovieCurrentTime,
 }) {
   const dispatch = useDispatch();
   const isPaused = useSelector(selectIsPaused);
@@ -37,7 +39,6 @@ export default memo(function VodControls({
   const [activeCtrl, setActiveCtrl] = useState("top");
   const [topActiveIndex, setTopActiveIndex] = useState(1);
   const [bottomActiveIndex, setBottomActiveIndex] = useState(0);
-  const [isSettingsActive, setIsSettingsActive] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   const controlsRef = useRef(null);
@@ -96,6 +97,7 @@ export default memo(function VodControls({
     dispatch(setCtrl("vodCtrl"));
   };
 
+
   useKeydown({
     isActive: ctrl === "vodCtrl",
     left: () => {
@@ -141,6 +143,7 @@ export default memo(function VodControls({
               refVideo.current.currentTime,
               refVideo.current.duration,
             );
+
           }
           handleSeek("backward");
         } else if (topActiveIndex === 1) isPaused ? play() : pause();
@@ -173,19 +176,13 @@ export default memo(function VodControls({
     },
   });
 
-  const handleSeekTo = (seekTime) => {
-    if (refVideo.current) {
-      refVideo.current.currentTime = seekTime;
-    }
-    showControl();
-  };
-
   const handleNextEpisode = () => {
     document.dispatchEvent(new Event("next-episode"));
   };
 
   return (
     <>
+     
       <div
         className={`vod-control${hideControls ? " hide" : ""}`}
         ref={controlsRef}
@@ -204,13 +201,15 @@ export default memo(function VodControls({
         </div>
 
         <div className="progress-field">
-          <Progress
-            color="#FFFFFF"
-            refProgress={refProgress}
-            classNames="vod_progress"
+
+          <InoPlayerProgress
+            isActive={true}
+            value={movieCurrentTime / (refVideo.current ? refVideo.current.duration : 0) * 100}
             duration={refVideo.current ? refVideo.current.duration : 0}
-            onSeekTo={handleSeekTo}
-            currentTime={refVideo.current ? refVideo.current.currentTime : 0}
+            onChange={value => {
+              setMovieCurrentTime((value * refVideo.current.duration) / 100)
+            }}
+            showTooltip={false}
           />
           <div className="vod-actions_wrapper">
             <div className="vod-ctrl_times">
@@ -258,4 +257,4 @@ export default memo(function VodControls({
       )}
     </>
   );
-});
+}

@@ -11,7 +11,7 @@ import "./styles/global.css";
 import "./styles/variables.css";
 import "./styles/variables.scss";
 import "./styles/mixins.scss";
-import "ino-ui-tv/dist/styles/styles.css";
+import "ino-ui-tv/src/styles/styles.css";
 
 import { HashRouter } from "react-router-dom";
 

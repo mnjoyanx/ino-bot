@@ -155,22 +155,22 @@ const MovieInfoContent = () => {
     <div
       className={`${styles["movie-info"]} ${isPlayerOpen ? styles["hidden"] : ""}`}
     >
+      {!isPlayerOpen && movieInfo.backdrop ? (
+        <MovieBackground
+          backdrop={imageResizer(
+            cropHost,
+            movieInfo.backdrop,
+            1280,
+            720,
+            "0",
+            "jpg",
+          )}
+        />
+      ) : null}
       {isLoading ? (
         <div className={styles["loading"]}></div>
       ) : (
         <>
-          {!isPlayerOpen && movieInfo.backdrop ? (
-            <MovieBackground
-              backdrop={imageResizer(
-                cropHost,
-                movieInfo.backdrop,
-                1280,
-                720,
-                "0",
-                "jpg",
-              )}
-            />
-          ) : null}
           <MovieContent movie={movieInfo} isPlayerOpen={isPlayerOpen} />
           {movieInfo.type === "movie" ? (
             <MovieActions
