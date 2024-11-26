@@ -1,7 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { selectCtrl, setCtrl } from "@app/global";
+import {
+  selectCtrl,
+  setCtrl,
+  selectIsProtectedModalOpen,
+  setIsProtectedModalOpen,
+} from "@app/global";
 import Button from "@components/common/Button";
 import SvgPlay from "@assets/icons/SvgPlay";
 import SvgFav from "@assets/icons/SvgFav";
@@ -11,12 +16,15 @@ import { useMovieActions } from "../hooks/useMovieActions";
 import styles from "@styles/components/movieInfo.module.scss";
 import { useMovieInfo } from "@context/movieInfoContext";
 import { formatTime } from "@utils/util";
+import { InoProtectInput, Modal, toast } from "ino-ui-tv";
 
 const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const isProtectedModalOpen = useSelector(selectIsProtectedModalOpen);
   const [activeButton, setActiveButton] = useState(0);
   const ctrl = useSelector(selectCtrl);
+  const [isShowProtected, setIsShowProtected] = useState(false);
   const { setUrl, movieInfo, setMovieInfo, setStartTime } = useMovieInfo();
   const { handleWatchClick, handleContinueWatchingClick, handleFavoriteClick } =
     useMovieActions(
@@ -54,11 +62,21 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
     ok: () => {
       switch (activeButton) {
         case 0:
-          if (movie?.canWatch) handleWatchClick();
+          if (movie?.is_protected) {
+            setIsShowProtected(true);
+            dispatch(setCtrl("protected"));
+          } else {
+            handleWatchClick();
+          }
           break;
         case 1:
-          setStartTime(movie.watched.time);
-          handleContinueWatchingClick();
+          if (movie.is_protected) {
+            setIsShowProtected(true);
+            dispatch(setCtrl("protected"));
+          } else {
+            setStartTime(movie.watched.time);
+            handleContinueWatchingClick();
+          }
           break;
         case 2:
           handleFavoriteClick();
@@ -68,42 +86,86 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
     back: () => navigate(-1),
   });
 
+  const localParentalCode = localStorage.getItem("parental_code");
+  const parentalCode = localParentalCode ? JSON.parse(localParentalCode) : null;
+
   return (
-    <div
-      className={`${styles["actions-container"]} ${
-        window.Android && isPlayerOpen ? styles["hidden"] : ""
-      }`}
-    >
-      {movie.canWatch && (
-        <Button
-          className={styles["action-btn"]}
-          onClick={handleWatchClick}
-          onMouseEnter={() => setActiveButton(0)}
-          title="Watch"
-          isActive={activeButton === 0 && ctrl === "movieInfo"}
-          icon={<SvgPlay />}
-        />
-      )}
-      {movie.watched ? (
-        <Button
-          className={styles["action-btn"]}
-          onClick={() => {
-            setStartTime(movie.watched.time);
-            handleContinueWatchingClick();
+    <>
+      <Modal
+        isOpen={isShowProtected || isProtectedModalOpen}
+        onClose={() => {
+          dispatch(setIsProtectedModalOpen(false));
+          setIsShowProtected(false);
+          dispatch(setCtrl("movieInfo"));
+        }}
+        onCancel={() => {}}
+        onOk={() => {}}
+        size="full"
+      >
+        <InoProtectInput
+          isActive={ctrl === "protected"}
+          count={4}
+          isOpenKeyboard={true}
+          onChange={(value) => {}}
+          onComplete={(value) => {
+            if (value === parentalCode) {
+              dispatch(setIsProtectedModalOpen(false));
+              setIsShowProtected(false);
+              handleWatchClick();
+            } else {
+              toast.error("Invalid parental code");
+            }
           }}
-          onMouseEnter={() => setActiveButton(1)}
-          title={formatTime(movie.watched.time)}
-          isActive={activeButton === 1 && ctrl === "movieInfo"}
         />
-      ) : null}
-      <Button
-        className={styles["action-btn"]}
-        onClick={handleFavoriteClick}
-        onMouseEnter={() => setActiveButton(2)}
-        isActive={activeButton === 2 && ctrl === "movieInfo"}
-        icon={movie.favorite ? <SvgFavFill /> : <SvgFav />}
-      />
-    </div>
+      </Modal>
+      <div
+        className={`${styles["actions-container"]} ${
+          window.Android && isPlayerOpen ? styles["hidden"] : ""
+        }`}
+      >
+        {movie.canWatch && (
+          <Button
+            className={styles["action-btn"]}
+            onClick={() => {
+              if (movie.is_protected) {
+                setIsShowProtected(true);
+                dispatch(setCtrl("protected"));
+              } else {
+                handleWatchClick();
+              }
+            }}
+            onMouseEnter={() => setActiveButton(0)}
+            title="Watch"
+            isActive={activeButton === 0 && ctrl === "movieInfo"}
+            icon={<SvgPlay />}
+          />
+        )}
+        {movie.watched ? (
+          <Button
+            className={styles["action-btn"]}
+            onClick={() => {
+              if (movie.is_protected) {
+                setIsShowProtected(true);
+                dispatch(setCtrl("protected"));
+              } else {
+                setStartTime(movie.watched.time);
+                handleContinueWatchingClick();
+              }
+            }}
+            onMouseEnter={() => setActiveButton(1)}
+            title={formatTime(movie.watched.time)}
+            isActive={activeButton === 1 && ctrl === "movieInfo"}
+          />
+        ) : null}
+        <Button
+          className={styles["action-btn"]}
+          onClick={handleFavoriteClick}
+          onMouseEnter={() => setActiveButton(2)}
+          isActive={activeButton === 2 && ctrl === "movieInfo"}
+          icon={movie.favorite ? <SvgFavFill /> : <SvgFav />}
+        />
+      </div>
+    </>
   );
 };
 

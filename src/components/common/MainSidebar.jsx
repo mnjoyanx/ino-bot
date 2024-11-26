@@ -6,26 +6,26 @@ import {
   selectCtrl,
   selectIsOpenMainSidebar,
   setIsOpenMainSidebar,
+  setSelectedType,
 } from "@app/global";
 import SvgSearch from "@assets/icons/SvgSearch";
-import SvgFavorites from "@assets/icons/SvgFavorite";
-import SvgLastWatched from "@assets/icons/SvgLastWatched";
-import SvgRecentlyAdded from "@assets/icons/SvgRecentlyAdded";
 import SvgGenres from "@assets/icons/SvgGenres";
-import { ListView } from "ino-ui-tv";
 
 import styles from "@styles/components/mainSidebar.module.scss";
 import useKeydown from "@hooks/useKeydown";
-import { setCtrl, setIsMovieSearchBarOpen } from "@app/global";
+import {
+  setCtrl,
+  setIsMovieSearchBarOpen,
+  selectSelectedType,
+} from "@app/global";
 
 const MainSidebar = ({ categories }) => {
   const dispatch = useDispatch();
-  const { setSelectedGenre, setSelectedType, menuList, selectedType } =
-    useContext(MoviesContext);
+  const { menuList } = useContext(MoviesContext);
 
   const isOpen = useSelector(selectIsOpenMainSidebar);
   const ctrl = useSelector(selectCtrl);
-
+  const selectedType = useSelector(selectSelectedType);
   const [sidebarItems, setSidebarItems] = useState([]);
   const [active, setActive] = useState(0);
   const [isCategoriesOpened, setIsCategoriesOpened] = useState(false);
@@ -74,9 +74,9 @@ const MainSidebar = ({ categories }) => {
       const foundMovieType = sidebarItems.find((item) => item.type === "movie");
 
       if (foundMovieType) {
-        setSelectedType(foundMovieType.type);
+        // setSelectedType(foundMovieType.type);
       } else {
-        setSelectedType(sidebarItems[1].type);
+        // setSelectedType(sidebarItems[1].type);
       }
     }
   }, [sidebarItems]);
@@ -127,7 +127,8 @@ const MainSidebar = ({ categories }) => {
   });
 
   const handleCategorySelect = (type) => {
-    setSelectedType(type);
+    // setSelectedType(type);
+    dispatch(setSelectedType(type));
     setIsCategoriesOpened(false);
     dispatch(setIsOpenMainSidebar(false));
     dispatch(setCtrl("moviesSeries"));

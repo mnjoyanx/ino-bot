@@ -17,6 +17,8 @@ import {
   setIsMovieSearchBarOpen,
   selectIsPlayerOpen,
   setCropHost,
+  selectSelectedType,
+  setSelectedType,
 } from "@app/global";
 import Search from "@components/search/Search";
 import BackButton from "@components/common/BackButton";
@@ -36,13 +38,12 @@ const MoviesPage = () => {
     moviesByGenre,
     setMoviesByGenre,
     setDynamicContent,
-    menuList,
+    dynamicContent,
     setMenuList,
-    selectedType,
-    setSelectedType,
   } = useContext(MoviesContext);
 
   const isPlayerOpen = useSelector(selectIsPlayerOpen);
+  const selectedType = useSelector(selectSelectedType);
 
   const [url, setUrl] = useState(null);
   const [isVertical, setIsVertical] = useState(true);
@@ -176,12 +177,18 @@ const MoviesPage = () => {
       const parsedResponse = JSON.parse(response);
       const { error, message } = parsedResponse;
 
+      console.log(message, "message");
       if (error) {
         console.log(error);
       } else {
         const menu = message.menu;
         const firstItem = menu.find((item) => item.position === 1);
-        setSelectedType(firstItem.type);
+        // setSelectedType(firstItem.type);
+        if (!selectedType) {
+          dispatch(
+            setSelectedType(firstItem.type === "movies" ? "movie" : "tv_show"),
+          );
+        }
         setMenuList(menu);
         setIsVertical(message.app_settings.isPortrait);
         dispatch(setCropHost(message.app_settings.image_crop_host));
@@ -207,9 +214,11 @@ const MoviesPage = () => {
 
   useEffect(() => {
     if (selectedType) {
+      if (moviesByGenre[selectedType] && moviesByGenre[selectedType].length)
+        return;
       getMoviesByGenreHandler(selectedType);
     }
-  }, [selectedType, getMoviesByGenreHandler]);
+  }, [selectedType, getMoviesByGenreHandler, moviesByGenre]);
 
   useEffect(() => {
     if (genres.length === 0) {
@@ -219,7 +228,6 @@ const MoviesPage = () => {
 
   return (
     <>
-      {/* {moviesByGenre && Object.keys(moviesByGenre).length ? ( */}
       {selectedType ? (
         <div className={`home-page ${isPlayerOpen ? "hidden" : ""}`}>
           {!isMovieSearchBarOpen ? (

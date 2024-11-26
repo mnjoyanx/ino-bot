@@ -15,6 +15,7 @@ import {
   selectIsMovieSearchBarOpen,
   setCtrl,
   setIsOpenMainSidebar,
+  selectSelectedType,
 } from "@app/global";
 import Loading from "@components/common/Loading";
 import { imageResizer } from "@utils/util";
@@ -23,9 +24,8 @@ const MoviesList = ({ isVertical, isLoading }) => {
   const dispatch = useDispatch();
   const ctrl = useSelector(selectCtrl);
   const cropHost = useSelector(selectCropHost);
-
-  const { moviesByGenre, selectedType, dynamicContent } =
-    useContext(MoviesContext);
+  const selectedType = useSelector(selectSelectedType);
+  const { moviesByGenre, dynamicContent } = useContext(MoviesContext);
   const isMovieSearchBarOpen = useSelector(selectIsMovieSearchBarOpen);
 
   const [activeCategory, setActiveCategory] = useState(0);
@@ -46,20 +46,21 @@ const MoviesList = ({ isVertical, isLoading }) => {
 
   useKeydown({
     isActive: ctrl === "moviesSeries" && !isMovieSearchBarOpen,
-    down: () => {
-      if (!currentMovies?.length) return;
+    // down: () => {
+    //   if (!currentMovies?.length) return;
 
-      setActiveCategory(Math.min(activeCategory + 1, currentMovies.length - 1));
-    },
-    up: () => {
-      if (activeCategory > 0) {
-        setActiveCategory(activeCategory - 1);
-      } else {
-        if (selectedType === "movie" || selectedType === "tv_show") {
-          dispatch(setCtrl("backBtn"));
-        }
-      }
-    },
+    //   setActiveCategory(Math.min(activeCategory + 1, currentMovies.length - 1));
+    // },
+    // up: () => {
+    //   // if (activeCategory > 0) {
+    //   //   setActiveCategory(activeCategory - 1);
+    //   // } else {
+    //   //   if (selectedType === "movie" || selectedType === "tv_show") {
+    //   //     dispatch(setCtrl("backBtn"));
+    //   //   }
+    //   // }
+    //   dispatch(setCtrl("backBtn"));
+    // },
   });
 
   const renderMovieCard = useCallback(
@@ -95,13 +96,17 @@ const MoviesList = ({ isVertical, isLoading }) => {
                     id="movies-grid"
                     data={currentMovies}
                     rowsCount={currentMovies.length}
-                    itemsTotal={currentMovies.length}
-                    itemsCount={3}
+                    visibleRowsCount={1}
+                    // itemsTotal={currentMovies.length}
+                    // itemsCount={1}
                     itemWidth={20}
                     itemHeight={30}
                     withTitle={true}
                     buffer={3}
                     debounce={200}
+                    onFirstRow={() => {
+                      dispatch(setCtrl("backBtn"));
+                    }}
                     gap={2}
                     rowGap={10}
                     isActive={ctrl === "moviesSeries"}

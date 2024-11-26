@@ -7,42 +7,20 @@ export default memo(function Progress({
   playerType = "",
   refVal = null,
   classNames = "",
-  duration = 0,
-  currentTime = 0,
-  onSeekTo,
-  seekByClick,
+  currentTime = 100,
 }) {
   const styleProgress = {
     backgroundColor: placeholderColor,
+    width: `100%`,
   };
 
   const styleProgressBar = {
     backgroundColor: color,
-    width: `${currentTime}px`,
+    width: `${currentTime}%`,
   };
 
-  const handleProgressClick = useCallback(
-    (e) => {
-      if (!duration || !onSeekTo) return;
-
-      const progressBar = e.currentTarget;
-      const rect = progressBar.getBoundingClientRect();
-      const clickPosition = e.clientX - rect.left;
-      const progressWidth = rect.width;
-      const seekPercentage = clickPosition / progressWidth;
-      const seekTime = seekPercentage * duration;
-
-      seekByClick(seekTime);
-    },
-    [duration, seekByClick],
-  );
-
   return (
-    <div
-      className={`progress ${classNames}`}
-      style={styleProgress}
-      onClick={handleProgressClick}
-    >
+    <div className={`progress ${classNames}`} style={styleProgress}>
       <div
         className={`progress-bar ${playerType}`}
         style={styleProgressBar}

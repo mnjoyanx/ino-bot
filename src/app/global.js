@@ -12,6 +12,8 @@ const initialState = {
   selectedPlaybackSpeed: "1x",
   cropHost: "",
   isConnected: true,
+  selectedType: "",
+  isProtectedModalOpen: false,
 };
 
 const globalSlice = createSlice({
@@ -19,6 +21,7 @@ const globalSlice = createSlice({
   initialState,
   reducers: {
     setCtrl: (state, action) => {
+      console.warn(action.payload, "opaykiad");
       state.ctrl = action.payload;
     },
     setIsOpenMainSidebar: (state, action) => {
@@ -51,6 +54,12 @@ const globalSlice = createSlice({
     setConnection: (state, action) => {
       state.isConnected = action.payload;
     },
+    setSelectedType: (state, action) => {
+      state.selectedType = action.payload;
+    },
+    setIsProtectedModalOpen: (state, action) => {
+      state.isProtectedModalOpen = action.payload;
+    },
   },
 });
 
@@ -66,6 +75,8 @@ export const {
   setSelectedPlaybackSpeed,
   setCropHost,
   setConnection,
+  setSelectedType,
+  setIsProtectedModalOpen,
 } = globalSlice.actions;
 
 export const selectCtrl = (state) => state.global.ctrl;
@@ -81,6 +92,8 @@ export const selectSelectedSubtitle = (state) => state.global.selectedSubtitle;
 export const selectSelectedPlaybackSpeed = (state) =>
   state.global.selectedPlaybackSpeed;
 export const selectCropHost = (state) => state.global.cropHost;
-export const selectIsConnected = (state) => state.global.isConnected
-
+export const selectIsConnected = (state) => state.global.isConnected;
+export const selectSelectedType = (state) => state.global.selectedType;
+export const selectIsProtectedModalOpen = (state) =>
+  state.global.isProtectedModalOpen;
 export default globalSlice.reducer;

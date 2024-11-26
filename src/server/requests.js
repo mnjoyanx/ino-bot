@@ -109,14 +109,14 @@ export const getProfile = (body) => {
 //   return request("delete", "v2/api/user/logout", body);
 // };
 
-// export const validateToken = body => {
-//   return request(
-//     "post",
-//     "user/validateToken", // -> endpoint
-//     "",
-//     body,
-//   );
-// };
+export const validateToken = (body) => {
+  return request(
+    "post",
+    "user/validateToken", // -> endpoint
+    "",
+    body,
+  );
+};
 
 export const getSearchResults = (queryParams) => {
   return request(

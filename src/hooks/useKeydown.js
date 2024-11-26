@@ -5,18 +5,14 @@ import store from "@app/store";
 let isConnected = true;
 
 store.subscribe(() => {
-  console.log(store.getState().global.isConnected, '----')
   isConnected = store.getState().global.isConnected;
 });
 
 function useKeydown(props) {
-
-
   useEffect(() => {
     const handleKeydown = (e) => {
       event.preventDefault();
       let key = check_key(e);
-
 
       if (key && !isNaN(key) && props["number"]) key = "number";
 
@@ -26,7 +22,6 @@ function useKeydown(props) {
         props.handleKeyPress(e.key);
       }
     };
-
 
     if (props.isActive && isConnected) {
       window.addEventListener("keydown", handleKeydown);

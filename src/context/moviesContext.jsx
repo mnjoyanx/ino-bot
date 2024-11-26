@@ -87,7 +87,6 @@ function moviesReducer(state, action) {
 export const MoviesProvider = ({ children }) => {
   const [state, dispatch] = useReducer(moviesReducer, initialState);
   const [selectedGenre, setSelectedGenre] = useState(null);
-  const [selectedType, setSelectedType] = useState(null);
 
   const setMoviesByGenre = useCallback((type, movies) => {
     dispatch({
@@ -132,8 +131,6 @@ export const MoviesProvider = ({ children }) => {
       setGenres,
       selectedGenre,
       setSelectedGenre,
-      selectedType,
-      setSelectedType,
       favorites: state.favorites,
       setFavorites,
       menuList: state.menuList,
@@ -148,8 +145,6 @@ export const MoviesProvider = ({ children }) => {
       setMoviesByGenre,
       setGenres,
       state.menuList,
-      setSelectedType,
-      selectedType,
       state.favorites,
       setFavorites,
       state.dynamicContent,

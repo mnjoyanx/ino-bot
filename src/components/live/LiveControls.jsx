@@ -14,6 +14,7 @@ import {
 } from "@app/player/playerSlice";
 import { channelInfo } from "@server/requests";
 import { formatTime } from "@utils/util";
+import { selectCtrl } from "@app/global";
 
 import useKeydown from "@hooks/useKeydown";
 
@@ -38,6 +39,7 @@ export default memo(function LiveControls({
   currentTimeRef,
   setPipMode,
   setUrl,
+  showProtected,
   url,
   refProgress,
   refUrlLive,
@@ -49,7 +51,8 @@ export default memo(function LiveControls({
   seekToHandler,
   seekByClick,
   cTime,
-  changeCTime
+  changeCTime,
+  duration,
 }) {
   const dispatch = useDispatch();
 
@@ -58,6 +61,7 @@ export default memo(function LiveControls({
   const playerType = useSelector(selectPlayerType);
   const showPreviewImages = useSelector(selectShowPreviewImages);
   const isPaused = useSelector(selectIsPaused);
+  const ctrl = useSelector(selectCtrl);
 
   const refNextChannel = useRef(null);
   const refPrevChannel = useRef(null);
@@ -108,7 +112,12 @@ export default memo(function LiveControls({
 
       LOCAL_STORAGE.LAST_CHANNEL_ID.SET(id);
       dispatch(setCurrentChannel(message));
-      setUrl(_url);
+
+      if (message.is_protected) {
+        showProtected();
+      } else {
+        setUrl(_url);
+      }
     }
   };
 
@@ -207,7 +216,7 @@ export default memo(function LiveControls({
         seekToHandler("rewind", 30);
         break;
       case 3:
-        if(isPaused) play();
+        if (isPaused) play();
         else pause();
         break;
       case 4:
@@ -220,7 +229,7 @@ export default memo(function LiveControls({
         seekToHandler("forward", 300);
         break;
     }
-  }
+  };
 
   useEffect(() => {
     return () => {
@@ -266,15 +275,6 @@ export default memo(function LiveControls({
     }
   };
 
-  const imitateTimeUpdate = (currentTime, duration) => {
-    if (currentTimeRef.current) {
-      currentTimeRef.current.innerHTML = formatTime(currentTime);
-    }
-    if (durationRef.current) {
-      durationRef.current.innerHTML = formatTime(duration);
-    }
-  };
-
   const nextChannel = () => {
     showControl();
     if (hideControls) return;
@@ -312,7 +312,7 @@ export default memo(function LiveControls({
   };
 
   useKeydown({
-    isActive: showPreviewImages,
+    isActive: showPreviewImages && ctrl !== "protected",
 
     back: () => {
       if (!window.Android) {
@@ -350,7 +350,8 @@ export default memo(function LiveControls({
   });
 
   useKeydown({
-    isActive: playerType === "live" && !showPreviewImages,
+    isActive:
+      playerType === "live" && !showPreviewImages && ctrl !== "protected",
 
     number: (e) => {
       showControl();
@@ -427,7 +428,8 @@ export default memo(function LiveControls({
   useKeydown({
     isActive:
       (playerType === "timeshift" || playerType === "archive") &&
-      !showPreviewImages,
+      !showPreviewImages &&
+      ctrl !== "protected",
 
     number: (e) => {
       showControl();
@@ -482,7 +484,7 @@ export default memo(function LiveControls({
     right: () => {
       showControl();
       if (hideControls) return;
-      setActive(1)
+      setActive(1);
       // if (active === 1) return;
       // setActive(active + 1);
     },
@@ -534,7 +536,7 @@ export default memo(function LiveControls({
         //   seekToHandler("forward");
         // }
 
-        return
+        return;
       } else if (active === 4) {
         setActive(0);
         if (currentChannel) {
@@ -553,6 +555,10 @@ export default memo(function LiveControls({
     };
   }, []);
 
+  const remainingTime = !window.Android
+    ? (cTime / (refVideo.current ? refVideo.current.duration : 0)) * 100
+    : (window.Android.getCurrentTime() / window.Android.getVideoDuration()) *
+      100;
   return (
     <>
       {number || displayChannel ? (
@@ -567,31 +573,31 @@ export default memo(function LiveControls({
           active={active}
         />
         <div className="progress-field">
-
-          
           {playerType === "live" ? (
-              <Progress
-                playerType={playerType}
-                color="#FFFFFF"
-                refProgress={refProgress}
-                refVal={refVal}
-                duration={secDuration}
-                currentTime={currentTimeSeekto.current}
-                onSeekTo={seekToHandler}
-                seekByClick={seekByClick}
-              /> 
-              ): (
-                <>
+            <Progress
+              playerType={playerType}
+              color="#FFFFFF"
+              refProgress={refProgress}
+              refVal={refVal}
+              duration={secDuration}
+              currentTime={currentTimeSeekto.current}
+              onSeekTo={seekToHandler}
+              seekByClick={seekByClick}
+            />
+          ) : (
+            <>
               <InoPlayerProgress
                 isActive={false}
-                value={cTime / (refVideo.current ? refVideo.current.duration : 0) * 100}
-                duration={refVideo.current ? refVideo.current.duration : 0}
+                value={remainingTime}
+                duration={duration}
+                showTime={false}
                 onChange={(value) => {
-                  changeCTime((value * refVideo.current.duration) / 100)
+                  changeCTime((value * refVideo.current.duration) / 100);
                 }}
                 showTooltip={false}
+                isLive={true}
               />
-                </>
+            </>
           )}
 
           {playerType === "live" ? (
@@ -607,7 +613,7 @@ export default memo(function LiveControls({
                 active={active}
                 setActive={() => setActive(0)}
                 actionHandler={(index) => {
-                  handleArchiveAction(index)
+                  handleArchiveAction(index);
                 }}
                 onLiveHandler={() => {
                   dispatch(setPlayerType("live"));
@@ -629,9 +635,8 @@ export default memo(function LiveControls({
                 active={active}
                 setActive={() => setActive(0)}
                 actionHandler={(index) => {
-                  handleArchiveAction(index)
+                  handleArchiveAction(index);
                 }}
-
                 onLiveHandler={() => {
                   dispatch(setPlayerType("live"));
                   setUrl(refUrlLive.current.url);

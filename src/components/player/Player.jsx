@@ -30,6 +30,7 @@ export default memo(function Player({
   retryC,
   setRetryC,
   title,
+  showProtected,
   onEnded,
   onRememberTime,
   startTime,
@@ -91,7 +92,6 @@ export default memo(function Player({
 
   const handleTimeUpdate = (currentTime, duration) => {
     secCurrentTime.current = currentTime;
-    // secDuration.current = duration;
     setSecDuration(duration);
     setMovieCurrentTime(currentTime);
     cTimeRef.current = currentTime;
@@ -202,20 +202,24 @@ export default memo(function Player({
 
   const updateSeekTimeDelayed = (time) => {
     timeout = setTimeout(() => {
-      seekByClick(time)
-      play()
-    }, 1000)
-  }
+      seekByClick(time);
+      play();
+    }, 1000);
+  };
 
   const handleSeek = (direction, seconds = 10) => {
-    pause()
-    clearTimeout(timeout)
+    pause();
+    clearTimeout(timeout);
 
-    setCTime(old => direction === 'forward' ? old + seconds : old - seconds);
-    cTimeRef.current = direction === 'forward' ? cTimeRef.current + seconds : cTimeRef.current - seconds;
+    setCTime((old) =>
+      direction === "forward" ? old + seconds : old - seconds,
+    );
+    cTimeRef.current =
+      direction === "forward"
+        ? cTimeRef.current + seconds
+        : cTimeRef.current - seconds;
 
-    updateSeekTimeDelayed(cTimeRef.current)
-
+    updateSeekTimeDelayed(cTimeRef.current);
 
     // if (window.Android) {
     //   const currentTime = window.Android.getCurrentTime();
@@ -232,10 +236,7 @@ export default memo(function Player({
     //     Math.min(newTime, refVideo.current.duration),
     //   );
     // }
-
   };
-
-
 
   useEffect(() => {
     document.addEventListener("playerError", onErrorHandler);
@@ -308,6 +309,7 @@ export default memo(function Player({
       <div id="controls_player">
         {type === "live" && !pipMode && (
           <LiveControls
+            showProtected={showProtected}
             setUrl={setUrl}
             url={url}
             refUrlLive={refUrlLive}
@@ -324,6 +326,7 @@ export default memo(function Player({
             pause={pause}
             seekToHandler={handleSeek}
             seekByClick={seekByClick}
+            duration={secDuration}
           />
         )}
         {type === "vod" && !pipMode && (

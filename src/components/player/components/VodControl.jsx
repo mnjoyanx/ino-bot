@@ -97,7 +97,6 @@ export default function VodControls({
     dispatch(setCtrl("vodCtrl"));
   };
 
-
   useKeydown({
     isActive: ctrl === "vodCtrl",
     left: () => {
@@ -143,7 +142,6 @@ export default function VodControls({
               refVideo.current.currentTime,
               refVideo.current.duration,
             );
-
           }
           handleSeek("backward");
         } else if (topActiveIndex === 1) isPaused ? play() : pause();
@@ -182,7 +180,6 @@ export default function VodControls({
 
   return (
     <>
-     
       <div
         className={`vod-control${hideControls ? " hide" : ""}`}
         ref={controlsRef}
@@ -201,13 +198,16 @@ export default function VodControls({
         </div>
 
         <div className="progress-field">
-
           <InoPlayerProgress
-            isActive={true}
-            value={movieCurrentTime / (refVideo.current ? refVideo.current.duration : 0) * 100}
+            isActive={false}
+            value={
+              (movieCurrentTime /
+                (refVideo.current ? refVideo.current.duration : 0)) *
+              100
+            }
             duration={refVideo.current ? refVideo.current.duration : 0}
-            onChange={value => {
-              setMovieCurrentTime((value * refVideo.current.duration) / 100)
+            onChange={(value) => {
+              setMovieCurrentTime((value * refVideo.current.duration) / 100);
             }}
             showTooltip={false}
           />

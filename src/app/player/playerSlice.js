@@ -35,11 +35,9 @@ const playerSlice = createSlice({
     },
     setCurrentArchive: (state, action) => {
       state.currentArchive = action.payload;
-      // Find and set next archive
       const currentIndex = state.archives.findIndex(
         (archive) => archive.start_ut === action.payload.start_ut,
       );
-      console.log(currentIndex, "currentIndex", state.archives);
       state.nextArchive = state.archives[currentIndex + 1] || null;
     },
   },

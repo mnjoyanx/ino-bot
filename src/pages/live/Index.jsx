@@ -14,6 +14,7 @@ import {
   selectNextArchive,
   selectShowPreviewImages,
 } from "@app/player/playerSlice";
+
 import { getChannels, channelInfo } from "@server/requests";
 
 import useKeydown from "@hooks/useKeydown";
@@ -25,10 +26,14 @@ import PipModeLive from "@components/live/PipModeLive.jsx";
 
 import "@styles/components/livePage.scss";
 import { setUrlArchive } from "@utils/util";
+import { InoProtectInput, Modal, toast } from "ino-ui-tv";
+import { selectCtrl, setCtrl } from "@app/global";
 
 export default function LivePage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const ctrl = useSelector(selectCtrl);
 
   const allChannels = useSelector(selectAllChannels);
   const currentChannel = useSelector(selectCurrentChannel);
@@ -38,6 +43,7 @@ export default function LivePage() {
   const [pipMode, setPipMode] = useState(false);
   const [url, setUrl] = useState(null);
   const [retryC, setRetryC] = useState(1);
+  const [isShowProtected, setIsShowProtected] = useState(false);
 
   const refUrlLive = useRef(null);
 
@@ -75,7 +81,12 @@ export default function LivePage() {
 
   const getFirstChannel = (array) => {
     if (currentChannel) {
-      setUrl(currentChannel.url);
+      if (currentChannel.is_protected) {
+        setIsShowProtected(true);
+        dispatch(setCtrl("protected"));
+      } else {
+        setUrl(currentChannel.url);
+      }
     } else {
       let channel_id = array[0]?.id;
 
@@ -104,7 +115,12 @@ export default function LivePage() {
 
       dispatch(setCurrentChannel(message));
 
-      setUrl(_url);
+      if (message.is_protected) {
+        setIsShowProtected(true);
+        dispatch(setCtrl("protected"));
+      } else {
+        setUrl(_url);
+      }
     }
   };
 
@@ -116,7 +132,7 @@ export default function LivePage() {
   };
 
   useKeydown({
-    isActive: !pipMode && !showPreviewImages,
+    isActive: !pipMode && !showPreviewImages && ctrl !== "protected",
     back: () => {
       document.body.classList.remove("playing");
       window.PLAYER.destroyPlayer();
@@ -133,8 +149,37 @@ export default function LivePage() {
     }
   };
 
+  const localParentalCode = localStorage.getItem("parental_code");
+  const parentalCode = localParentalCode ? JSON.parse(localParentalCode) : null;
+
   return (
     <div className={`parent-live-page${pipMode ? " pip-mode" : ""}`}>
+      <Modal
+        isOpen={isShowProtected}
+        onClose={() => {
+          setIsShowProtected(false);
+          dispatch(setCtrl(""));
+        }}
+        onCancel={() => {}}
+        onOk={() => {}}
+        size="full"
+      >
+        <InoProtectInput
+          isActive={ctrl === "protected"}
+          count={4}
+          isOpenKeyboard={true}
+          onChange={(value) => {}}
+          onComplete={(value) => {
+            if (value === parentalCode) {
+              setIsShowProtected(false);
+              setUrl(currentChannel.url);
+              dispatch(setCtrl(""));
+            } else {
+              toast.error("Invalid parental code");
+            }
+          }}
+        />
+      </Modal>
       <Player
         type="live"
         url={url}
@@ -146,6 +191,10 @@ export default function LivePage() {
         retryC={retryC}
         setRetryC={setRetryC}
         onNextArchive={handleNextArchive}
+        showProtected={() => {
+          setIsShowProtected(true);
+          dispatch(setCtrl("protected"));
+        }}
       />
       {pipMode ? (
         <PipModeLive

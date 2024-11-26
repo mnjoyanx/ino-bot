@@ -37,6 +37,7 @@ export default function ActivationPage() {
       });
       const parsedUser = JSON.parse(user);
       const { message, error } = parsedUser;
+      console.log(message, "message user");
 
       if (error) {
         setActivationPageState(message.action);

@@ -94,7 +94,8 @@ p {
   width: 100%;
 }
 
-.connection-modal, .ino-modal {
+.connection-modal,
+.ino-modal {
   background-color: black !important;
 }
 
@@ -109,4 +110,18 @@ p {
   color: #fff;
   font-size: 2.5rem;
   margin-bottom: 2rem;
+}
+
+.modal-protected {
+  width: 50rem;
+  height: 30rem;
+}
+
+.modal-content {
+  height: 30rem;
+}
+
+.ino-keyboard.numeric .ino-button--active {
+  background-color: #fff !important;
+  color: black !important;
 }

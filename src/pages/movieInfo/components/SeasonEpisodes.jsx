@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import styles from "@styles/components/seasonEpisodes.module.scss";
 import useKeydown from "@hooks/useKeydown";
 import { useSelector, useDispatch } from "react-redux";
-import { selectCtrl, setCtrl } from "@app/global";
+import { selectCtrl, setCtrl, setIsProtectedModalOpen } from "@app/global";
 import EpisodeCard from "./EpisodeCard";
 import { ListView } from "ino-ui-tv";
 
@@ -28,6 +28,7 @@ const SeasonEpisodes = ({
     setCurrentEpisode,
     activeSeasonIndex,
     setActiveSeasonIndex,
+    movieInfo,
   } = useMovieInfo();
   const isPlayerOpen = useSelector(selectIsPlayerOpen);
   const ctrl = useSelector(selectCtrl);
@@ -50,7 +51,10 @@ const SeasonEpisodes = ({
     right: () =>
       setActiveEpisode((prev) => Math.min(episodes.length - 1, prev + 1)),
     ok: () => {
-      if (episodes[activeEpisode]) {
+      if (movieInfo && movieInfo.is_protected) {
+        dispatch(setIsProtectedModalOpen(true));
+        dispatch(setCtrl("protected"));
+      } else if (episodes[activeEpisode]) {
         setCurrentEpisode(episodes[activeEpisode]);
         setStartTime(episodes[activeEpisode]?.watched?.time || 0);
         handleEpisodeClick(episodes[activeEpisode].id);
@@ -111,9 +115,14 @@ const SeasonEpisodes = ({
         isActive={isActive}
         style={style}
         onClick={() => {
-          setCurrentEpisode(item);
-          setStartTime(item.watched?.time || 0);
-          handleEpisodeClick(item.id);
+          if (movieInfo && movieInfo.is_protected) {
+            dispatch(setIsProtectedModalOpen(true));
+            dispatch(setCtrl("protected"));
+          } else {
+            setCurrentEpisode(item);
+            setStartTime(item.watched?.time || 0);
+            handleEpisodeClick(item.id);
+          }
         }}
       />
     ),
