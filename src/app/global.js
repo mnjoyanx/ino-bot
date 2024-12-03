@@ -14,6 +14,7 @@ const initialState = {
   isConnected: true,
   selectedType: "",
   isProtectedModalOpen: false,
+  onEpisodes: false,
 };
 
 const globalSlice = createSlice({
@@ -60,6 +61,9 @@ const globalSlice = createSlice({
     setIsProtectedModalOpen: (state, action) => {
       state.isProtectedModalOpen = action.payload;
     },
+    setOnEpisodes: (state, action) => {
+      state.onEpisodes = action.payload;
+    },
   },
 });
 
@@ -77,6 +81,7 @@ export const {
   setConnection,
   setSelectedType,
   setIsProtectedModalOpen,
+  setOnEpisodes,
 } = globalSlice.actions;
 
 export const selectCtrl = (state) => state.global.ctrl;
@@ -96,4 +101,5 @@ export const selectIsConnected = (state) => state.global.isConnected;
 export const selectSelectedType = (state) => state.global.selectedType;
 export const selectIsProtectedModalOpen = (state) =>
   state.global.isProtectedModalOpen;
+export const selectOnEpisodes = (state) => state.global.onEpisodes;
 export default globalSlice.reducer;

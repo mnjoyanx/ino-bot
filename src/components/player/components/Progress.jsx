@@ -16,7 +16,7 @@ export default memo(function Progress({
 
   const styleProgressBar = {
     backgroundColor: color,
-    width: `${currentTime}%`,
+    width: `${100}%`,
   };
 
   return (
@@ -24,7 +24,7 @@ export default memo(function Progress({
       <div
         className={`progress-bar ${playerType}`}
         style={styleProgressBar}
-        ref={refProgress}
+        // ref={refProgress}
       >
         <div className="seekto-current_time" ref={refVal}></div>
       </div>

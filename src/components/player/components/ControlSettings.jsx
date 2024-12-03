@@ -68,7 +68,7 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
   const [expandedOption, setExpandedOption] = useState(null);
   const [activeChild, setActiveChild] = useState(0);
   const [settingsOptions, setSettingsOptions] = useState(
-    initialSettingsOptions
+    initialSettingsOptions,
   );
 
   useEffect(() => {
@@ -144,12 +144,12 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
         setActiveChild((prev) =>
           Math.min(
             settingsOptions[expandedOption].children.length - 1,
-            prev + 1
-          )
+            prev + 1,
+          ),
         );
       } else {
         setActiveOption((prev) =>
-          Math.min(settingsOptions.length - 1, prev + 1)
+          Math.min(settingsOptions.length - 1, prev + 1),
         );
       }
     },

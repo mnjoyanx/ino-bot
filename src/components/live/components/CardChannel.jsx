@@ -12,11 +12,13 @@ export default memo(function CardChannel({
   onClick,
   index,
   isSelected,
+  style,
 }) {
   return (
     <div
       className={`card-channel${isActive ? " active" : ""}${isSelected ? " selected" : ""}`}
       onClick={() => onClick(index, elem.id)}
+      style={style}
     >
       <div className="number">#{elem.position}</div>
       <img

@@ -4,10 +4,10 @@ import {
   selectChannels,
   selectCurrentChannel,
   setCurrentChannel,
-  playerType,
   setPlayerType,
   selectPlayerType,
 } from "@app/channels/channelsSlice";
+import { ListView } from "@ino-ui/tv";
 
 import { channelInfo } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
@@ -15,7 +15,6 @@ import LOCAL_STORAGE from "@utils/localStorage";
 import useKeydown from "@hooks/useKeydown";
 
 import CardChannel from "./CardChannel";
-import ArrowButton from "../../common/ArrowButton";
 
 import "../styles/ChannelsWrapper.scss";
 
@@ -25,7 +24,6 @@ export default memo(function ChannelsWrapper({
   setControl,
   setUrl,
   setPipMode,
-  refSetIndex,
 }) {
   const dispatch = useDispatch();
 
@@ -34,7 +32,6 @@ export default memo(function ChannelsWrapper({
   const playerType = useSelector(selectPlayerType);
 
   const [active, setActive] = useState(0);
-  const [start, setStart] = useState(0);
 
   const handleClick = useCallback(
     (index, id) => {
@@ -43,34 +40,6 @@ export default memo(function ChannelsWrapper({
     },
     [currentChannel, playerType],
   );
-
-  const handleUp = () => {
-    if (active === 0) {
-      setControl("search");
-
-      return;
-    }
-
-    setActive(active - 1);
-    if (active - 1 == 0 || active - 1 < 0) {
-      setStart(0);
-      setActive(0);
-      return;
-    }
-
-    if (active < categories[selectedCategory]?.total - 6) {
-      setStart(start - 1);
-    }
-  };
-
-  const handleDown = () => {
-    if (active === categories[selectedCategory]?.total - 1) return;
-
-    setActive(active + 1);
-    if (active + 1 < categories[selectedCategory]?.total - 6) {
-      setStart(start + 1);
-    }
-  };
 
   const getChannelInfo = async (id) => {
     if (id === currentChannel?.id && playerType === "live") {
@@ -96,39 +65,8 @@ export default memo(function ChannelsWrapper({
     }
   };
 
-  useEffect(() => {
-    if (currentChannel && selectedCategory === "All") {
-      for (var i = 0; i < categories[selectedCategory]?.content?.length; i++) {
-        if (
-          categories[selectedCategory]?.content[i].id === currentChannel?.id
-        ) {
-          setActive(i);
-          if (i > 2 && i <= categories[selectedCategory]?.total - 6)
-            setStart(i);
-          else if (i > categories[selectedCategory]?.total - 6) {
-            setStart(categories[selectedCategory]?.total - 7);
-          }
-          break;
-        }
-      }
-    }
-  }, [categories, currentChannel]);
-
-  useEffect(() => {}, [active, start, selectedCategory]);
-
-  useEffect(() => {
-    if (refSetIndex.current) {
-      setActive(0);
-      setStart(0);
-    }
-  }, [selectedCategory]);
-
   useKeydown({
     isActive: control,
-
-    up: handleUp,
-
-    down: handleDown,
 
     left: () => setControl("category"),
 
@@ -143,32 +81,48 @@ export default memo(function ChannelsWrapper({
     <div className="parent-channels">
       <h3 className="title">Channels</h3>
       <div className="channels-wrapper">
-        {active > 0 && categories[selectedCategory]?.content?.length > 12 ? (
-          <ArrowButton onClick={handleUp} type="up" />
-        ) : null}
-        <div
-          className="list-channels"
-          onWheel={(e) => {
-            if (e.deltaY < 0) handleUp();
-            else handleDown();
-          }}
-        >
-          {categories[selectedCategory]?.content?.map((elem, index) => {
-            return index >= start && index < start + 12 ? (
-              <CardChannel
-                key={elem.id}
-                isActive={active === index && control}
-                isSelected={elem.id === currentChannel?.id}
-                elem={elem}
-                onClick={handleClick}
-              />
-            ) : null;
-          })}
+        <div className="list-channels">
+          {categories[selectedCategory]?.content?.length > 0 ? (
+            <ListView
+              data={categories[selectedCategory]?.content}
+              id="channels-list"
+              uniqueKey="list-channels"
+              listType="vertical"
+              nativeControle={true}
+              itemsCount={5}
+              itemsTotal={categories[selectedCategory]?.content?.length}
+              gap={0}
+              buffer={10}
+              itemWidth={31}
+              itemHeight={7}
+              isActive={control}
+              initialActiveIndex={0}
+              startScrollIndex={0}
+              direction="ltr"
+              onMouseEnter={() => {}}
+              onIndexChange={(index) => {
+                setActive(index);
+              }}
+              renderItem={({ item, index, isActive, style }) => {
+                return (
+                  <CardChannel
+                    key={item.id}
+                    style={style}
+                    isActive={isActive}
+                    isSelected={item.id === currentChannel?.id}
+                    elem={item}
+                    index={index}
+                    onClick={handleClick}
+                  />
+                );
+              }}
+            />
+          ) : (
+            <div className="empty-channel">
+              <p className="empty-channel_text">No channels</p>
+            </div>
+          )}
         </div>
-        {categories[selectedCategory]?.content?.length > 12 &&
-        active != categories[selectedCategory]?.content?.length - 1 ? (
-          <ArrowButton onClick={handleDown} type="down" />
-        ) : null}
       </div>
     </div>
   );

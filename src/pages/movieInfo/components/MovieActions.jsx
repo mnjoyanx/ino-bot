@@ -16,7 +16,7 @@ import { useMovieActions } from "../hooks/useMovieActions";
 import styles from "@styles/components/movieInfo.module.scss";
 import { useMovieInfo } from "@context/movieInfoContext";
 import { formatTime } from "@utils/util";
-import { InoProtectInput, Modal, toast } from "ino-ui-tv";
+import { InoProtectInput, Modal, toast } from "@ino-ui/tv";
 
 const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
   const navigate = useNavigate();

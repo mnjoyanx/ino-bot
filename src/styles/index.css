@@ -125,3 +125,9 @@ p {
   background-color: #fff !important;
   color: black !important;
 }
+
+.ino-player-progress__time-remaining,
+.ino-player-progress__duration {
+  color: white !important;
+  font-size: 1.5rem !important;
+}

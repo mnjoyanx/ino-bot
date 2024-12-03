@@ -1,8 +1,9 @@
 .parent-epg_list {
   width: 53rem;
-  height: 54.8rem;
+  height: 56.8rem;
   // background-color: green;
   position: relative;
+  overflow: hidden;
   .rec_video {
     position: absolute;
     top: 2rem;

@@ -148,7 +148,7 @@
       overflow: hidden;
     }
   }
-  
+
   .progress-field {
     width: 80rem;
     // width: 80%;
@@ -197,19 +197,27 @@
 }
 
 .timeshift-btn {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 4.5rem;
+  height: 4.5rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   margin-right: 1rem;
   position: relative;
 
+  .timeshift-btn_text {
+    font-size: 1.5rem;
+    color: #fff;
+  }
+
   &.active {
-    transition: 0.1s linear;
     path {
       fill: $active-color;
-      transition: 0.1s linear;
+    }
+
+    .timeshift-btn_text {
+      color: $active-color;
     }
   }
   svg {

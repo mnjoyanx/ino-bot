@@ -32,12 +32,15 @@ export default memo(function InfoLiveControl({
         <p>{currentChannel?.name}</p>
       </div>
       {playerType === "live" ? (
-        <div
-          className={`timeshift-btn${active === 1 ? " active" : ""}`}
-          style={{ opacity: currentChannel?.has_archive ? "1" : "0" }}
-        >
-          <SvgBackward />
-        </div>
+        <>
+          <div
+            className={`timeshift-btn${active === 1 ? " active" : ""}`}
+            style={{ opacity: currentChannel?.has_archive ? "1" : "0" }}
+          >
+            <span className="timeshift-btn_text">Archive</span>
+            <SvgBackward />
+          </div>
+        </>
       ) : null}
     </>
   );

@@ -11,48 +11,52 @@ import Settings from "@pages/settings/Index.jsx";
 import MoviesPage from "@pages/movies/Index.jsx";
 import MovieInfo from "@pages/movieInfo/Index.jsx";
 import { ToastProvider } from "./hooks/useToast";
-import { ToastProvider as InoToastProvider } from "ino-ui-tv";
+import { ToastProvider as InoToastProvider } from "@ino-ui/tv";
 import useConnection from "./hooks/useConnection";
 import { MoviesProvider } from "./context/moviesContext";
 import AppsPage from "@pages/apps/Index.jsx";
 import { selectIsPlayerOpen } from "@app/global";
 import { useSelector } from "react-redux";
-import { Modal } from "ino-ui-tv";
+import { Modal } from "@ino-ui/tv";
 import "./styles/global.css";
 import { validateToken } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
 
 const getVersion = () => {
-  var req = new XMLHttpRequest();
+  if (window.Android) {
+    const version = window.Android.getAppVersion();
+    localStorage.setItem("app_version", version);
+  } else {
+    var req = new XMLHttpRequest();
 
-  req.onreadystatechange = function () {
-    if (this.readyState == 4 && this.status == 200) {
-      let data = JSON.parse(this.responseText);
+    req.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        let data = JSON.parse(this.responseText);
 
-      let VERSION = data.version;
+        let VERSION = data.version;
 
-      if (localStorage.getItem("app_version") == VERSION) {
-        localStorage.setItem("app_version", VERSION);
-      } else {
-        localStorage.setItem("app_version", VERSION);
-        if (window.Android) {
-          window.Android.reload();
+        if (localStorage.getItem("app_version") == VERSION) {
+          localStorage.setItem("app_version", VERSION);
         } else {
-          window.location.reload();
+          localStorage.setItem("app_version", VERSION);
+          if (window.Android) {
+            window.Android.reload();
+          } else {
+            window.location.reload();
+          }
         }
       }
-    }
-  };
-  req.onerror = function () {};
+    };
+    req.onerror = function () {};
 
-  // req.open("GET", HOST + "js/version.json?time=" + Math.random(), true);
-  let host = "";
-  const sriptEl = document.getElementById("bundlejs");
-  if (sriptEl) {
-    host = sriptEl.src.split("bundle.js")[0];
+    let host = "";
+    const sriptEl = document.getElementById("bundlejs");
+    if (sriptEl) {
+      host = sriptEl.src.split("bundle.js")[0];
+    }
+    req.open("GET", host + "/version.json", true);
+    req.send();
   }
-  req.open("GET", host + "/version.json", true);
-  req.send();
 
   setTimeout(function () {
     getVersion();

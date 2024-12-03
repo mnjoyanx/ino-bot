@@ -26,7 +26,7 @@ import PipModeLive from "@components/live/PipModeLive.jsx";
 
 import "@styles/components/livePage.scss";
 import { setUrlArchive } from "@utils/util";
-import { InoProtectInput, Modal, toast } from "ino-ui-tv";
+import { InoProtectInput, Modal, toast } from "@ino-ui/tv";
 import { selectCtrl, setCtrl } from "@app/global";
 
 export default function LivePage() {

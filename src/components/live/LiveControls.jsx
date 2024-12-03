@@ -30,7 +30,7 @@ import favFill from "../../assets/images/live/favFill.png";
 
 import "./styles/LiveControl.scss";
 import { addLiveFavorite, removeLiveFavorite } from "../../server/requests";
-import { InoPlayerProgress } from "ino-ui-tv";
+import { InoPlayerProgress } from "@ino-ui/tv";
 
 let hideControlsTimer = null;
 
@@ -574,15 +574,26 @@ export default memo(function LiveControls({
         />
         <div className="progress-field">
           {playerType === "live" ? (
-            <Progress
-              playerType={playerType}
-              color="#FFFFFF"
-              refProgress={refProgress}
-              refVal={refVal}
-              duration={secDuration}
-              currentTime={currentTimeSeekto.current}
-              onSeekTo={seekToHandler}
-              seekByClick={seekByClick}
+            // <Progress
+            //   playerType={playerType}
+            //   color="#FFFFFF"
+            //   refProgress={refProgress}
+            //   refVal={refVal}
+            //   duration={secDuration}
+            //   currentTime={currentTimeSeekto.current}
+            //   onSeekTo={seekToHandler}
+            //   seekByClick={seekByClick}
+            // />
+            <InoPlayerProgress
+              isActive={false}
+              value={remainingTime}
+              duration={duration}
+              showTime={false}
+              // onChange={(value) => {
+              //   changeCTime((value * refVideo.current.duration) / 100);
+              // }}
+              showTooltip={false}
+              isLive={true}
             />
           ) : (
             <>
@@ -590,12 +601,11 @@ export default memo(function LiveControls({
                 isActive={false}
                 value={remainingTime}
                 duration={duration}
-                showTime={false}
+                showTime={true}
                 onChange={(value) => {
                   changeCTime((value * refVideo.current.duration) / 100);
                 }}
                 showTooltip={false}
-                isLive={true}
               />
             </>
           )}
@@ -621,10 +631,10 @@ export default memo(function LiveControls({
                 }}
               />
               {/* <LiveIcon type={playerType} isActive={active === 4} /> */}
-              <Duration
+              {/* <Duration
                 _ref={currentTimeRef}
                 className={"timeshift-duration"}
-              />
+              /> */}
             </>
           ) : (
             <>
@@ -643,11 +653,11 @@ export default memo(function LiveControls({
                 }}
               />
               <LiveIcon type={playerType} isActive={active === 4} />
-              <Duration _ref={durationRef} className={"archive-duration"} />
-              <Duration
+              {/* <Duration _ref={durationRef} className={"archive-duration"} /> */}
+              {/* <Duration
                 _ref={currentTimeRef}
                 className={"archive-current_time"}
-              />
+              /> */}
             </>
           )}
         </div>

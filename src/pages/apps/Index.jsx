@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AppLogo from "@components/common/AppLogo";
 import BackButton from "@components/common/BackButton";
 import { selectCtrl, setCtrl } from "@app/global";
-import { GridView } from "ino-ui-tv";
+import { GridView } from "@ino-ui/tv";
 import { getApps } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
 import Loading from "@components/common/Loading";
@@ -50,7 +50,7 @@ export default function AppsPage() {
 
   return (
     <div className={styles["apps-page"]}>
-      {isLoading ? (
+      {!isLoading ? (
         <div className={styles["loading-container"]}>
           <Loading />
         </div>
@@ -67,7 +67,7 @@ export default function AppsPage() {
           </div>
           <div className={styles["apps-content"]}>
             <h2 className={styles["apps-title"]}>Apps Launcher</h2>
-            {isAndroid ? (
+            {!isAndroid ? (
               <div className={styles["grid-view_container"]}>
                 <GridView
                   id="apps-grid"
@@ -78,7 +78,7 @@ export default function AppsPage() {
                   bufferStart={10}
                   bufferEnd={10}
                   itemWidth={35}
-                  itemHeight={25}
+                  itemHeight={24.5}
                   isActive={ctrl !== "backBtn"}
                   onOk={(item) => {
                     if (item?.app_id) {
@@ -86,8 +86,6 @@ export default function AppsPage() {
                     }
                   }}
                   initialActiveIndex={0}
-                  //   onMouseEnter={() => {}}
-
                   onChangeRow={() => {}}
                   onUp={() => dispatch(setCtrl("backBtn"))}
                   onDown={() => {}}

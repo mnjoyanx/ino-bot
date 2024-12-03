@@ -57,6 +57,7 @@ export default memo(function Player({
   ); // Set this from your ad server
   const [cTime, setCTime] = useState(0);
   const cTimeRef = useRef(0);
+  const durationRef = useRef(0);
 
   const [movieCurrentTime, setMovieCurrentTime] = useState(0);
 
@@ -82,17 +83,24 @@ export default memo(function Player({
 
   const loadedMetadataHandler = useCallback(() => {
     hideToast();
+    if (window.Android) {
+      durationRef.current = window.Android.getDuration();
+    } else if (refVideo.current) {
+      durationRef.current = refVideo.current.duration;
+    }
+
     if (startTime) {
       if (refVideo.current) {
         refVideo.current.currentTime = startTime;
       }
     }
     play();
-  }, [startTime]);
+  }, [startTime, durationRef]);
 
   const handleTimeUpdate = (currentTime, duration) => {
     secCurrentTime.current = currentTime;
     setSecDuration(duration);
+    console.log(duration, "duration", currentTime, "currentTime");
     setMovieCurrentTime(currentTime);
     cTimeRef.current = currentTime;
     if (Math.floor(currentTime) >= duration - 1) {
@@ -344,6 +352,7 @@ export default memo(function Player({
             seekToHandler={handleSeek}
             movieCurrentTime={cTimeRef.current}
             setMovieCurrentTime={seekByClick}
+            duration={durationRef.current}
           />
         )}
       </div>

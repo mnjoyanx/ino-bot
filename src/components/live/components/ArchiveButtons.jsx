@@ -1,19 +1,26 @@
-import { memo , useState} from "react";
+import { memo, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectIsPaused } from "@app/player/playerSlice";
 import SvgPlay from "@assets/images/player/SvgPlay";
 import SvgRewind from "@assets/images/player/SvgRewind";
 import SvgForward from "@assets/images/player/SvgForward";
 import SvgPause from "@assets/images/player/SvgPause";
-import { InoRow } from "ino-ui-tv";
+import { InoRow } from "@ino-ui/tv";
 
 import "../styles/ArchiveButtons.scss";
 import LiveIcon from "./LiveIcon";
 
-export default memo(function ArchiveButtons({ play, pause, active, setActive, actionHandler, onLiveHandler }) {
+export default memo(function ArchiveButtons({
+  play,
+  pause,
+  active,
+  setActive,
+  actionHandler,
+  onLiveHandler,
+}) {
   const isPaused = useSelector(selectIsPaused);
 
-  const [isOnLive, setIsOnLive] = useState(false)
+  const [isOnLive, setIsOnLive] = useState(false);
 
   const handleClick = (e) => {
     if (isPaused) play();
@@ -25,7 +32,7 @@ export default memo(function ArchiveButtons({ play, pause, active, setActive, ac
       <InoRow
         isActive={isOnLive}
         onDown={() => {
-          setIsOnLive(false)
+          setIsOnLive(false);
         }}
         onOk={onLiveHandler}
       >
@@ -34,47 +41,44 @@ export default memo(function ArchiveButtons({ play, pause, active, setActive, ac
 
       <div className="buttons-group-live">
         <InoRow
-         isActive={active &&  !isOnLive}
-         onLeft={setActive}
-         onOk={(_e, index) => {
-          actionHandler(index)
-         }}
-         onUp={() => {
-          setIsOnLive(true)
-         }}
-      >
-      <div className={`rewind btn-group-live`}>
-        <p className="archive-btn_text">-5 MIN</p>
-        <SvgRewind />
+          isActive={active && !isOnLive}
+          onLeft={setActive}
+          onOk={(_e, index) => {
+            actionHandler(index);
+          }}
+          onUp={() => {
+            setIsOnLive(true);
+          }}
+        >
+          <div className={`rewind btn-group-live`}>
+            <p className="archive-btn_text">-5 MIN</p>
+            <SvgRewind />
+          </div>
+          <div className={`rewind btn-group-live`}>
+            <p className="archive-btn_text">-1 MIN</p>
+            <SvgRewind />
+          </div>
+          <div className={`rewind btn-group-live`}>
+            <p className="archive-btn_text">-30 SEC</p>
+            <SvgRewind />
+          </div>
+          <div className={`play-pause btn-group-live`} onClick={handleClick}>
+            {isPaused ? <SvgPlay /> : <SvgPause />}
+          </div>
+          <div className={`forward btn-group-live`}>
+            <SvgForward />
+            <p className="archive-btn_text">+30 SEC</p>
+          </div>
+          <div className={`forward btn-group-live`}>
+            <SvgForward />
+            <p className="archive-btn_text">+1 MIN</p>
+          </div>
+          <div className={`forward btn-group-live`}>
+            <SvgForward />
+            <p className="archive-btn_text">+5 MIN</p>
+          </div>
+        </InoRow>
       </div>
-       <div className={`rewind btn-group-live`}>
-        <p className="archive-btn_text">-1 MIN</p>
-        <SvgRewind />
-      </div>
-       <div className={`rewind btn-group-live`}>
-        <p className="archive-btn_text">-30 SEC</p>
-        <SvgRewind />
-      </div>
-      <div
-        className={`play-pause btn-group-live`}
-        onClick={handleClick}
-      >
-        {isPaused ? <SvgPlay /> : <SvgPause />}
-      </div>
-      <div className={`forward btn-group-live`}>
-        <SvgForward />
-        <p className="archive-btn_text">+30 SEC</p>
-      </div>
-      <div className={`forward btn-group-live`}>
-        <SvgForward />
-        <p className="archive-btn_text">+1 MIN</p>
-      </div>
-      <div className={`forward btn-group-live`}>
-        <SvgForward />
-        <p className="archive-btn_text">+5 MIN</p>
-      </div>
-      </InoRow>
-    </div>
     </div>
   );
 });

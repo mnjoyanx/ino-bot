@@ -1,78 +1,90 @@
 .parent-channels {
-    width: 32.5rem;
-    height: 54.6rem;
-    border-radius: 1.5rem;
-    background-color: rgba(3, 3, 3, 0.4);
+  width: 32.5rem;
+  height: 56.6rem;
+  border-radius: 1.5rem;
+  background-color: rgba(3, 3, 3, 0.4);
+  overflow: hidden;
 
-    .title {
-        font-size: 2rem;
-        font-weight: 500;
-        color: white;
-        padding: 2rem 0 0 2rem;
-    }
-    .channels-wrapper {
-        height: 50rem;
-        overflow: hidden;
-        padding: 1rem;
-        position: relative;
+  .title {
+    font-size: 2rem;
+    font-weight: 500;
+    color: white;
+    padding: 2rem 0 0 2rem;
+  }
+  .channels-wrapper {
+    height: 50rem;
+    overflow: hidden;
+    padding: 1rem;
+    position: relative;
 
-        .list-channels {
-            margin-top: 1rem;
-            .card-channel {
-                display: flex;
-                justify-content: space-between;
-                padding: 1.2rem 1rem;
-                display: flex;
-                align-items: center;
-                    border-radius: 1rem;
-                    border: .1rem solid transparent;
+    .list-channels {
+      .card-channel {
+        display: flex;
+        justify-content: space-between;
+        padding: 1.2rem 1rem;
+        display: flex;
+        align-items: center;
+        border-radius: 1rem;
+        border: 0.1rem solid transparent;
 
-                &.active {
-                    background-color: rgba(255, 255, 255, 0.05);
-                }
-                &.selected{
-                    border-color: white;
-                }
-                .name {
-                    font-size: 1.2rem;
-                    color: white;
-                    width: 12rem;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                }
-                .number {
-                    color: white;
-                    width: 3rem;
-                    font-size: 1.5rem;
-                }
-                .icon {
-                    width: 4rem;
-                    height: 4rem;
-                    object-fit: contain;
-                    object-position: center;
-                    background-color: white;
-                    border-radius: 0.5rem;
-                }
-
-                .icons {
-                    width: 7rem;
-                    display: flex;
-                    justify-content: flex-end;
-                    img {
-                        width: 2.2rem;
-                        height: 2.2rem;
-                        object-fit: cover;
-                        object-position: center;
-                        margin-left: 0.5rem;
-                    }
-                }
-                p {
-                    color: #bababa;
-                    font-size: 1.7rem;
-                    font-weight: 400;
-                }
-            }
+        &.active {
+          background-color: rgba(255, 255, 255, 0.05);
         }
+        &.selected {
+          border-color: white;
+        }
+        .name {
+          font-size: 1.2rem;
+          color: white;
+          width: 12rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .number {
+          color: white;
+          width: 3rem;
+          font-size: 1.5rem;
+        }
+        .icon {
+          width: 4rem;
+          height: 4rem;
+          object-fit: contain;
+          object-position: center;
+          background-color: white;
+          border-radius: 0.5rem;
+        }
+
+        .icons {
+          width: 7rem;
+          display: flex;
+          justify-content: flex-end;
+          img {
+            width: 2.2rem;
+            height: 2.2rem;
+            object-fit: cover;
+            object-position: center;
+            margin-left: 0.5rem;
+          }
+        }
+        p {
+          color: #bababa;
+          font-size: 1.7rem;
+          font-weight: 400;
+        }
+      }
     }
+  }
+}
+
+.empty-channel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  .empty-channel_text {
+    color: #fff;
+    font-size: 1.8rem;
+    text-align: center;
+  }
 }

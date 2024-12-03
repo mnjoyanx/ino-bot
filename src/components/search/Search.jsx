@@ -233,7 +233,10 @@ export default memo(function Search({
   return (
     <div className="parent-search">
       <HeadSearch
-        setShowSearchHandler={setShow}
+        setShowSearchHandler={() => {
+          setShow(false);
+          updateSearchQuery("");
+        }}
         setControl={setControl}
         control={control === "result"}
       />
@@ -257,6 +260,7 @@ export default memo(function Search({
         setUrl={setUrl}
         setRemove={setRemove}
         setControl={setControl}
+        onBackHandler={() => updateSearchQuery("")}
         ctrl={ctrl}
         control={
           control === "result" && !empty && ctrl !== "inp" && ctrl !== "backBtn"

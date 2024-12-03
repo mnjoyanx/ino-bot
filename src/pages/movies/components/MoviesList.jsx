@@ -5,7 +5,7 @@ import {
   selectCtrl,
   setIsMovieSearchBarOpen,
 } from "@app/global";
-import { GridView, InoButton, ListView, ListGridView } from "ino-ui-tv";
+import { GridView, InoButton, ListView, ListGridView } from "@ino-ui/tv";
 
 import useKeydown from "@hooks/useKeydown";
 import MovieCard from "./MovieCard";

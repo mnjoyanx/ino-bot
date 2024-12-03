@@ -4,7 +4,7 @@ import useKeydown from "@hooks/useKeydown";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCtrl, setCtrl, setIsProtectedModalOpen } from "@app/global";
 import EpisodeCard from "./EpisodeCard";
-import { ListView } from "ino-ui-tv";
+import { ListView } from "@ino-ui/tv";
 
 import { useSeasonEpisodeActions } from "../hooks/useSeasonEpisodeActions";
 import { useMovieInfo } from "@context/movieInfoContext";

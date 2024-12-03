@@ -14,6 +14,7 @@ import {
   setCtrl,
   selectCropHost,
   setCropHost,
+  selectOnEpisodes,
 } from "@app/global";
 import { MovieInfoProvider, useMovieInfo } from "@context/movieInfoContext";
 
@@ -38,7 +39,7 @@ const MovieInfoContent = () => {
     setStartTime,
     isLastEpisode,
   } = useMovieInfo();
-
+  const onEpisodes = useSelector(selectOnEpisodes);
   const [isLoading, setIsLoading] = useState(false);
   const [isCropHostLoading, setIsCropHostLoading] = useState(false);
   const cropHost = useSelector(selectCropHost);
@@ -152,64 +153,71 @@ const MovieInfoContent = () => {
   }
 
   return (
-    <div
-      className={`${styles["movie-info"]} ${isPlayerOpen ? styles["hidden"] : ""}`}
-    >
-      {!isPlayerOpen && movieInfo.backdrop ? (
-        <MovieBackground
-          backdrop={imageResizer(
-            cropHost,
-            movieInfo.backdrop,
-            1280,
-            720,
-            "0",
-            "jpg",
-          )}
-        />
-      ) : null}
-      {isLoading ? (
-        <div className={styles["loading"]}></div>
-      ) : (
-        <>
-          <MovieContent movie={movieInfo} isPlayerOpen={isPlayerOpen} />
-          {movieInfo.type === "movie" ? (
-            <MovieActions
-              movie={movieInfo}
-              movieId={id}
-              currentEpisode={null}
-              isPlayerOpen={isPlayerOpen}
-            />
-          ) : (
-            <>
-              {currentEpisode && (
+    <div className={styles["movie-info-wrapper"]}>
+      <div
+        className={`${styles["movie-info"]} ${isPlayerOpen ? styles["hidden"] : ""}`}
+      >
+        {!isPlayerOpen && movieInfo.backdrop ? (
+          <MovieBackground
+            backdrop={imageResizer(
+              cropHost,
+              movieInfo.backdrop,
+              1280,
+              720,
+              "0",
+              "jpg",
+            )}
+          />
+        ) : null}
+        {isLoading ? (
+          <div className={styles["loading"]}></div>
+        ) : (
+          <>
+            <div
+              className={`${styles["info-content_wrapper"]} ${onEpisodes ? styles["on-episodes"] : ""}`}
+            >
+              <MovieContent movie={movieInfo} isPlayerOpen={isPlayerOpen} />
+              {movieInfo.type === "movie" ? (
                 <MovieActions
                   movie={movieInfo}
                   movieId={id}
-                  currentEpisode={currentEpisode}
+                  currentEpisode={null}
                   isPlayerOpen={isPlayerOpen}
                 />
+              ) : (
+                <>
+                  {currentEpisode && (
+                    <MovieActions
+                      movie={movieInfo}
+                      movieId={id}
+                      currentEpisode={currentEpisode}
+                      isPlayerOpen={isPlayerOpen}
+                    />
+                  )}
+                </>
               )}
-            </>
-          )}
-          {movieInfo.type === "tv_show" && (
-            <TvShowSeasons seasons={movieInfo.seasons} seriesId={id} />
-          )}
-          {isPlayerOpen && (
-            <Player
-              type="vod"
-              url={url}
-              pipMode={false}
-              title={movieInfo.name}
-              setUrl={setUrl}
-              setRetryC={() => {}}
-              onRememberTime={rememberTimeHandler}
-              startTime={movieInfo?.watched?.time || startTime || 0}
-              onEnded={onEnded}
-              showNextEpisode={movieInfo.type === "tv_show"}
-            />
-          )}
-        </>
-      )}
+              {movieInfo.type === "tv_show" && (
+                <TvShowSeasons seasons={movieInfo.seasons} seriesId={id} />
+              )}
+            </div>
+
+            {isPlayerOpen && (
+              <Player
+                type="vod"
+                url={url}
+                pipMode={false}
+                title={movieInfo.name}
+                setUrl={setUrl}
+                setRetryC={() => {}}
+                onRememberTime={rememberTimeHandler}
+                startTime={movieInfo?.watched?.time || startTime || 0}
+                onEnded={onEnded}
+                showNextEpisode={movieInfo.type === "tv_show"}
+              />
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

@@ -27,6 +27,7 @@
     .vod-title {
       font-size: 3rem;
       color: white;
+      margin-bottom: 1rem;
     }
   }
 
@@ -164,5 +165,6 @@
 .vod-ctrl_btns_right {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 1rem;
 }

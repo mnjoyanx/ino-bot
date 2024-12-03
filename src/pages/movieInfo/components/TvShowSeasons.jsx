@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { selectCtrl, selectIsPlayerOpen, setCtrl } from "@app/global";
+import {
+  selectCtrl,
+  selectIsPlayerOpen,
+  setCtrl,
+  setOnEpisodes,
+} from "@app/global";
 import styles from "@styles/components/tvShowSeasons.module.scss";
 import SeasonEpisodes from "./SeasonEpisodes";
 import { getEpisodes } from "@server/requests";
@@ -88,11 +93,13 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
     down: () => {
       if (allEpisodes && allEpisodes[selectedSeason]?.length > 0) {
         dispatch(setCtrl("episodes"));
+        dispatch(setOnEpisodes(true));
       }
     },
     up: () => {
       if (allEpisodes && allEpisodes[selectedSeason]?.length > 0) {
         dispatch(setCtrl("movieInfo"));
+        dispatch(setOnEpisodes(false));
       }
     },
     ok: () => {

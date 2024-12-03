@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef, useState } from "react";
+import React, { useMemo, useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setPaused, selectIsPaused } from "@app/player/playerSlice";
 import useKeydown from "@hooks/useKeydown";
@@ -10,7 +10,7 @@ import PlaybackActions from "./PlaybackActions";
 import ControlSettings from "./ControlSettings";
 import SvgNextEpisode from "@assets/icons/SvgNextEpisode";
 import { useMovieInfo } from "@context/movieInfoContext";
-import { InoPlayerProgress } from "ino-ui-tv";
+import { InoPlayerProgress } from "@ino-ui/tv";
 
 import "@styles/components/vodControl.scss";
 import { formatTime } from "@utils/util";
@@ -19,6 +19,7 @@ let hideControlsTimer = null;
 
 export default function VodControls({
   durationRef,
+  duration,
   currentTimeRef,
   refVideo,
   play,
@@ -178,6 +179,10 @@ export default function VodControls({
     document.dispatchEvent(new Event("next-episode"));
   };
 
+  const videoDuration = window.Android
+    ? window.Android.getVideoDuration()
+    : refVideo.current?.duration;
+
   return (
     <>
       <div
@@ -198,24 +203,18 @@ export default function VodControls({
         </div>
 
         <div className="progress-field">
+          {" "}
           <InoPlayerProgress
             isActive={false}
-            value={
-              (movieCurrentTime /
-                (refVideo.current ? refVideo.current.duration : 0)) *
-              100
-            }
-            duration={refVideo.current ? refVideo.current.duration : 0}
+            value={(movieCurrentTime / 50) * 100}
+            duration={videoDuration}
             onChange={(value) => {
-              setMovieCurrentTime((value * refVideo.current.duration) / 100);
+              setMovieCurrentTime((value * videoDuration) / 100);
             }}
             showTooltip={false}
+            showTime={true}
           />
           <div className="vod-actions_wrapper">
-            <div className="vod-ctrl_times">
-              <Duration _ref={currentTimeRef} className="vod-current_time" />
-              <Duration _ref={durationRef} className="vod_duration" />
-            </div>
             <div className="vod-ctrl_btns_right">
               {!isLastEpisode && movieInfo.type === "tv_show" && (
                 <button
