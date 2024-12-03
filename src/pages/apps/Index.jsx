@@ -50,7 +50,7 @@ export default function AppsPage() {
 
   return (
     <div className={styles["apps-page"]}>
-      {!isLoading ? (
+      {isLoading ? (
         <div className={styles["loading-container"]}>
           <Loading />
         </div>
