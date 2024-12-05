@@ -9,6 +9,7 @@ import AndroidPlayer from "./components/AndroidPlayer";
 import { selectPlayerType } from "@app/channels/channelsSlice";
 import { useToast } from "@hooks/useToast";
 import VodControls from "./components/VodControl";
+import { GoogleIMA } from "../../GoogleIMA-init";
 
 import "./styles/player.scss";
 
