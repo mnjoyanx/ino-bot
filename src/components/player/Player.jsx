@@ -9,7 +9,6 @@ import AndroidPlayer from "./components/AndroidPlayer";
 import { selectPlayerType } from "@app/channels/channelsSlice";
 import { useToast } from "@hooks/useToast";
 import VodControls from "./components/VodControl";
-import ImaAdsPlayer from "./components/ImaAdsPlayer";
 
 import "./styles/player.scss";
 
@@ -228,22 +227,6 @@ export default memo(function Player({
         : cTimeRef.current - seconds;
 
     updateSeekTimeDelayed(cTimeRef.current);
-
-    // if (window.Android) {
-    //   const currentTime = window.Android.getCurrentTime();
-    //   const newTime =
-    //     direction === "forward" ? currentTime + 10 : currentTime - 10;
-    //   window.Android.seekTo(newTime);
-    // } else {
-    //   const currentTime = refVideo.current.currentTime;
-    //   const newTime =
-    //     direction === "forward" ? currentTime + 10 : currentTime - 10;
-
-    //   refVideo.current.currentTime = Math.max(
-    //     0,
-    //     Math.min(newTime, refVideo.current.duration),
-    //   );
-    // }
   };
 
   useEffect(() => {
@@ -255,6 +238,38 @@ export default memo(function Player({
       document.removeEventListener("playerError", onErrorHandler);
     };
   }, [url]);
+
+  useEffect(() => {
+    if (adContainerRef.current && !window.Android) {
+      GoogleIMA.init({
+        timeout: 0,
+        adTagUrl: adTagUrl,
+        adContainer: adContainerRef.current,
+        events: {
+          onAdStarted: () => {
+            if (refVideo.current) {
+              refVideo.current.pause();
+            }
+          },
+          onAdEnded: () => {
+            if (refVideo.current) {
+              refVideo.current.play();
+            }
+          },
+          onAdError: (err) => {
+            console.error("Ad error:", err);
+            if (refVideo.current) {
+              refVideo.current.play();
+            }
+          },
+        },
+      });
+    }
+
+    return () => {
+      GoogleIMA.destroy();
+    };
+  }, [adTagUrl, adContainerRef.current]);
 
   const renderPlayer = () => {
     if (!url) return null;
@@ -356,37 +371,6 @@ export default memo(function Player({
           />
         )}
       </div>
-      {showAds && (
-        <>
-          {window.Android ? (
-            <>
-              {androidAdContainer.current && (
-                <ImaAdsPlayer
-                  videoElement={androidAdContainer.current}
-                  adTagUrl={adTagUrl}
-                  onAdComplete={() => {
-                    setShowAds(false);
-                    play();
-                  }}
-                />
-              )}
-            </>
-          ) : (
-            <>
-              {refVideo.current && (
-                <ImaAdsPlayer
-                  videoElement={refVideo.current}
-                  adTagUrl={adTagUrl}
-                  onAdComplete={() => {
-                    setShowAds(false);
-                    play();
-                  }}
-                />
-              )}
-            </>
-          )}
-        </>
-      )}
       {renderPlayer()}
     </>
   );
