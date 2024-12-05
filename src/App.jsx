@@ -24,8 +24,8 @@ import LOCAL_STORAGE from "@utils/localStorage";
 
 const getVersion = () => {
   if (window.Android) {
-    const version = window.Android.getAppVersion();
-    localStorage.setItem("app_version", version);
+    // const version = window.Android.getAppVersion();
+    // localStorage.setItem("app_version", version);
   } else {
     var req = new XMLHttpRequest();
 

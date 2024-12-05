@@ -22,7 +22,6 @@ const globalSlice = createSlice({
   initialState,
   reducers: {
     setCtrl: (state, action) => {
-      console.warn(action.payload, "opaykiad");
       state.ctrl = action.payload;
     },
     setIsOpenMainSidebar: (state, action) => {
@@ -35,12 +34,14 @@ const globalSlice = createSlice({
       state.isMovieSearchBarOpen = action.payload;
     },
     setSubtitles: (state, action) => {
+      console.warn(action.payload, "subssss");
       state.subtitles = action.payload;
     },
     setResolutions: (state, action) => {
       state.resolutions = action.payload;
     },
     setSelectedQuality: (state, action) => {
+      console.warn(action.payload, "quality");
       state.selectedQuality = action.payload;
     },
     setSelectedSubtitle: (state, action) => {

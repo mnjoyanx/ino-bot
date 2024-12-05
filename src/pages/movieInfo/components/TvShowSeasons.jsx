@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -29,6 +29,8 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
     setActiveSeasonIndex,
   } = useMovieInfo();
   const isPlayerOpen = useSelector(selectIsPlayerOpen);
+
+  const seasonsListInnerRef = useRef(null);
 
   const [allEpisodes, setAllEpisodes] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -85,6 +87,18 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
     }
   }, [allEpisodes]);
 
+  useEffect(() => {
+    if (seasonsListInnerRef.current) {
+      if (activeSeason > 4) {
+        seasonsListInnerRef.current.style.transform = `translateX(-${
+          (activeSeason - 1) * 15
+        }rem)`;
+      } else {
+        seasonsListInnerRef.current.style.transform = `translateX(0)`;
+      }
+    }
+  }, [activeSeason, seasonsListInnerRef]);
+
   useKeydown({
     isActive: ctrl === "seasons",
     left: () => setActiveSeason((prev) => Math.max(0, prev - 1)),
@@ -121,20 +135,30 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
       className={`${styles["seasons-container"]} ${isPlayerOpen ? styles["hidden"] : ""}`}
     >
       <h2>Seasons</h2>
-      <div className={styles["seasons-list"]}>
-        {seasons.map((season, index) => (
-          <Button
-            key={season.id}
-            onClick={() => setActiveSeason(index)}
-            onMouseEnter={() => {}}
-            className={`${styles["season-button"]} ${
-              season.id === selectedSeason ? styles["selected"] : ""
-            }`}
-            isActive={ctrl === "seasons" && index === activeSeason}
-            title={`Season ${season.id}`}
-            index={index}
-          />
-        ))}
+      <div
+        className={styles["seasons-list"]}
+        style={{ width: `${seasons.length * 16}rem` }}
+      >
+        <div className={styles["seasons-list_warpper"]}>
+          <div
+            className={styles["seasons-list-inner"]}
+            ref={seasonsListInnerRef}
+          >
+            {seasons.map((season, index) => (
+              <Button
+                key={season.id}
+                onClick={() => setActiveSeason(index)}
+                onMouseEnter={() => {}}
+                className={`${styles["season-button"]} ${
+                  season.id === selectedSeason ? styles["selected"] : ""
+                }`}
+                isActive={ctrl === "seasons" && index === activeSeason}
+                title={`Season ${season.id}`}
+                index={index}
+              />
+            ))}
+          </div>
+        </div>
       </div>
       {allEpisodes &&
       selectedSeason &&

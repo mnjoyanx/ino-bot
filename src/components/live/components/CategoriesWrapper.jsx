@@ -53,7 +53,7 @@ export default memo(function CategoriesWrapper({
           itemsCount={5}
           itemsTotal={Object.keys(categories).length}
           gap={0}
-          buffer={2}
+          buffer={5}
           itemWidth={25}
           itemHeight={7}
           isActive={control}
@@ -63,6 +63,9 @@ export default memo(function CategoriesWrapper({
           onMouseEnter={() => {}}
           onIndexChange={(index) => {
             setActive(index);
+          }}
+          onUp={() => {
+            setControl("search");
           }}
           renderItem={({ item, index, isActive, style }) => {
             return (

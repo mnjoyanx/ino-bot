@@ -6,6 +6,8 @@ import {
   selectAllChannels,
   setCurrentChannel,
   setPlayerType,
+  selectChannels,
+  setChannels,
 } from "@app/channels/channelsSlice";
 import {
   setShowPreviewImages,
@@ -62,6 +64,7 @@ export default memo(function LiveControls({
   const showPreviewImages = useSelector(selectShowPreviewImages);
   const isPaused = useSelector(selectIsPaused);
   const ctrl = useSelector(selectCtrl);
+  const categoryChannels = useSelector(selectChannels);
 
   const refNextChannel = useRef(null);
   const refPrevChannel = useRef(null);
@@ -187,6 +190,21 @@ export default memo(function LiveControls({
       if (isAdd) {
         dispatch(setCurrentChannel({ ...currentChannel, favorite: true }));
         const res = await addLiveFavorite({ channel_id: currentChannel.id });
+
+        const categoryChannelsClone = JSON.parse(
+          JSON.stringify(categoryChannels),
+        );
+
+        if (categoryChannelsClone && categoryChannelsClone.favorites) {
+          const filteredCatChannels =
+            categoryChannelsClone.favorites.content.push(currentChannel);
+
+          categoryChannelsClone.favorites.content = filteredCatChannels;
+          categoryChannelsClone.favorites.totatl = filteredCatChannels.length;
+
+          dispatch(setChannels(categoryChannelsClone));
+        }
+
         const parsedRes = JSON.parse(res);
         if (parsedRes.error) {
           dispatch(setCurrentChannel({ ...currentChannel, favorite: false }));
@@ -194,6 +212,22 @@ export default memo(function LiveControls({
       } else {
         dispatch(setCurrentChannel({ ...currentChannel, favorite: false }));
         const res = await removeLiveFavorite({ channel_id: currentChannel.id });
+        const categoryChannelsClone = JSON.parse(
+          JSON.stringify(categoryChannels),
+        );
+
+        if (categoryChannelsClone && categoryChannelsClone.favorites) {
+          const filteredCatChannels =
+            categoryChannelsClone.favorites.content.filter(
+              (channel) => channel.id !== currentChannel.id,
+            );
+
+          categoryChannelsClone.favorites.content = filteredCatChannels;
+          categoryChannelsClone.favorites.total = filteredCatChannels.length;
+
+          dispatch(setChannels(categoryChannelsClone));
+        }
+
         const parsedRes = JSON.parse(res);
         if (parsedRes.error) {
           dispatch(setCurrentChannel({ ...currentChannel, favorite: true }));
@@ -422,6 +456,11 @@ export default memo(function LiveControls({
         }
         dispatch(setPlayerType("live"));
       }
+    },
+
+    back: () => {
+      setPipMode(true);
+      window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
     },
   });
 

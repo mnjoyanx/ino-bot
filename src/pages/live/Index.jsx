@@ -199,6 +199,7 @@ export default function LivePage() {
       {pipMode ? (
         <PipModeLive
           url={url}
+          pipMode={pipMode}
           refUrlLive={refUrlLive}
           setUrl={setUrl}
           setPipMode={setPipMode}

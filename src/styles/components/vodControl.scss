@@ -45,13 +45,13 @@
   .vod-control-btns {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    // gap: 1rem;
   }
 
   .vod-controls {
     display: flex;
     justify-content: center;
-    gap: 2rem;
+    // gap: 2rem;
 
     .control-btn {
       background-color: rgba(255, 255, 255, 0.2);
@@ -130,7 +130,7 @@
 .vod-ctrl_times {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  // gap: 1rem;
 }
 
 .next-episode-btn {
@@ -166,5 +166,6 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 1rem;
+  margin-left: auto;
+  // gap: 1rem;
 }

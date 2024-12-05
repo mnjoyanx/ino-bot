@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  // gap: 1rem;
 
   .playback_btn {
     @include flex(center, center);
@@ -16,6 +16,7 @@
     border: 1px solid $dark;
     cursor: pointer;
     transition: all 0.1s ease;
+    margin: 0 0.6rem;
 
     &:active {
       transform: scale(0.9);

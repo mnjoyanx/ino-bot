@@ -53,7 +53,7 @@ p {
 .back-button {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  /* gap: 1rem; */
   padding: 0.5rem;
   border-radius: 0.5rem;
   background-color: transparent;
@@ -63,6 +63,10 @@ p {
   position: absolute;
   top: 3rem;
   left: 20rem;
+}
+
+.back-button .back-button-text {
+  margin-left: 1rem;
 }
 
 .back-button.active {
@@ -130,4 +134,10 @@ p {
 .ino-player-progress__duration {
   color: white !important;
   font-size: 1.5rem !important;
+}
+
+.ino-keyboard-row,
+.ino-keyboard-row {
+  display: flex;
+  justify-content: center;
 }

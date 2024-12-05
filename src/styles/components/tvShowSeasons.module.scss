@@ -20,11 +20,24 @@
   }
 
   .seasons-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
     margin-bottom: 2rem;
+    position: relative;
   }
+
+  .seasons-list-inner {
+    display: flex;
+    flex-wrap: nowrap;
+    padding: 1rem 0;
+    // max-width: 100rem;
+    transition: transform 0.5s;
+    margin-left: 0.1rem;
+    // overflow: hidden;
+  }
+}
+
+.seasons-list_warpper {
+  overflow: hidden;
+  max-width: 93.5rem;
 }
 
 .no-episodes {
@@ -32,6 +45,15 @@
   font-size: 2rem;
   text-align: center;
   margin-top: 2rem;
+}
+
+.season-button {
+  white-space: nowrap;
+  width: 15rem;
+}
+
+.season-button:not(:last-child) {
+  margin-right: 1rem;
 }
 
 .season-button.selected {

@@ -1,4 +1,5 @@
 import { memo, useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectChannels,
@@ -25,8 +26,9 @@ export default memo(function ChannelsWrapper({
   setUrl,
   setPipMode,
 }) {
-  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
+  const dispatch = useDispatch();
   const categories = useSelector(selectChannels);
   const currentChannel = useSelector(selectCurrentChannel);
   const playerType = useSelector(selectPlayerType);
@@ -100,6 +102,9 @@ export default memo(function ChannelsWrapper({
               startScrollIndex={0}
               direction="ltr"
               onMouseEnter={() => {}}
+              onUp={() => {
+                setControl("search");
+              }}
               onIndexChange={(index) => {
                 setActive(index);
               }}

@@ -7,7 +7,7 @@ import {
   selectAllChannels,
   setChannels,
 } from "@app/channels/channelsSlice";
-import { getChannelCategories } from "@server/requests";
+import { getChannelCategories, getLiveFavorite } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
 
 import useKeydown from "@hooks/useKeydown";
@@ -25,6 +25,7 @@ import { setCtrl } from "../../app/global";
 export default memo(function PipModeLive({
   setUrl,
   setPipMode,
+  pipMode,
   refUrlLive,
   url,
 }) {
@@ -74,7 +75,21 @@ export default memo(function PipModeLive({
     }
   };
 
-  const sortCategories = (categories) => {
+  const getAllFavoritesHadnler = async () => {
+    try {
+      const res = await getLiveFavorite();
+      const parsedRes = JSON.parse(res);
+      if (!parsedRes.error) {
+        return parsedRes.message.rows;
+      }
+
+      return [];
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const sortCategories = async (categories) => {
     let obj_categories = {};
 
     obj_categories["All"] = {
@@ -84,11 +99,13 @@ export default memo(function PipModeLive({
       total: allChannels.length,
     };
 
+    const favs = await getAllFavoritesHadnler();
+
     obj_categories["favorites"] = {
       id: 101010102,
       name: "favorites",
-      content: [],
-      total: 0,
+      content: favs,
+      total: favs.length,
     };
 
     categories.forEach((category) => {
@@ -125,8 +142,12 @@ export default memo(function PipModeLive({
     isActive: !showSearch,
 
     back: () => {
-      setPipMode(false);
-      window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
+      if (pipMode) {
+        navigate("/menu");
+      } else {
+        setPipMode(false);
+        window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
+      }
     },
     ok: () => {},
   });

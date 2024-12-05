@@ -236,6 +236,10 @@ export const addLiveFavorite = (body) => {
   return request("post", "user/channels/addFavorite", "", body);
 };
 
+export const getLiveFavorite = (queryParams) => {
+  return request("get", "v2/api/channels/favorites", queryParams);
+};
+
 export const removeLiveFavorite = (body) => {
   return request("post", "user/channels/deleteFavorite", "", body);
 };

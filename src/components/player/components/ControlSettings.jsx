@@ -44,11 +44,15 @@ const initialSettingsOptions = [
     value: "Auto",
     children: ["Auto"],
   },
-  {
-    name: "Playback Speed",
-    value: "1x",
-    children: ["0.25x", "0.5x", "0.75x", "1x", "1.25x", "1.5x", "2x"],
-  },
+  ...(window.Android
+    ? []
+    : [
+        {
+          name: "Playback Speed",
+          value: "1x",
+          children: ["0.25x", "0.5x", "0.75x", "1x", "1.25x", "1.5x", "2x"],
+        },
+      ]),
   {
     name: "Subtitles",
     value: "Off",
@@ -84,16 +88,19 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
         };
       }
 
-      // Update Playback Speed options
-      newOptions[1] = {
-        ...newOptions[1],
-        value: selectedPlaybackSpeed,
-      };
+      // Update Playback Speed options if not on Android
+      if (!window.Android) {
+        newOptions[1] = {
+          ...newOptions[1],
+          value: selectedPlaybackSpeed,
+        };
+      }
 
       // Update Subtitles options
       if (subtitles.length > 0) {
-        newOptions[2] = {
-          ...newOptions[2],
+        const subtitleIndex = window.Android ? 1 : 2;
+        newOptions[subtitleIndex] = {
+          ...newOptions[subtitleIndex],
           children: ["Off", ...subtitles.map((sub) => sub.name)],
           value: selectedSubtitle,
         };

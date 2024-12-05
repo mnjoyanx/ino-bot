@@ -61,7 +61,6 @@
 
   .items {
     @include flex-column(flex-start, flex-start);
-    gap: 5.2rem;
     top: 0;
     transform: translateY(0);
     position: relative;
@@ -73,10 +72,10 @@
 
     .item {
       @include flex(flex-start, center);
-      gap: 1.6rem;
       border-left: 0.4rem solid transparent;
       transition: border-color 0.2s linear;
       padding-left: 1.6rem;
+      margin: 2.2rem 0;
 
       &.parent {
         position: relative;
@@ -108,6 +107,7 @@
         color: $muted;
         opacity: 0;
         transition: opacity 0.3s linear;
+        margin-left: 1rem;
       }
 
       .icon {
@@ -140,7 +140,7 @@
 
 .categories-list_wrapper {
   @include flex-column(flex-start, flex-start);
-  gap: 1.6rem;
+  // gap: 1.6rem;
   transition: transform 0.2s linear;
   .name {
     font-size: 1.8rem;

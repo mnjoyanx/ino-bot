@@ -50,7 +50,7 @@ body.player-open .background-image {
 
 .content {
   position: relative;
-  padding: 13rem 6.7rem 0;
+  padding: 13rem 6.7rem 0 6.7rem;
   max-width: 50%;
   z-index: 1;
 
@@ -84,10 +84,11 @@ body.player-open .background-image {
 
 .metadata {
   display: flex;
-  gap: 1rem;
+  // gap: 1rem;
   span {
     font-size: 1.8rem;
     margin-bottom: 1rem;
+    margin-left: 1rem;
     text-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.9);
 
     &:not(:last-child) {
@@ -111,7 +112,7 @@ body.player-open .background-image {
 
 .actions-container {
   display: flex;
-  gap: 1rem;
+  // gap: 1rem;
   position: relative;
   left: 6.7rem;
   z-index: 1;
@@ -126,6 +127,7 @@ body.player-open .background-image {
   white-space: nowrap;
   border-radius: 3.5rem;
   padding: 1rem 2rem;
+  margin-right: 1rem;
   &:hover,
   &.active {
     background-color: rgba(255, 255, 255, 0.4);
