@@ -259,3 +259,15 @@ export const getLastWatchedMovies = (queryParams) => {
 export const getApps = (queryParams) => {
   return request("get", "launcher/apps", queryParams);
 };
+
+export const setChannelsView = (body) => {
+  return request("post", "v2/api/statistics/set_view_channel", "", body);
+};
+
+export const setMoviesView = (body) => {
+  return request("post", "v2/api/statistics/set_view_movie", "", body);
+};
+
+export const setOnline = (body) => {
+  return request("post", "user/setOnline", "", body);
+};

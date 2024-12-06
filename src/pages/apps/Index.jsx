@@ -45,6 +45,8 @@ export default function AppsPage() {
 
     if (window.Android) {
       setIsAndroid(true);
+    } else {
+      dispatch(setCtrl("backBtn"));
     }
   }, []);
 
@@ -59,7 +61,11 @@ export default function AppsPage() {
           <BackButton
             path="Menu"
             onDownHandler={() => {
+              if (!window.Android) return;
               dispatch(setCtrl("apps"));
+            }}
+            onBackHandler={() => {
+              navigate("/menu");
             }}
           />
           <div className="app-logo">
@@ -67,7 +73,7 @@ export default function AppsPage() {
           </div>
           <div className={styles["apps-content"]}>
             <h2 className={styles["apps-title"]}>Apps Launcher</h2>
-            {!isAndroid ? (
+            {isAndroid ? (
               <div className={styles["grid-view_container"]}>
                 <GridView
                   id="apps-grid"
@@ -90,6 +96,7 @@ export default function AppsPage() {
                   onUp={() => dispatch(setCtrl("backBtn"))}
                   onDown={() => {}}
                   onBack={() => {
+                    console.log("backkk");
                     navigate("/menu");
                   }}
                   //   onBackScrollIndex={0}
@@ -112,7 +119,9 @@ export default function AppsPage() {
                 />
               </div>
             ) : (
-              <p>This feature is only available on Android devices</p>
+              <p className={styles["android-only"]}>
+                This feature is only available on Android devices
+              </p>
             )}
           </div>
         </>

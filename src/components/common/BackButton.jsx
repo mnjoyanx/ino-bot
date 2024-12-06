@@ -5,7 +5,7 @@ import { selectCtrl } from "@app/global";
 import useKeydown from "@hooks/useKeydown";
 import SvgBack from "@assets/icons/SvgBack";
 
-const BackButton = ({ path, onDownHandler, onOkHandler }) => {
+const BackButton = ({ path, onDownHandler, onOkHandler, onBackHandler }) => {
   const navigate = useNavigate();
   const ctrl = useSelector(selectCtrl);
 
@@ -19,6 +19,11 @@ const BackButton = ({ path, onDownHandler, onOkHandler }) => {
       }
     },
     down: () => onDownHandler(),
+    back: () => {
+      if (onBackHandler) {
+        onBackHandler();
+      }
+    },
   });
 
   return (

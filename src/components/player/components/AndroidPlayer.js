@@ -130,5 +130,5 @@ export default function AndroidPlayer({
     }
   }, [window.Android.getSate()]);
 
-  return <></>;
+  return null;
 }

@@ -171,3 +171,12 @@
   z-index: 3;
   background-color: black;
 }
+
+#adContainerRef {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 128rem;
+  height: 72rem;
+  z-index: 99999999;
+}

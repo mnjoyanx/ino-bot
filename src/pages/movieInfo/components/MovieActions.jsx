@@ -8,7 +8,7 @@ import {
   setIsProtectedModalOpen,
 } from "@app/global";
 import Button from "@components/common/Button";
-import SvgPlay from "@assets/icons/SvgPlay";
+import SvgPlay from "@assets/icons/SvgPlay.jsx";
 import SvgFav from "@assets/icons/SvgFav";
 import SvgFavFill from "@assets/icons/SvgFavFill";
 import useKeydown from "@hooks/useKeydown";
@@ -38,6 +38,8 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
       setStartTime,
     );
 
+  const [clickByWatch, setClickByWatch] = useState(true);
+
   useKeydown({
     isActive: ctrl === "movieInfo",
     left: () => {
@@ -62,6 +64,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
     ok: () => {
       switch (activeButton) {
         case 0:
+          setClickByWatch(true);
           if (movie?.is_protected) {
             setIsShowProtected(true);
             dispatch(setCtrl("protected"));
@@ -70,6 +73,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
           }
           break;
         case 1:
+          setClickByWatch(false);
           if (movie.is_protected) {
             setIsShowProtected(true);
             dispatch(setCtrl("protected"));
@@ -111,7 +115,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
             if (value === parentalCode) {
               dispatch(setIsProtectedModalOpen(false));
               setIsShowProtected(false);
-              handleWatchClick();
+              handleWatchClick(clickByWatch ? true : false);
             } else {
               toast.error("Invalid parental code");
             }
@@ -127,6 +131,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
           <Button
             className={styles["action-btn"]}
             onClick={() => {
+              setClickByWatch(true);
               if (movie.is_protected) {
                 setIsShowProtected(true);
                 dispatch(setCtrl("protected"));
@@ -144,6 +149,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
           <Button
             className={styles["action-btn"]}
             onClick={() => {
+              setClickByWatch(false);
               if (movie.is_protected) {
                 setIsShowProtected(true);
                 dispatch(setCtrl("protected"));

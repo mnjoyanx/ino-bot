@@ -1,5 +1,9 @@
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState, useRef } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { setOnline } from "@server/requests";
+import { selectIsPlayerOpen } from "@app/global";
+import { selectCurrentChannel } from "@app/channels/channelsSlice";
 
 import PATHS from "@utils/paths.js";
 
@@ -15,8 +19,6 @@ import { ToastProvider as InoToastProvider } from "@ino-ui/tv";
 import useConnection from "./hooks/useConnection";
 import { MoviesProvider } from "./context/moviesContext";
 import AppsPage from "@pages/apps/Index.jsx";
-import { selectIsPlayerOpen } from "@app/global";
-import { useSelector } from "react-redux";
 import { Modal } from "@ino-ui/tv";
 import "./styles/global.css";
 import { validateToken } from "@server/requests";
@@ -66,7 +68,10 @@ const getVersion = () => {
 getVersion();
 
 function App() {
+  const navigate = useNavigate();
   const isPlayerOpen = useSelector(selectIsPlayerOpen);
+  const currentChannel = useSelector(selectCurrentChannel);
+  const onlineIntervalRef = useRef(null);
   const isConnected = useConnection();
 
   const handleValidateToken = async () => {
@@ -83,6 +88,42 @@ function App() {
       );
     }
   };
+
+  const sendOnlineStatus = async () => {
+    try {
+      const body = {
+        isLive: false,
+      };
+
+      const pathname = window.location.href;
+      const isLiveContent = pathname.includes("/live");
+
+      body.isLive = isLiveContent;
+      if (isPlayerOpen) {
+        if (pathname.includes("/live")) {
+          body.channelId = currentChannel.id;
+        } else {
+          body.movieId = pathname.split("/").pop();
+        }
+      }
+
+      await setOnline(body);
+    } catch (error) {
+      console.error("Failed to send online status:", error);
+    }
+  };
+
+  useEffect(() => {
+    sendOnlineStatus();
+
+    onlineIntervalRef.current = setInterval(sendOnlineStatus, 120000);
+
+    return () => {
+      if (onlineIntervalRef.current) {
+        clearInterval(onlineIntervalRef.current);
+      }
+    };
+  }, [isPlayerOpen, currentChannel?.id]);
 
   useEffect(() => {
     handleValidateToken();

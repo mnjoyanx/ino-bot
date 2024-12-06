@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectCropHost,
@@ -21,6 +22,7 @@ import Loading from "@components/common/Loading";
 import { imageResizer } from "@utils/util";
 
 const MoviesList = ({ isVertical, isLoading }) => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const ctrl = useSelector(selectCtrl);
   const cropHost = useSelector(selectCropHost);
@@ -104,8 +106,13 @@ const MoviesList = ({ isVertical, isLoading }) => {
                     withTitle={true}
                     buffer={3}
                     debounce={200}
-                    onFirstRow={() => {
-                      dispatch(setCtrl("backBtn"));
+                    onFirstRow={({ key }) => {
+                      console.log(key, 'keeey')
+                      if (key === "up") {
+                        dispatch(setCtrl("backBtn"));
+                      } else {
+                        navigate("/menu");
+                      }
                     }}
                     gap={2}
                     rowGap={10}

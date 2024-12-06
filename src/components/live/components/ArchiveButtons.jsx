@@ -1,7 +1,7 @@
 import { memo, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectIsPaused } from "@app/player/playerSlice";
-import SvgPlay from "@assets/images/player/SvgPlay";
+import SvgPlay from "@assets/images/player/SvgPlay.jsx";
 import SvgRewind from "@assets/images/player/SvgRewind";
 import SvgForward from "@assets/images/player/SvgForward";
 import SvgPause from "@assets/images/player/SvgPause";

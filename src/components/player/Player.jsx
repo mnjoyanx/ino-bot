@@ -6,12 +6,17 @@ import LOCAL_STORAGE from "@utils/localStorage";
 import HlsPlayer from "./components/HlsPlayer";
 import LiveControls from "@components/live/LiveControls.jsx";
 import AndroidPlayer from "./components/AndroidPlayer";
-import { selectPlayerType } from "@app/channels/channelsSlice";
+import {
+  selectPlayerType,
+  selectCurrentChannel,
+} from "@app/channels/channelsSlice";
 import { useToast } from "@hooks/useToast";
 import VodControls from "./components/VodControl";
+import { setIsPlayerOpen } from "@app/global";
 import { GoogleIMA } from "../../GoogleIMA";
 
 import "./styles/player.scss";
+import { setMoviesView, setChannelsView } from "@server/requests";
 
 let timeout = null;
 
@@ -35,6 +40,7 @@ export default memo(function Player({
   onRememberTime,
   startTime,
   onNextArchive,
+  movieId,
 }) {
   const dispatch = useDispatch();
   const refVideo = useRef(null);
@@ -46,7 +52,7 @@ export default memo(function Player({
   // const secDuration = useRef(0);
   const lastRememberTimeUpdate = useRef(0);
   const maxRetries = 3;
-  const androidAdContainer = useRef(null);
+  const adContainerRef = useRef(null);
 
   const [secDuration, setSecDuration] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
@@ -58,10 +64,35 @@ export default memo(function Player({
   const [cTime, setCTime] = useState(0);
   const cTimeRef = useRef(0);
   const durationRef = useRef(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const viewDurationRef = useRef(0);
+  const isStartRef = useRef(true);
+  const intervalRef = useRef(null);
+  const isAdPlayingRef = useRef(false);
 
   const [movieCurrentTime, setMovieCurrentTime] = useState(0);
 
   const playerType = useSelector(selectPlayerType);
+  const currentChannel = useSelector(selectCurrentChannel);
+
+  const lastTimeRef = useRef(0);
+  const bufferingStartTimeRef = useRef(null);
+  const totalBufferingTimeRef = useRef(0);
+
+  const handleBufferingStart = () => {
+    if (type === "live") {
+      bufferingStartTimeRef.current = Date.now();
+    }
+  };
+
+  const handleBufferingEnd = () => {
+    if (type === "live" && bufferingStartTimeRef.current) {
+      const bufferingDuration =
+        (Date.now() - bufferingStartTimeRef.current) / 1000; // convert to seconds
+      totalBufferingTimeRef.current += bufferingDuration;
+      bufferingStartTimeRef.current = null;
+    }
+  };
 
   const play = () => {
     if (!window.Android) {
@@ -70,6 +101,7 @@ export default memo(function Player({
       window.Android.play();
     }
     dispatch(setPaused(false));
+    setIsPlaying(true);
   };
 
   const pause = () => {
@@ -79,6 +111,7 @@ export default memo(function Player({
       window.Android.pause();
     }
     dispatch(setPaused(true));
+    setIsPlaying(false);
   };
 
   const loadedMetadataHandler = useCallback(() => {
@@ -100,7 +133,6 @@ export default memo(function Player({
   const handleTimeUpdate = (currentTime, duration) => {
     secCurrentTime.current = currentTime;
     setSecDuration(duration);
-    console.log(duration, "duration", currentTime, "currentTime");
     setMovieCurrentTime(currentTime);
     cTimeRef.current = currentTime;
     if (Math.floor(currentTime) >= duration - 1) {
@@ -241,6 +273,14 @@ export default memo(function Player({
   }, [url]);
 
   useEffect(() => {
+    dispatch(setIsPlayerOpen(true));
+
+    return () => {
+      dispatch(setIsPlayerOpen(false));
+    };
+  }, []);
+
+  useEffect(() => {
     if (adContainerRef.current && !window.Android) {
       GoogleIMA.init({
         timeout: 0,
@@ -248,16 +288,21 @@ export default memo(function Player({
         adContainer: adContainerRef.current,
         events: {
           onAdStarted: () => {
+            console.log("on add start");
+            isAdPlayingRef.current = true;
             if (refVideo.current) {
               refVideo.current.pause();
             }
           },
           onAdEnded: () => {
+            isAdPlayingRef.current = false;
             if (refVideo.current) {
               refVideo.current.play();
             }
           },
           onAdError: (err) => {
+            console.log("on add error");
+            isAdPlayingRef.current = false;
             console.error("Ad error:", err);
             if (refVideo.current) {
               refVideo.current.play();
@@ -271,6 +316,68 @@ export default memo(function Player({
       GoogleIMA.destroy();
     };
   }, [adTagUrl, adContainerRef.current]);
+
+  const sendViewRequest = async (duration) => {
+    try {
+      if (type === "live") {
+        const effectiveTime = Math.max(0, 10 - totalBufferingTimeRef.current);
+
+        await setChannelsView({
+          is_start: isStartRef.current,
+          channel_id: currentChannel?.id,
+          view_duration: Math.floor(effectiveTime),
+        });
+
+        totalBufferingTimeRef.current = 0;
+      } else {
+        await setMoviesView({
+          is_start: isStartRef.current,
+          movie_id: movieId,
+          view_duration: duration,
+        });
+      }
+
+      if (isStartRef.current) {
+        isStartRef.current = false;
+      }
+
+      lastTimeRef.current = Math.floor(refVideo.current?.currentTime || 0);
+    } catch (error) {
+      console.error("Failed to track view:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (window.Android) {
+      window.Android.onBufferingStart = handleBufferingStart;
+      window.Android.onBufferingEnd = handleBufferingEnd;
+    }
+
+    intervalRef.current = setInterval(async () => {
+      if (isAdPlayingRef.current || !refVideo.current) return;
+
+      if (type === "live") {
+        await sendViewRequest();
+      } else {
+        const currentTime = Math.floor(refVideo.current.currentTime);
+        const watchedDuration = currentTime - lastTimeRef.current;
+
+        if (watchedDuration > 0) {
+          await sendViewRequest(watchedDuration);
+        }
+      }
+    }, 10000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      if (window.Android) {
+        window.Android.onBufferingStart = null;
+        window.Android.onBufferingEnd = null;
+      }
+    };
+  }, [type === "live" ? currentChannel?.id : movieId]);
 
   const renderPlayer = () => {
     if (!url) return null;
@@ -329,7 +436,7 @@ export default memo(function Player({
 
   return (
     <>
-      <div ref={androidAdContainer} id="adnroidAdContainer"></div>
+      <div ref={adContainerRef} id="adContainerRef"></div>
       <div id="controls_player">
         {type === "live" && !pipMode && (
           <LiveControls

@@ -1,6 +1,6 @@
 import styles from "@styles/components/playbackActions.module.scss";
 import SvgBackward from "@assets/icons/SvgBackward";
-import SvgPlay from "@assets/images/player/SvgPlay";
+import SvgPlay from "@assets/images/player/SvgPlay.jsx";
 import SvgPauseIcon from "@assets/icons/SvgPauseIcon";
 import SvgForward from "@assets/icons/SvgForward";
 

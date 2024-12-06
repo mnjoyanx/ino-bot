@@ -200,7 +200,7 @@ const MovieInfoContent = () => {
                 <TvShowSeasons seasons={movieInfo.seasons} seriesId={id} />
               )}
             </div>
-
+            -----{startTime}-------
             {isPlayerOpen && (
               <Player
                 type="vod"
@@ -210,9 +210,11 @@ const MovieInfoContent = () => {
                 setUrl={setUrl}
                 setRetryC={() => {}}
                 onRememberTime={rememberTimeHandler}
-                startTime={movieInfo?.watched?.time || startTime || 0}
+                // startTime={movieInfo?.watched?.time || startTime || 0}
+                startTime={startTime}
                 onEnded={onEnded}
                 showNextEpisode={movieInfo.type === "tv_show"}
+                movieId={id}
               />
             )}
           </>
