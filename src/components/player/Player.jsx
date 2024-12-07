@@ -377,34 +377,34 @@ export default memo(function Player({
 
   useEffect(() => {
     if (adContainerRef.current && !window.Android) {
-      GoogleIMA.init({
-        timeout: 0,
-        adTagUrl: adTagUrl,
-        adContainer: adContainerRef.current,
-        events: {
-          onAdStarted: () => {
-            console.log("on add start");
-            isAdPlayingRef.current = true;
-            if (refVideo.current) {
-              refVideo.current.pause();
-            }
-          },
-          onAdEnded: () => {
-            isAdPlayingRef.current = false;
-            if (refVideo.current) {
-              refVideo.current.play();
-            }
-          },
-          onAdError: (err) => {
-            console.log("on add error");
-            isAdPlayingRef.current = false;
-            console.error("Ad error:", err);
-            if (refVideo.current) {
-              refVideo.current.play();
-            }
-          },
-        },
-      });
+      // GoogleIMA.init({
+      //   timeout: 0,
+      //   adTagUrl: adTagUrl,
+      //   adContainer: adContainerRef.current,
+      //   events: {
+      //     onAdStarted: () => {
+      //       console.log("on add start");
+      //       isAdPlayingRef.current = true;
+      //       if (refVideo.current) {
+      //         refVideo.current.pause();
+      //       }
+      //     },
+      //     onAdEnded: () => {
+      //       isAdPlayingRef.current = false;
+      //       if (refVideo.current) {
+      //         refVideo.current.play();
+      //       }
+      //     },
+      //     onAdError: (err) => {
+      //       console.log("on add error");
+      //       isAdPlayingRef.current = false;
+      //       console.error("Ad error:", err);
+      //       if (refVideo.current) {
+      //         refVideo.current.play();
+      //       }
+      //     },
+      //   },
+      // });
     }
 
     return () => {

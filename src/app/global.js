@@ -17,6 +17,7 @@ const initialState = {
   selectedType: "",
   isProtectedModalOpen: false,
   onEpisodes: false,
+  isCategoriesOpen: false,
 };
 
 const globalSlice = createSlice({
@@ -72,6 +73,9 @@ const globalSlice = createSlice({
     setOnEpisodes: (state, action) => {
       state.onEpisodes = action.payload;
     },
+    setIsCategoriesOpen: (state, action) => {
+      state.isCategoriesOpen = action.payload;
+    },
   },
 });
 
@@ -92,6 +96,7 @@ export const {
   setSelectedType,
   setIsProtectedModalOpen,
   setOnEpisodes,
+  setIsCategoriesOpen,
 } = globalSlice.actions;
 
 export const selectCtrl = (state) => state.global.ctrl;
@@ -114,5 +119,5 @@ export const selectIsProtectedModalOpen = (state) =>
 export const selectOnEpisodes = (state) => state.global.onEpisodes;
 export const selectAudioTracks = (state) => state.global.audioTracks;
 export const selectSelectedAudio = (state) => state.global.selectedAudio;
-
+export const selectIsCategoriesOpen = (state) => state.global.isCategoriesOpen;
 export default globalSlice.reducer;

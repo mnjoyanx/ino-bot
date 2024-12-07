@@ -99,7 +99,10 @@ export default memo(function PipModeLive({
       total: allChannels.length,
     };
 
+    console.log("before faaaavs");
     const favs = await getAllFavoritesHadnler();
+
+    console.log(favs, "faaaavs");
 
     obj_categories["favorites"] = {
       id: 101010102,

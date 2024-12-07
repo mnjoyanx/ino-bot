@@ -141,3 +141,13 @@ p {
   display: flex;
   justify-content: center;
 }
+
+.ino-keyboard-overlay {
+  position: fixed !important;
+  bottom: 0 !important;
+}
+
+.ino-keyboard {
+  margin: 0 auto !important;
+  background-color: transparent !important;
+}

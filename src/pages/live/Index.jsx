@@ -136,7 +136,7 @@ export default function LivePage() {
     back: () => {
       document.body.classList.remove("playing");
       window.PLAYER.destroyPlayer();
-      navigate(PATH.MENU);
+      // navigate(PATH.MENU);
     },
   });
 

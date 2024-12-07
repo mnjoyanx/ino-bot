@@ -16,7 +16,7 @@ import {
 } from "@app/player/playerSlice";
 import { channelInfo } from "@server/requests";
 import { formatTime } from "@utils/util";
-import { selectCtrl } from "@app/global";
+import { selectCtrl, setIsCategoriesOpen } from "@app/global";
 
 import useKeydown from "@hooks/useKeydown";
 
@@ -195,12 +195,20 @@ export default memo(function LiveControls({
           JSON.stringify(categoryChannels),
         );
 
-        if (categoryChannelsClone && categoryChannelsClone.favorites) {
-          const filteredCatChannels =
-            categoryChannelsClone.favorites.content.push(currentChannel);
+        if (categoryChannelsClone) {
+          if (!categoryChannelsClone.favorites) {
+            categoryChannelsClone.favorites = {
+              content: [],
+              total: 0,
+            };
+          }
+          const filteredCatChannels = [
+            ...categoryChannelsClone.favorites.content,
+            currentChannel,
+          ];
 
           categoryChannelsClone.favorites.content = filteredCatChannels;
-          categoryChannelsClone.favorites.totatl = filteredCatChannels.length;
+          categoryChannelsClone.favorites.total = filteredCatChannels.length;
 
           dispatch(setChannels(categoryChannelsClone));
         }
@@ -215,6 +223,8 @@ export default memo(function LiveControls({
         const categoryChannelsClone = JSON.parse(
           JSON.stringify(categoryChannels),
         );
+
+        console.log(categoryChannelsClone, "categoryChannelsClone");
 
         if (categoryChannelsClone && categoryChannelsClone.favorites) {
           const filteredCatChannels =
@@ -279,7 +289,7 @@ export default memo(function LiveControls({
 
     hideControlsTimer = setTimeout(() => {
       setHideControls(true);
-    }, 30000000);
+    }, 5000);
   };
 
   useEffect(() => {
@@ -396,9 +406,12 @@ export default memo(function LiveControls({
     left: () => {
       showControl();
       if (hideControls) return;
-      if (active < 1) return;
-
-      setActive(active - 1);
+      if (currentChannel?.has_archive) {
+        if (active < 1) return;
+        setActive(active - 1);
+      } else {
+        setActive(0);
+      }
     },
 
     right: () => {
@@ -414,6 +427,8 @@ export default memo(function LiveControls({
             setActive(active + 1);
           }
         }
+      } else {
+        setActive(2);
       }
     },
 
@@ -459,6 +474,7 @@ export default memo(function LiveControls({
     },
 
     back: () => {
+      dispatch(setIsCategoriesOpen(true));
       setPipMode(true);
       window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
     },
@@ -550,6 +566,7 @@ export default memo(function LiveControls({
       showControl();
       if (hideControls) return;
       if (active === 0) {
+        dispatch(setIsCategoriesOpen(true));
         setPipMode(true);
         window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
       } else if (active === 2) {
