@@ -26,7 +26,52 @@ window.PLAYER = {
     window.Android.seekTo(direction);
   },
 
-  getAndroidTracks: () => {},
+  getAndroidTracks: () => {
+    const tracks = window.Android.getTracks();
+    const tracksArr = JSON.parse(tracks);
+
+    const trackSubtitles = tracksArr.filter((track) => track.type === "TEXT");
+    const audioTracks = tracksArr.filter((track) => track.type === "AUDIO");
+    const videoTracks = tracksArr.filter((track) => track.type === "VIDEO");
+
+    const trackList = trackSubtitles.map((track) => {
+      return {
+        id: track.id,
+        name: track.name,
+        lang: track.lang,
+        index: track.index,
+        track_index: track.track_index,
+        group_index: track.group_index,
+        is_selected: track.is_selected,
+      };
+    });
+
+    const filteredSubs = trackList.filter(
+      (track) => track.is_supported || !track.hasOwnProperty("is_supported"),
+    );
+
+    const filteredAudio = audioTracks.filter(
+      (track) => track.is_supported || !track.hasOwnProperty("is_supported"),
+    );
+
+    const filteredVideo = videoTracks.filter(
+      (track) => track.is_supported || !track.hasOwnProperty("is_supported"),
+    );
+
+    dispatchEvent(
+      new CustomEvent("getTracks", {
+        detail: {
+          tracksList: {
+            subtitles: filteredSubs,
+            audio: filteredAudio,
+            video: filteredVideo,
+          },
+        },
+      }),
+    );
+
+    // console.log(trackList, "trackList");
+  },
 
   playerError: () => {
     dispatchEvent(new CustomEvent("playerError", {}));
@@ -80,6 +125,7 @@ export default function AndroidPlayer({
   onSeek,
   startTime,
   onLoadedMetadata,
+  getTracks,
 }) {
   const streamEnded = () => {
     streamEnd();
@@ -94,16 +140,23 @@ export default function AndroidPlayer({
     onSeek(direction);
   };
 
+  const getTracksHandler = (tracks) => {
+    getTracks(tracks.detail.tracksList);
+  };
+
   useEffect(() => {
     window.addEventListener("playerTimeUpdate", timeUpdateHandler);
     window.addEventListener("streamEnded", streamEnded);
     window.addEventListener("seekTo", seekToHandler);
     window.addEventListener("playbackLoaded", onLoadedMetadata);
+    window.addEventListener("getTracks", getTracksHandler);
+
     return () => {
       window.removeEventListener("playerTimeUpdate", timeUpdateHandler);
       window.removeEventListener("streamEnded", streamEnded);
       window.removeEventListener("seekTo", seekToHandler);
       window.removeEventListener("playbackLoaded", onLoadedMetadata);
+      window.removeEventListener("getTracks", getTracksHandler);
     };
   }, []);
 

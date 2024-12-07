@@ -7,9 +7,11 @@ const initialState = {
   isMovieSearchBarOpen: false,
   subtitles: [],
   resolutions: [],
-  selectedQuality: "Auto",
-  selectedSubtitle: "Off",
-  selectedPlaybackSpeed: "1x",
+  audioTracks: [],
+  selectedQuality: { id: "Auto", name: "Auto" },
+  selectedSubtitle: { id: "Off", name: "Off" },
+  selectedAudio: { id: "Default", name: "Default" },
+  selectedPlaybackSpeed: { id: "1x", name: "1x" },
   cropHost: "",
   isConnected: true,
   selectedType: "",
@@ -34,18 +36,23 @@ const globalSlice = createSlice({
       state.isMovieSearchBarOpen = action.payload;
     },
     setSubtitles: (state, action) => {
-      console.warn(action.payload, "subssss");
       state.subtitles = action.payload;
     },
+    setAudioTracks: (state, action) => {
+      state.audioTracks = action.payload;
+    },
+
     setResolutions: (state, action) => {
       state.resolutions = action.payload;
     },
     setSelectedQuality: (state, action) => {
-      console.warn(action.payload, "quality");
       state.selectedQuality = action.payload;
     },
     setSelectedSubtitle: (state, action) => {
       state.selectedSubtitle = action.payload;
+    },
+    setSelectedAudio: (state, action) => {
+      state.selectedAudio = action.payload;
     },
     setSelectedPlaybackSpeed: (state, action) => {
       state.selectedPlaybackSpeed = action.payload;
@@ -71,7 +78,9 @@ const globalSlice = createSlice({
 export const {
   setCtrl,
   setIsOpenMainSidebar,
+  setAudioTracks,
   setIsPlayerOpen,
+  setSelectedAudio,
   setIsMovieSearchBarOpen,
   setSubtitles,
   setResolutions,
@@ -103,4 +112,7 @@ export const selectSelectedType = (state) => state.global.selectedType;
 export const selectIsProtectedModalOpen = (state) =>
   state.global.isProtectedModalOpen;
 export const selectOnEpisodes = (state) => state.global.onEpisodes;
+export const selectAudioTracks = (state) => state.global.audioTracks;
+export const selectSelectedAudio = (state) => state.global.selectedAudio;
+
 export default globalSlice.reducer;

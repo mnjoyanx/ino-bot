@@ -12,7 +12,19 @@ import {
 } from "@app/channels/channelsSlice";
 import { useToast } from "@hooks/useToast";
 import VodControls from "./components/VodControl";
-import { setIsPlayerOpen } from "@app/global";
+import {
+  setIsPlayerOpen,
+  setAudioTracks,
+  setResolutions,
+  setSubtitles,
+  selectSelectedSubtitle,
+  selectSelectedQuality,
+  selectSelectedAudio,
+  selectSubtitles,
+  selectAudioTracks,
+  selectResolutions,
+} from "@app/global";
+
 import { GoogleIMA } from "../../GoogleIMA";
 
 import "./styles/player.scss";
@@ -53,6 +65,14 @@ export default memo(function Player({
   const lastRememberTimeUpdate = useRef(0);
   const maxRetries = 3;
   const adContainerRef = useRef(null);
+
+  const audioTracks = useSelector(selectAudioTracks);
+  const subtitles = useSelector(selectSubtitles);
+  const resolutions = useSelector(selectResolutions);
+  const selectedAudio = useSelector(selectSelectedAudio);
+  const selectedSubtitle = useSelector(selectSelectedSubtitle);
+  const selectedQuality = useSelector(selectSelectedQuality);
+  const [isPlayedOnce, setIsPlayedOnce] = useState(false);
 
   const [secDuration, setSecDuration] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
@@ -262,6 +282,81 @@ export default memo(function Player({
     updateSeekTimeDelayed(cTimeRef.current);
   };
 
+  const getTracksHandler = (tracksList) => {
+    dispatch(setAudioTracks(tracksList.audio));
+    dispatch(setSubtitles(tracksList.subtitles));
+    dispatch(setResolutions(tracksList.video));
+  };
+
+  useEffect(() => {
+    if (subtitles) {
+      if (window.Android) {
+        if (selectedSubtitle && selectedSubtitle.id !== "Off") {
+          const foundIndex = subtitles.findIndex(
+            (subtitle) => subtitle.id == selectedSubtitle.id,
+          );
+          window.Android.selectTrack(
+            "TEXT",
+            subtitles[foundIndex].track_index,
+            subtitles[foundIndex].group_index,
+          );
+        } else if (selectedSubtitle === "Off") {
+          window.Android.selectTrack("TEXT", -1, -1);
+        }
+      }
+    }
+  }, [subtitles, selectedSubtitle]);
+
+  useEffect(() => {
+    if (audioTracks) {
+      if (window.Android) {
+        if (
+          selectedAudio &&
+          selectedAudio !== "Default" &&
+          audioTracks.length
+        ) {
+          const foundIndex = audioTracks.findIndex(
+            (audio) => audio.id == selectedAudio.id,
+          );
+          if (foundIndex !== -1) {
+            window.Android.selectTrack(
+              "AUDIO",
+              audioTracks[foundIndex].track_index,
+              audioTracks[foundIndex].group_index,
+            );
+          }
+        } else if (selectedAudio === "Default") {
+          window.Android.selectTrack("AUDIO", -1, -1);
+        }
+      }
+    }
+  }, [audioTracks, selectedAudio]);
+
+  useEffect(() => {
+    if (resolutions) {
+      if (window.Android) {
+        if (
+          selectedQuality &&
+          selectedQuality !== "Auto" &&
+          resolutions.length
+        ) {
+          const foundIndex = resolutions.findIndex(
+            (resolution) => resolution.id == selectedQuality.id,
+          );
+          if (foundIndex !== -1) {
+            window.Android.selectTrack(
+              "VIDEO",
+              resolutions[foundIndex].track_index,
+              resolutions[foundIndex].group_index,
+            );
+          }
+        } else if (selectedQuality === "Auto") {
+          window.Android.selectTrack("VIDEO", -1, -1);
+        }
+      }
+    }
+  }, [resolutions, selectedQuality]);
+
   useEffect(() => {
     document.addEventListener("playerError", onErrorHandler);
     setRetryC(0);
@@ -394,6 +489,7 @@ export default memo(function Player({
           onError={onErrorHandler}
           onLoadedMetadata={loadedMetadataHandler}
           onSeek={handleSeek}
+          getTracks={getTracksHandler}
         />
       );
     }

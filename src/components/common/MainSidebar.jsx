@@ -40,29 +40,32 @@ const MainSidebar = ({ categories }) => {
   ];
 
   useEffect(() => {
+    const supportedTypes = ["movies", "tv-shows", "favorites"];
     if (categories && menuList) {
       const newItems = [
         ...items,
-        ...menuList.map((item) => ({
-          name: item.name,
-          id: item.id,
-          selectedIcon: item.selectedIcon,
-          type:
-            item.type === "movies"
-              ? "movie"
-              : item.type === "tv-shows"
-                ? "tv_show"
-                : item.type,
-          icon: item.icon ? (
-            <img
-              src={item.icon}
-              alt={item.name}
-              className={styles["main-sidebar-item_icon"]}
-            />
-          ) : (
-            <SvgGenres />
-          ),
-        })),
+        ...menuList
+          .filter((item) => supportedTypes.includes(item.type))
+          .map((item) => ({
+            name: item.name,
+            id: item.id,
+            selectedIcon: item.selectedIcon,
+            type:
+              item.type === "movies"
+                ? "movie"
+                : item.type === "tv-shows"
+                  ? "tv_show"
+                  : item.type,
+            icon: item.icon ? (
+              <img
+                src={item.icon}
+                alt={item.name}
+                className={styles["main-sidebar-item_icon"]}
+              />
+            ) : (
+              <SvgGenres />
+            ),
+          })),
       ];
 
       setSidebarItems(newItems);

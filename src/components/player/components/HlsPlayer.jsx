@@ -39,7 +39,13 @@ export default memo(function HlsPlayer({
       hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
         const resolutions = hls.levels.map((level) => level.height);
         const uniqueResolutions = [...new Set(resolutions)];
-        dispatch(setResolutions(uniqueResolutions));
+        const res = uniqueResolutions.map((resolution) => ({
+          height: resolution,
+          index: hls.levels.findIndex((level) => level.height === resolution),
+          group_index: 0,
+        }));
+        dispatch(setResolutions(res));
+
         refVideo.current.play().catch((e) => console.error("Play failed:", e));
       });
 
@@ -70,11 +76,11 @@ export default memo(function HlsPlayer({
   useEffect(() => {
     if (hlsRef.current) {
       const hls = hlsRef.current;
-      if (selectedQuality === "Auto") {
+      if (selectedQuality.id === "Auto") {
         hls.currentLevel = -1; // Auto quality
       } else {
         const qualityLevel = hls.levels.findIndex(
-          (level) => `${level.height}p` === selectedQuality,
+          (level) => `${level.height}p` === selectedQuality.id,
         );
         if (qualityLevel !== -1) {
           hls.currentLevel = qualityLevel;
@@ -86,11 +92,11 @@ export default memo(function HlsPlayer({
   useEffect(() => {
     if (hlsRef.current) {
       const hls = hlsRef.current;
-      if (selectedSubtitle === "Off") {
+      if (selectedSubtitle.id === "Off") {
         hls.subtitleTrack = -1;
       } else {
         const subtitleTrack = hls.subtitleTracks.findIndex(
-          (track) => track.name === selectedSubtitle,
+          (track) => track.id === selectedSubtitle.id,
         );
         if (subtitleTrack !== -1) {
           hls.subtitleTrack = subtitleTrack;
@@ -101,7 +107,7 @@ export default memo(function HlsPlayer({
 
   useEffect(() => {
     if (refVideo.current) {
-      refVideo.current.playbackRate = parseFloat(selectedPlaybackSpeed);
+      refVideo.current.playbackRate = 1;
     }
   }, [selectedPlaybackSpeed]);
 
