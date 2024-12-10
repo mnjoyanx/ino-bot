@@ -1,35 +1,75 @@
-.settings-wrapper{
-    width: 108rem;
-    margin: 0 auto;
-    padding-top: 12rem;
-    display: flex;
-    .list-settings{
-        .item-settings{
-            width: 30rem;
-            font-size: 2.7rem;
-            padding-bottom: 3rem;
-            color:#6E6D6D;
-            &.active{
-                color: white;
-            }
-        }
-    }
-    .parent-info-settings{
-        width: 78rem;
-        .info-settings{
-            width:80%;
-            p{
-                font-size: 2.7rem;
-                padding-bottom: 3rem;
-                font-weight: 400;
+@import "@styles/variables.scss";
 
-            }
-            span{
-                font-size: 2.5rem;
-                line-height: 3rem;
-                font-weight: 200;
-                color: white;
-            }
-        }
+.settings-wrapper {
+  width: 108rem;
+  margin: 0 auto;
+  padding-top: 12rem;
+  display: flex;
+  .list-settings {
+    .item-settings {
+      width: 30rem;
+      font-size: 2.7rem;
+      padding-bottom: 3rem;
+      color: #6e6d6d;
+      &.active {
+        color: white;
+      }
     }
+  }
+  .parent-info-settings {
+    width: 78rem;
+    .info-settings {
+      width: 80%;
+      p {
+        font-size: 2.7rem;
+        padding-bottom: 3rem;
+        font-weight: 400;
+      }
+      span {
+        font-size: 2.5rem;
+        line-height: 3rem;
+        font-weight: 200;
+        color: white;
+      }
+    }
+  }
+}
+
+.parent-language {
+  display: flex;
+  align-items: center;
+}
+.settings-lang_icon {
+  width: 4rem;
+  height: 3rem;
+  margin-right: 1rem;
+}
+
+.lang-name {
+  padding-bottom: 0 !important;
+}
+
+.reload-btn {
+  margin-left: 10rem;
+  display: flex;
+
+  &.ino-button--active {
+    background-color: $active-color !important;
+    transform: scale(1) !important;
+  }
+}
+
+.ino-button.reload-btn {
+  font-size: 2rem !important;
+}
+
+.reload-btn_icon {
+  margin-right: 0.5rem;
+}
+
+.settings-loader {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }

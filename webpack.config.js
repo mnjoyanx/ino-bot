@@ -20,7 +20,7 @@ module.exports = (env, argv) => {
     devtool,
 
     optimization: {
-      minimize: false,
+      minimize: true,
     },
 
     devServer: {

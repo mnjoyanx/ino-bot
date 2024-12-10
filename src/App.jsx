@@ -1,9 +1,11 @@
 import { memo, useEffect, useMemo, useState, useRef } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { setOnline } from "@server/requests";
-import { selectIsPlayerOpen } from "@app/global";
+import { useSelector, useDispatch } from "react-redux";
+import { getApps, getAppSettings, setOnline } from "@server/requests";
+import { selectIsPlayerOpen, setIsUpdateModalOpen } from "@app/global";
 import { selectCurrentChannel } from "@app/channels/channelsSlice";
+import "@ino-ui/tv/index.css";
+import { InoButton, InoRow } from "@ino-ui/tv";
 
 import PATHS from "@utils/paths.js";
 
@@ -23,11 +25,30 @@ import { Modal } from "@ino-ui/tv";
 import "./styles/global.css";
 import { validateToken } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
+import { setAllSettings, setConfigs } from "@app/configs/configsSlice";
+
+window.setRequestResult = (url, code, response) => {
+  if (code == 200) {
+    const sriptEl = document.getElementById("bundlejs");
+    const hostUrl =
+      sriptEl.src.split("bundle.js")[0] + "version.js/?" + Date.now();
+    if (url === hostUrl) {
+      console.log(JSON.parse(atob(response)), "atob get res", url);
+    }
+  } else {
+    console.log(code, response);
+  }
+};
 
 const getVersion = () => {
   if (window.Android) {
     // const version = window.Android.getAppVersion();
     // localStorage.setItem("app_version", version);
+    const sriptEl = document.getElementById("bundlejs");
+    const hostUrl =
+      sriptEl.src.split("bundle.js")[0] + "version.js/?" + Date.now();
+    window.Android.getFromUrlB64(hostUrl);
+    // console.log(versionUrl, "version url");
   } else {
     var req = new XMLHttpRequest();
 
@@ -68,11 +89,56 @@ const getVersion = () => {
 getVersion();
 
 function App() {
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const isPlayerOpen = useSelector(selectIsPlayerOpen);
   const currentChannel = useSelector(selectCurrentChannel);
   const onlineIntervalRef = useRef(null);
   const isConnected = useConnection();
+  const [apkUrl, setApkUrl] = useState("");
+
+  const [isApkModalOpen, setIsApkModalOpen] = useState(true);
+
+  const getConfigs = async () => {
+    const lang = JSON.parse(localStorage.getItem("language"));
+    const langId = lang.id;
+    const configs = await getAppSettings({
+      languageId: langId,
+    });
+    const parsedConfigs = JSON.parse(configs);
+    const { message } = parsedConfigs;
+
+    dispatch(setAllSettings(message));
+  };
+
+  const getAppsHandler = async () => {
+    try {
+      const res = await getApps({
+        device_id: LOCAL_STORAGE.MAC_ADDRESS.GET(),
+      });
+
+      const parsedRes = JSON.parse(res);
+      const version = parsedRes.message[0].version_string;
+      const appId = parsedRes.message[0].app_id;
+      const apk = parsedRes.message[0].apk;
+      const appVersion = window.Android.getAppVersion(appId);
+      console.log(appVersion, "----", version, "parsedRes", parsedRes);
+      setApkUrl(apk);
+      const realVersion = appVersion.slice(
+        appVersion.indexOf("(") + 1,
+        appVersion.indexOf(")"),
+      );
+
+      if (realVersion > version) {
+        setIsApkModalOpen(true);
+        dispatch(setIsUpdateModalOpen(true));
+      } else {
+        setIsApkModalOpen(false);
+        dispatch(setIsUpdateModalOpen(false));
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const handleValidateToken = async () => {
     const token = LOCAL_STORAGE.TOKEN.GET();
@@ -113,6 +179,13 @@ function App() {
     }
   };
 
+  const updateApkHandler = () => {
+    console.log("uypdate");
+    const splited = apkUrl.split("/");
+    const fileName = splited[splited.length - 1];
+    window.Android?.installApp(apkUrl, fileName);
+  };
+
   useEffect(() => {
     sendOnlineStatus();
 
@@ -124,6 +197,12 @@ function App() {
       }
     };
   }, [isPlayerOpen, currentChannel?.id]);
+
+  useEffect(() => {
+    if (window.Android) {
+      getAppsHandler();
+    }
+  }, []);
 
   useEffect(() => {
     handleValidateToken();
@@ -139,6 +218,10 @@ function App() {
     }
   }, [isPlayerOpen]);
 
+  useEffect(() => {
+    getConfigs();
+  }, []);
+
   return (
     <>
       <Modal
@@ -149,6 +232,37 @@ function App() {
       >
         <h2 className="no-interen-title">No internet connection</h2>
         <p>Please check your internet connection and try again</p>
+      </Modal>
+      <Modal isOpen={isApkModalOpen} onClose={() => {}} size="full">
+        <h2 className="no-interen-title">There is a new version available</h2>
+
+        <InoRow isActive={true} classNames="apk-update_row">
+          <InoButton
+            isActive
+            variant="outline"
+            size="large"
+            classNames="apk-update_btn close"
+            onClick={() => {
+              setIsApkModalOpen(false);
+              dispatch(setIsUpdateModalOpen(false));
+            }}
+          >
+            Close
+          </InoButton>
+          <InoButton
+            isActive
+            size="large"
+            variant="outline"
+            classNames="apk-update_btn update"
+            onClick={() => {
+              updateApkHandler();
+              setIsApkModalOpen(false);
+              dispatch(setIsUpdateModalOpen(false));
+            }}
+          >
+            Update
+          </InoButton>
+        </InoRow>
       </Modal>
       <InoToastProvider>
         <ToastProvider>

@@ -151,3 +151,15 @@ p {
   margin: 0 auto !important;
   background-color: transparent !important;
 }
+
+.ino-button--active.apk-update_btn {
+  transform: scale(1);
+  background-color: #0f87b2 !important;
+}
+
+.apk-update_row {
+  justify-content: center;
+}
+.apk-update_btn {
+  font-size: 2rem !important;
+}

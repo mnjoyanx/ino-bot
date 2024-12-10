@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import useKeydown from "@hooks/useKeydown";
 import PATHS from "@utils/paths";
 import MenuItem from "./MenuItem";
@@ -16,8 +17,10 @@ import bgMovies from "@assets/images/menu/bg_movies.png";
 import bgSettings from "@assets/images/menu/bg_settings.png";
 
 import "./menuItems.scss";
+import { selectIsUpdateModalOpen } from "@app/global";
 
 export default function MenuItems() {
+  const isUpdateModalOpen = useSelector(selectIsUpdateModalOpen);
   const navigate = useNavigate();
 
   const list = [
@@ -71,7 +74,7 @@ export default function MenuItems() {
   const onMouseEnter = useCallback((index) => setActiveIndex(index), []);
 
   useKeydown({
-    isActive: !show,
+    isActive: !show && !isUpdateModalOpen,
 
     left: () => {
       if (activeIndex === 0 || activeIndex === 2) return;

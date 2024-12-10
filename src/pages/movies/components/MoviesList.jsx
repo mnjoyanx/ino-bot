@@ -99,15 +99,13 @@ const MoviesList = ({ isVertical, isLoading }) => {
                     data={currentMovies}
                     rowsCount={currentMovies.length}
                     visibleRowsCount={1}
-                    // itemsTotal={currentMovies.length}
-                    // itemsCount={1}
                     itemWidth={20}
                     itemHeight={30}
                     withTitle={true}
                     buffer={3}
                     debounce={200}
                     onFirstRow={({ key }) => {
-                      console.log(key, 'keeey')
+                      console.log(key, "keeey");
                       if (key === "up") {
                         dispatch(setCtrl("backBtn"));
                       } else {
