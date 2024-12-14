@@ -2,7 +2,7 @@ import { memo, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { selectChannels } from "@app/channels/channelsSlice";
 import useKeydown from "@hooks/useKeydown";
-
+import { useTranslation } from "react-i18next";
 import CardCategory from "./CardCategory";
 
 import { ListView } from "@ino-ui/tv";
@@ -16,6 +16,7 @@ export default memo(function CategoriesWrapper({
   category,
   refSetIndex,
 }) {
+  const { t } = useTranslation();
   const categories = useSelector(selectChannels);
 
   const [active, setActive] = useState(0);
@@ -42,7 +43,7 @@ export default memo(function CategoriesWrapper({
 
   return (
     <div className="parent-categories">
-      <h3 className="title">Categories</h3>
+      <h3 className="title">{t("Categories")}</h3>
       <div className="categories-wrapper">
         <ListView
           data={Object.values(categories)}

@@ -1,11 +1,19 @@
 import { memo, useEffect, useMemo, useState, useRef } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { getApps, getAppSettings, setOnline } from "@server/requests";
+import {
+  getApps,
+  getAppSettings,
+  getCurrentTranslations,
+  getTranslations,
+  setOnline,
+} from "@server/requests";
 import { selectIsPlayerOpen, setIsUpdateModalOpen } from "@app/global";
 import { selectCurrentChannel } from "@app/channels/channelsSlice";
-import "@ino-ui/tv/index.css";
+// import "@ino-ui/tv/index.css";
 import { InoButton, InoRow } from "@ino-ui/tv";
+import { useTranslation } from "react-i18next";
+import TranslationProvider from "./TranslationProvider";
 
 import PATHS from "@utils/paths.js";
 
@@ -95,19 +103,28 @@ function App() {
   const onlineIntervalRef = useRef(null);
   const isConnected = useConnection();
   const [apkUrl, setApkUrl] = useState("");
+  const { t } = useTranslation();
+  const navigate = useNavigate();
 
-  const [isApkModalOpen, setIsApkModalOpen] = useState(true);
+  const [isApkModalOpen, setIsApkModalOpen] = useState(false);
 
   const getConfigs = async () => {
-    const lang = JSON.parse(localStorage.getItem("language"));
-    const langId = lang.id;
-    const configs = await getAppSettings({
-      languageId: langId,
-    });
-    const parsedConfigs = JSON.parse(configs);
-    const { message } = parsedConfigs;
+    try {
+      const lang = JSON.parse(localStorage.getItem("language"));
 
-    dispatch(setAllSettings(message));
+      if (lang) {
+        const langId = lang.id;
+        const configs = await getAppSettings({
+          languageId: langId,
+        });
+        const parsedConfigs = JSON.parse(configs);
+        const { message } = parsedConfigs;
+
+        dispatch(setAllSettings(message));
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const getAppsHandler = async () => {
@@ -129,8 +146,13 @@ function App() {
       );
 
       if (realVersion > version) {
-        setIsApkModalOpen(true);
-        dispatch(setIsUpdateModalOpen(true));
+        if (window.Android) {
+          setIsApkModalOpen(true);
+          dispatch(setIsUpdateModalOpen(true));
+        } else {
+          setIsApkModalOpen(false);
+          dispatch(setIsUpdateModalOpen(false));
+        }
       } else {
         setIsApkModalOpen(false);
         dispatch(setIsUpdateModalOpen(false));
@@ -146,7 +168,7 @@ function App() {
     const parsedResponse = JSON.parse(response);
     const { message, error } = parsedResponse;
     if (error) {
-      console.log(message, "message");
+      navigate("/");
     } else {
       localStorage.setItem(
         "parental_code",
@@ -167,7 +189,7 @@ function App() {
       body.isLive = isLiveContent;
       if (isPlayerOpen) {
         if (pathname.includes("/live")) {
-          body.channelId = currentChannel.id;
+          body.channelId = currentChannel?.id;
         } else {
           body.movieId = pathname.split("/").pop();
         }
@@ -180,10 +202,38 @@ function App() {
   };
 
   const updateApkHandler = () => {
-    console.log("uypdate");
     const splited = apkUrl.split("/");
     const fileName = splited[splited.length - 1];
     window.Android?.installApp(apkUrl, fileName);
+  };
+
+  const getCurrentTranslationsHandler = async (lang) => {
+    try {
+      const res = await getCurrentTranslations({ id: lang.id });
+      const parsedRes = JSON.parse(res);
+      const { message } = parsedRes;
+      console.log(message, "parseeee lang translation", lang);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const getTranslationsHandler = async () => {
+    try {
+      const res = await getTranslations();
+      const parsedRes = JSON.parse(res);
+      const { message } = parsedRes;
+
+      // const defaultLang = message.find((item) => item.default);
+      const defaultLangId = JSON.parse(localStorage.getItem("userLangId"));
+      const defaultLang = message.find((item) => +item.id === +defaultLangId);
+
+      if (defaultLang) {
+        getCurrentTranslationsHandler(defaultLang);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   useEffect(() => {
@@ -202,6 +252,7 @@ function App() {
     if (window.Android) {
       getAppsHandler();
     }
+    // getTranslationsHandler();
   }, []);
 
   useEffect(() => {
@@ -222,83 +273,82 @@ function App() {
     getConfigs();
   }, []);
 
+  const langId = JSON.parse(localStorage.getItem("language"))?.id;
+
   return (
     <>
-      <Modal
-        isOpen={!isConnected}
-        onClose={() => {}}
-        size="full"
-        classNames="connection-modal"
-      >
-        <h2 className="no-interen-title">No internet connection</h2>
-        <p>Please check your internet connection and try again</p>
-      </Modal>
-      <Modal isOpen={isApkModalOpen} onClose={() => {}} size="full">
-        <h2 className="no-interen-title">There is a new version available</h2>
+      <TranslationProvider langId={langId}>
+        <Modal
+          isOpen={!isConnected}
+          onClose={() => {}}
+          size="full"
+          classNames="connection-modal"
+        >
+          <h2 className="no-interen-title">No internet connection</h2>
+          <p>Please check your internet connection and try again</p>
+        </Modal>
+        <Modal isOpen={isApkModalOpen} onClose={() => {}} size="full">
+          <h2 className="no-interen-title">There is a new version available</h2>
 
-        <InoRow isActive={true} classNames="apk-update_row">
-          <InoButton
-            isActive
-            variant="outline"
-            size="large"
-            classNames="apk-update_btn close"
-            onClick={() => {
-              setIsApkModalOpen(false);
-              dispatch(setIsUpdateModalOpen(false));
-            }}
-          >
-            Close
-          </InoButton>
-          <InoButton
-            isActive
-            size="large"
-            variant="outline"
-            classNames="apk-update_btn update"
-            onClick={() => {
-              updateApkHandler();
-              setIsApkModalOpen(false);
-              dispatch(setIsUpdateModalOpen(false));
-            }}
-          >
-            Update
-          </InoButton>
-        </InoRow>
-      </Modal>
-      <InoToastProvider>
-        <ToastProvider>
-          <Routes>
-            <Route
-              path={PATHS.SPLASH_SCREEN}
-              index
-              element={<SplashScreen />}
-            />
-            <Route path={PATHS.MENU} element={<Menu />} />
-            <Route path={PATHS.ACTIVATION_PAGE} element={<ActivationPage />} />
-            <Route path={PATHS.LIVE} element={<LivePage />} />
-            <Route path={PATHS.SETTINGS} element={<Settings />} />
+          <InoRow isActive={true} classNames="apk-update_row">
+            <InoButton
+              isActive
+              variant="outline"
+              size="large"
+              classNames="apk-update_btn close"
+              onClick={() => {
+                setIsApkModalOpen(false);
+                dispatch(setIsUpdateModalOpen(false));
+              }}
+            >
+              {t("Close")}
+            </InoButton>
+            <InoButton
+              isActive
+              size="large"
+              variant="outline"
+              classNames="apk-update_btn update"
+              onClick={() => {
+                updateApkHandler();
+                setIsApkModalOpen(false);
+                dispatch(setIsUpdateModalOpen(false));
+              }}
+            >
+              {t("Update")}
+            </InoButton>
+          </InoRow>
+        </Modal>
+        <InoToastProvider>
+          <ToastProvider>
+            <Routes>
+              <Route
+                path={PATHS.SPLASH_SCREEN}
+                index
+                element={<SplashScreen />}
+              />
+              <Route path={PATHS.MENU} element={<Menu />} />
+              <Route
+                path={PATHS.ACTIVATION_PAGE}
+                element={<ActivationPage />}
+              />
+              <Route path={PATHS.LIVE} element={<LivePage />} />
+              <Route path={PATHS.SETTINGS} element={<Settings />} />
 
-            <Route
-              path={PATHS.MOVIES}
-              element={
-                <MoviesProvider>
-                  <MoviesPage />
-                </MoviesProvider>
-              }
-            />
-            <Route path={PATHS.MOVIE_INFO} element={<MovieInfo />} />
+              <Route
+                path={PATHS.MOVIES}
+                element={
+                  <MoviesProvider>
+                    <MoviesPage />
+                  </MoviesProvider>
+                }
+              />
+              <Route path={PATHS.MOVIE_INFO} element={<MovieInfo />} />
 
-            <Route path={PATHS.APPS} element={<AppsPage />} />
-
-            {/* <Route path={PATHS.LOGIN} element={<Login imagesApp={imagesAppObj} />} />
-              <Route path={PATHS.SUBUSERS} element={<Subusers imagesApp={imagesAppObj} />} />
-              <Route path={PATHS.ADD_SUBUSER} element={<AddSubuser imagesApp={imagesAppObj} />} />
-  
-              <Route path={PATHS.ROOT} element={<MainLayout />}>
-                  <Route path={PATHS.FAVORITES} element={<Favorite />} />
-              </Route> */}
-          </Routes>
-        </ToastProvider>
-      </InoToastProvider>
+              <Route path={PATHS.APPS} element={<AppsPage />} />
+            </Routes>
+          </ToastProvider>
+        </InoToastProvider>
+      </TranslationProvider>
     </>
   );
 }

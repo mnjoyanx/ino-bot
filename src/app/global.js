@@ -19,6 +19,7 @@ const initialState = {
   onEpisodes: false,
   isCategoriesOpen: false,
   isUpdateModalOpen: false,
+  isLangActive: false,
 };
 
 const globalSlice = createSlice({
@@ -80,6 +81,9 @@ const globalSlice = createSlice({
     setIsUpdateModalOpen: (state, action) => {
       state.isUpdateModalOpen = action.payload;
     },
+    setIsLangActive: (state, action) => {
+      state.isLangActive = action.payload;
+    },
   },
 });
 
@@ -102,6 +106,7 @@ export const {
   setOnEpisodes,
   setIsCategoriesOpen,
   setIsUpdateModalOpen,
+  setIsLangActive,
 } = globalSlice.actions;
 
 export const selectCtrl = (state) => state.global.ctrl;
@@ -127,4 +132,5 @@ export const selectSelectedAudio = (state) => state.global.selectedAudio;
 export const selectIsCategoriesOpen = (state) => state.global.isCategoriesOpen;
 export const selectIsUpdateModalOpen = (state) =>
   state.global.isUpdateModalOpen;
+export const selectIsLangActive = (state) => state.global.isLangActive;
 export default globalSlice.reducer;

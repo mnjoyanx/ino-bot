@@ -15,6 +15,7 @@ import {
   selectSelectedSubtitle,
   selectSelectedPlaybackSpeed,
 } from "@app/global";
+import { useTranslation } from "react-i18next";
 import useKeydown from "@hooks/useKeydown";
 import styles from "@styles/components/controlSettings.module.scss";
 
@@ -73,6 +74,7 @@ const initialSettingsOptions = [
 ];
 
 const ControlSettings = ({ isVisible, onClose, showControl }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const audioTracks = useSelector(selectAudioTracks);
   const ctrl = useSelector(selectCtrl);
@@ -101,7 +103,7 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
       if (resolutions?.length > 0) {
         const qualityIndex = window.Android ? 0 : 0;
         newOptions[qualityIndex] = {
-          name: "Quality",
+          name: t("Quality"),
           value: selectedQuality || { id: "Auto", name: "Auto" },
           children: [
             { id: "Auto", name: "Auto" },
@@ -119,7 +121,7 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
       if (audioTracks?.length > 0) {
         const audioIndex = window.Android ? 1 : 2;
         newOptions[audioIndex] = {
-          name: "Audio",
+          name: t("Audio"),
           value: selectedAudio || { id: "Default", name: "Default" },
           children: audioTracks.map((track) => ({
             id: track.id,
@@ -142,7 +144,7 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
       if (subtitles?.length > 0) {
         const subtitleIndex = window.Android ? 2 : 3;
         newOptions[subtitleIndex] = {
-          name: "Subtitles",
+          name: t("Subtitles"),
           value: selectedSubtitle || { id: "Off", name: "Off" },
           children: [
             { id: "Off", name: "Off" },
@@ -344,7 +346,7 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
               >
                 <div className={styles.optionContent}>
                   <span>{option.name}</span>
-                  <span>{option.value?.name || "Default"}</span>
+                  <span>{option.value?.name || t("Default")}</span>
                 </div>
                 <ArrowIcon isRotated={expandedOption === index} />
               </div>

@@ -8,11 +8,13 @@ import { GridView } from "@ino-ui/tv";
 import { getApps } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
 import Loading from "@components/common/Loading";
+import { useTranslation } from "react-i18next";
 
 import styles from "@styles/components/appsPage.module.scss";
 
 export default function AppsPage() {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const ctrl = useSelector(selectCtrl);
   const [isAndroid, setIsAndroid] = useState(false);
 
@@ -72,7 +74,7 @@ export default function AppsPage() {
             <AppLogo />
           </div>
           <div className={styles["apps-content"]}>
-            <h2 className={styles["apps-title"]}>Apps Launcher</h2>
+            <h2 className={styles["apps-title"]}>{t("Apps Launcher")}</h2>
             {isAndroid ? (
               <div className={styles["grid-view_container"]}>
                 <GridView
@@ -96,7 +98,6 @@ export default function AppsPage() {
                   onUp={() => dispatch(setCtrl("backBtn"))}
                   onDown={() => {}}
                   onBack={() => {
-                    console.log("backkk");
                     navigate("/menu");
                   }}
                   //   onBackScrollIndex={0}
@@ -111,7 +112,7 @@ export default function AppsPage() {
                         className={styles["image"]}
                       />
                       {isActive && (
-                        <span className={styles["name"]}>{item.name}</span>
+                        <span className={styles["name"]}>{t(item.name)}</span>
                       )}
                     </div>
                   )}
@@ -120,7 +121,7 @@ export default function AppsPage() {
               </div>
             ) : (
               <p className={styles["android-only"]}>
-                This feature is only available on Android devices
+                {t("This feature is only available on Android devices")}
               </p>
             )}
           </div>

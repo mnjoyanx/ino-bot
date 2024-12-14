@@ -73,6 +73,7 @@ export default function ActivationPage() {
 
     const parsedToken = JSON.parse(token);
     const { message, error } = parsedToken;
+    console.log(message, "messageeeeee user messagte");
     if (!error) {
       LOCAL_STORAGE.TOKEN.SET(message);
       navigate(PATHS.MENU);

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next";
 import {
   selectCtrl,
   selectIsPlayerOpen,
@@ -16,6 +17,7 @@ import { useMovieInfo } from "@context/movieInfoContext";
 
 const TvShowSeasons = ({ seasons, seriesId }) => {
   const ctrl = useSelector(selectCtrl);
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const {
     currentEpisode,
@@ -134,7 +136,7 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
     <div
       className={`${styles["seasons-container"]} ${isPlayerOpen ? styles["hidden"] : ""}`}
     >
-      <h2>Seasons</h2>
+      <h2>{t("Seasons")}</h2>
       <div
         className={styles["seasons-list"]}
         style={{ width: `${seasons.length * 16}rem` }}
@@ -183,7 +185,9 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
           {isLoading ? (
             <div className={styles["loading"]}>Loading...</div>
           ) : (
-            <div className={styles["no-episodes"]}>No episodes found</div>
+            <div className={styles["no-episodes"]}>
+              {t("No episodes found")}
+            </div>
           )}
         </>
       )}

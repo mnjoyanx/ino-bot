@@ -11,6 +11,7 @@ import ControlSettings from "./ControlSettings";
 import SvgNextEpisode from "@assets/icons/SvgNextEpisode";
 import { useMovieInfo } from "@context/movieInfoContext";
 import { InoPlayerProgress } from "@ino-ui/tv";
+import { useTranslation } from "react-i18next";
 
 import "@styles/components/vodControl.scss";
 import { formatTime } from "@utils/util";
@@ -33,7 +34,7 @@ export default function VodControls({
   const dispatch = useDispatch();
   const isPaused = useSelector(selectIsPaused);
   const ctrl = useSelector(selectCtrl);
-
+  const { t } = useTranslation();
   const { isLastEpisode, movieInfo } = useMovieInfo();
 
   const [hideControls, setHideControls] = useState(false);
@@ -190,7 +191,9 @@ export default function VodControls({
         ref={controlsRef}
       >
         <div className="vod-info">
-          <h2 className="vod-title">{title}</h2>
+          <h2 className="vod-title">
+            {movieInfo.translations ? movieInfo.translations.name : title}
+          </h2>
         </div>
 
         <div className="playback-actions_wrapper">
@@ -226,7 +229,7 @@ export default function VodControls({
                   onClick={handleNextEpisode}
                 >
                   <SvgNextEpisode />
-                  <span>Next episode</span>
+                  <span>{t("Next episode")}</span>
                 </button>
               )}
               <button

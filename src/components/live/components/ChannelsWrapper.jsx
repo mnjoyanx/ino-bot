@@ -10,6 +10,7 @@ import {
 } from "@app/channels/channelsSlice";
 import { ListView } from "@ino-ui/tv";
 
+import { useTranslation } from "react-i18next";
 import { channelInfo } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
 
@@ -26,6 +27,7 @@ export default memo(function ChannelsWrapper({
   setUrl,
   setPipMode,
 }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
@@ -81,7 +83,7 @@ export default memo(function ChannelsWrapper({
 
   return (
     <div className="parent-channels">
-      <h3 className="title">Channels</h3>
+      <h3 className="title">{t("Channels")}</h3>
       <div className="channels-wrapper">
         <div className="list-channels">
           {categories[selectedCategory]?.content?.length > 0 ? (
@@ -124,7 +126,7 @@ export default memo(function ChannelsWrapper({
             />
           ) : (
             <div className="empty-channel">
-              <p className="empty-channel_text">No channels</p>
+              <p className="empty-channel_text">{t("No channels")}</p>
             </div>
           )}
         </div>

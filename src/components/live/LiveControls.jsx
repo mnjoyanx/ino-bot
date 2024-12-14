@@ -9,6 +9,7 @@ import {
   selectChannels,
   setChannels,
 } from "@app/channels/channelsSlice";
+import { useTranslation } from "react-i18next";
 import {
   setShowPreviewImages,
   selectShowPreviewImages,
@@ -56,6 +57,7 @@ export default memo(function LiveControls({
   changeCTime,
   duration,
 }) {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const allChannels = useSelector(selectAllChannels);
@@ -104,6 +106,7 @@ export default memo(function LiveControls({
     const response = await channelInfo({ id: id });
     const parsedResponse = JSON.parse(response);
     const { error, message } = parsedResponse;
+    1;
 
     if (error) {
     } else {

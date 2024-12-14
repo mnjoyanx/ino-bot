@@ -7,7 +7,7 @@ import {
 } from "@app/channels/channelsSlice";
 import { getEpgList } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
-
+import { useTranslation } from "react-i18next";
 import useKeydown from "@hooks/useKeydown";
 
 import CardEpg from "./CardEpg";
@@ -25,6 +25,7 @@ export default memo(function EpgListWrapper({
   url,
   refUrlLive,
 }) {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const currentChannel = useSelector(selectCurrentChannel);
   const playerType = useSelector(selectPlayerType);
@@ -164,7 +165,9 @@ export default memo(function EpgListWrapper({
         onError={(e) => (e.target.src = LOCAL_STORAGE.LOGO.GET())}
       />
 
-      {playerType !== "live" ? <div className="rec_video">REC</div> : null}
+      {playerType !== "live" ? (
+        <div className="rec_video">{t("REC")}</div>
+      ) : null}
 
       <div className="epg-list-wrapper">
         {!emptyList && active !== 0 ? (
@@ -172,7 +175,7 @@ export default memo(function EpgListWrapper({
         ) : null}
 
         {emptyList ? (
-          <p className="empty">List is empty</p>
+          <p className="empty">{t("List is empty")}</p>
         ) : (
           <div
             className="main-epg_list"

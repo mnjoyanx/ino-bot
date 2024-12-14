@@ -9,6 +9,7 @@ import { ListView } from "@ino-ui/tv";
 import CardChannel from "../../cards/CardChannel";
 import MovieCard from "../../../pages/movies/components/MovieCard";
 import { setCtrl } from "../../../app/global";
+import { useTranslation } from "react-i18next";
 
 export default memo(function ResultSearch({
   result,
@@ -24,6 +25,7 @@ export default memo(function ResultSearch({
   empty,
   ctrl,
 }) {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const [active, setActive] = useState(0);
 
@@ -71,7 +73,7 @@ export default memo(function ResultSearch({
     <div className="parent-result">
       {empty ? (
         <div className="empty-result">
-          <p>No result found</p>
+          <p>{t("No result found")}</p>
         </div>
       ) : (
         <ListView

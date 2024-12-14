@@ -26,13 +26,21 @@ const MovieContent = ({ movie, isPlayerOpen }) => {
           className={styles["image-title"]}
         />
       ) : (
-        <h1 className={styles["title"]}>{movie.name}</h1>
+        <h1 className={styles["title"]}>
+          {movie.translations && movie.translations.name
+            ? movie.translations.name
+            : movie.name}
+        </h1>
       )}
       <div className={styles["metadata"]}>
         <span>{movie.year}</span>
         <span>{movie.pg}+</span>
         <span>{`${movie.duration} min`}</span>
-        <span>{movie.type}</span>
+        <span>
+          {movie.translations && movie.translations.type
+            ? movie.translations.type
+            : movie.type}
+        </span>
       </div>
       {movie.casts.length > 0 && (
         <div className={styles["casts"]} key={movie.id}>
@@ -43,7 +51,11 @@ const MovieContent = ({ movie, isPlayerOpen }) => {
           ))}
         </div>
       )}
-      <p className={styles["description"]}>{movie.description}</p>
+      <p className={styles["description"]}>
+        {movie.translations && movie.translations.description
+          ? movie.translations.description
+          : movie.description}
+      </p>
     </div>
   );
 };

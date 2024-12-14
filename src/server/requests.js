@@ -8,6 +8,19 @@ export const getLanguages = () => {
   );
 };
 
+export const getTranslations = () => {
+  console.warn("get---");
+  return request("get", CONFIG.TRANSLATIONS);
+};
+
+export const getCurrentTranslations = (queryParams) => {
+  return request("get", CONFIG.APP_TRANSLATIONS, queryParams);
+};
+
+export const changeLang = (body) => {
+  return request("post", CONFIG.CHANGE_LANG, "", body);
+};
+
 export const getAppSettings = (body) => {
   return request(
     "get",
@@ -192,9 +205,9 @@ export const getEpisodes = (queryParams) => {
   return request("get", "v2/api/episode/by_season_id", queryParams);
 };
 
-// export const getTranslationsMovie = queryParams => {
-//   return request("get", "v2/api/movie_translations/by_movie_id", queryParams);
-// };
+export const getTranslationsMovie = (queryParams) => {
+  return request("get", "v2/api/movie_translations/by_movie_id", queryParams);
+};
 
 // export const getRating = queryParams => {
 //   return request("get", "v2/api/rating/by_movie_id", queryParams);

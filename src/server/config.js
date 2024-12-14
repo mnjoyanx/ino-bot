@@ -10,4 +10,7 @@ export const CONFIG = {
   EPG_LIST: "user/epg/getByDate",
   GET_PROFILE: "user/subUser/getByRootUserId",
   GET_MOVIES: "v2/api/movies",
+  TRANSLATIONS: "application/app_languages",
+  APP_TRANSLATIONS: "application/translations",
+  CHANGE_LANG: "user/language",
 };

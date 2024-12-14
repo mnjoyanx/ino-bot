@@ -6,6 +6,7 @@ import LOCAL_STORAGE from "@utils/localStorage";
 import HlsPlayer from "./components/HlsPlayer";
 import LiveControls from "@components/live/LiveControls.jsx";
 import AndroidPlayer from "./components/AndroidPlayer";
+import { useTranslation } from "react-i18next";
 import {
   selectPlayerType,
   selectCurrentChannel,
@@ -54,6 +55,7 @@ export default memo(function Player({
   onNextArchive,
   movieId,
 }) {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const refVideo = useRef(null);
   const refDuration = useRef(null);
@@ -236,7 +238,11 @@ export default memo(function Player({
     } else {
       hideToast();
       setAlreadyRetryed(true);
-      showToast("Unable to play video. Please try again later.", "error", 5000);
+      showToast(
+        t("Unable to play video. Please try again later."),
+        "error",
+        5000,
+      );
       setRetryC(0);
       return;
     }

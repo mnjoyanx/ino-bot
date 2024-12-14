@@ -7,6 +7,7 @@ import {
   setIsMovieSearchBarOpen,
 } from "@app/global";
 import { GridView, InoButton, ListView, ListGridView } from "@ino-ui/tv";
+import { useTranslation } from "react-i18next";
 
 import useKeydown from "@hooks/useKeydown";
 import MovieCard from "./MovieCard";
@@ -24,6 +25,7 @@ import { imageResizer } from "@utils/util";
 const MoviesList = ({ isVertical, isLoading }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const ctrl = useSelector(selectCtrl);
   const cropHost = useSelector(selectCropHost);
   const selectedType = useSelector(selectSelectedType);
@@ -73,7 +75,9 @@ const MoviesList = ({ isVertical, isLoading }) => {
           key={item.id}
           style={style}
           isActive={isActive}
-          name={item.name}
+          name={
+            item.movie_translation ? item.movie_translation.name : item.name
+          }
           poster={`${imageResizer(cropHost, item.poster, 200, 300, "0", "jpg")}`}
           isVertical={isVertical}
         />
@@ -188,7 +192,7 @@ const MoviesList = ({ isVertical, isLoading }) => {
                   dispatch(setIsMovieSearchBarOpen(true));
                 }}
               >
-                Search
+                {t("Search")}
               </InoButton>
             </>
           )}

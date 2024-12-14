@@ -2,6 +2,7 @@ import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import { selectCtrl } from "@app/global";
+import { useTranslation } from "react-i18next";
 
 import { getChannels, getSearchResults } from "@server/requests";
 
@@ -19,6 +20,7 @@ export default memo(function Search({
   setUrl,
   setPipMode = () => {},
 }) {
+  const { t } = useTranslation();
   const ctrl = useSelector(selectCtrl);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -246,7 +248,7 @@ export default memo(function Search({
         className={`search-inp`}
         onChange={handleSearch}
         value={searchValue}
-        placeholder="Search"
+        placeholder={t("Search")}
         onBlur={() => setControl("result")}
         onFocus={() => setControl("keyboard")}
       />

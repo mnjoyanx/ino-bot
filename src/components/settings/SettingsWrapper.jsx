@@ -2,30 +2,28 @@ import { memo, useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { selectIsLangActive, setIsLangActive } from "@app/global";
 import PATHS from "@utils/paths.js";
+import { useTranslation } from "react-i18next";
 
 import useKeydown from "@hooks/useKeydown";
-import {
-  selectAllSettings,
-  selectConfigs,
-  setAllSettings,
-} from "@app/configs/configsSlice";
+import { selectAllSettings, setAllSettings } from "@app/configs/configsSlice";
 
 import Item from "./components/ItemSettings";
 
 import SAccount from "./components/SAccount";
 import SNetwork from "./components/SNetwork";
 import SLanguage from "./components/SLanguage";
-import SDisplay from "./components/SDisplay";
 import SAppInfo from "./components/SAppInfo";
 
 import "./styles/SettingsWrapper.scss";
-import { getAppSettings } from "@server/requests";
+import { changeLang, getAppSettings, getLanguages } from "@server/requests";
 import Loading from "@components/common/Loading";
 import { InoButton } from "@ino-ui/tv";
 
 export default function SettingsWrapper({ children }) {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const appData = useSelector(selectAllSettings);
 
@@ -33,31 +31,14 @@ export default function SettingsWrapper({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [active, setActive] = useState(0);
   const [ctrl, setCtrl] = useState("items");
-
+  const [selectedLanguage, setSelectedLanguage] = useState(null);
+  const [languages, setLanguages] = useState([]);
   const [list, setList] = useState([]);
 
-  // const list = [
-  //   {
-  //     id: 0,
-  //     title: "Account",
-  //     // component: <SAccount data={appData?.basics?.[0]} />,
-  //   },
-  //   { id: 1, title: "Network",
-
-  //     // component: <SNetwork />
-  //   },
-  //   { id: 2, title: "Language",
-  //     // component: <SLanguage />
-  //   },
-  //   // { id: 4, title: "Display", component: <SDisplay /> },
-  //   { id: 4, title: "App Info",
-  //     //  component: <SAppInfo />
-
-  //   },
-  // ];
+  const isLangActive = useSelector(selectIsLangActive);
 
   useKeydown({
-    isActive: ctrl === "items",
+    isActive: ctrl === "items" && !isLangActive,
 
     back: () => {
       navigate(PATHS.MENU);
@@ -67,6 +48,19 @@ export default function SettingsWrapper({ children }) {
       if (active === 0) return;
 
       setActive(active - 1);
+    },
+
+    right: () => {
+      if (active === 2) {
+        setCtrl("lang");
+        dispatch(setIsLangActive(true));
+      }
+    },
+
+    ok: () => {
+      if (active === 1) {
+        console.log("ok");
+      }
     },
 
     down: () => {
@@ -79,10 +73,10 @@ export default function SettingsWrapper({ children }) {
     },
   });
 
-  const getConfigs = async () => {
+  const getConfigs = async (lang) => {
     setIsLoading(true);
     try {
-      const lang = JSON.parse(localStorage.getItem("language"));
+      // const lang = JSON.parse(localStorage.getItem("language"));
       const langId = lang.id;
       const configs = await getAppSettings({
         languageId: langId,
@@ -98,21 +92,79 @@ export default function SettingsWrapper({ children }) {
     }
   };
 
+  const getLanguagesHandler = async () => {
+    try {
+      const lngs = await getLanguages();
+      const parsedLanguages = JSON.parse(lngs);
+      const { message } = parsedLanguages;
+
+      setLanguages(message);
+
+      // const defaultLanguage = message.find((item) => item.default === true);
+      const defaultLanguageId = JSON.parse(localStorage.getItem("userLangId"));
+      const defaultLanguage = message.find(
+        (item) => +item.id === +defaultLanguageId,
+      );
+      setSelectedLanguage(defaultLanguage);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const changeLanguageHandler = async (lang) => {
+    try {
+      const langId = lang.id;
+      const configs = await changeLang({
+        languageId: langId,
+      });
+      const parsedConfigs = JSON.parse(configs);
+      const { message } = parsedConfigs;
+
+      dispatch(setAllSettings(message));
+      localStorage.setItem("userLangId", JSON.stringify(langId));
+      window.location.reload();
+    } catch (err) {
+      console.log(err);
+    }
+  };
   useEffect(() => {
+    getLanguagesHandler();
+  }, []);
+
+  useEffect(() => {
+    if (!isLangActive) {
+      setCtrl("items");
+    }
+  }, [isLangActive]);
+
+  useEffect(() => {
+    if (!selectedLanguage) return;
+
     if (!appData) {
-      getConfigs();
+      getConfigs(selectedLanguage);
     } else {
       setList([
         {
           id: 0,
-          title: "Account",
+          title: t("Account"),
           component: <SAccount data={appData.basics?.[0]} />,
         },
-        { id: 1, title: "Network", component: <SNetwork /> },
-        { id: 2, title: "Language", component: <SLanguage /> },
+        { id: 1, title: t("Network"), component: <SNetwork /> },
+        {
+          id: 2,
+          title: t("Language"),
+          component: (
+            <SLanguage
+              languages={languages}
+              selectedLanguage={selectedLanguage}
+              setSelectedLanguage={setSelectedLanguage}
+              changeLanguage={changeLanguageHandler}
+            />
+          ),
+        },
         {
           id: 4,
-          title: "App Info",
+          title: t("App Info"),
           component: (
             <SAppInfo
               description={appData.basics?.[0]?.description}
@@ -122,7 +174,7 @@ export default function SettingsWrapper({ children }) {
         },
       ]);
     }
-  }, [appData]);
+  }, [appData, selectedLanguage]);
 
   const onMouseEnter = useCallback((index) => setActive(index), []);
 
@@ -157,7 +209,9 @@ export default function SettingsWrapper({ children }) {
           <InoButton
             isActive={ctrl === "reload"}
             onUp={() => setCtrl("items")}
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              window.location.reload();
+            }}
             size="large"
             classNames="reload-btn"
             variant="outline"
@@ -179,7 +233,7 @@ export default function SettingsWrapper({ children }) {
                 <path d="M1,12A11,11,0,0,1,17.882,2.7l1.411-1.41A1,1,0,0,1,21,2V6a1,1,0,0,1-1,1H16a1,1,0,0,1-.707-1.707l1.128-1.128A8.994,8.994,0,0,0,3,12a1,1,0,0,1-2,0Zm21-1a1,1,0,0,0-1,1,9.01,9.01,0,0,1-9,9,8.9,8.9,0,0,1-4.42-1.166l1.127-1.127A1,1,0,0,0,8,17H4a1,1,0,0,0-1,1v4a1,1,0,0,0,.617.924A.987.987,0,0,0,4,23a1,1,0,0,0,.707-.293L6.118,21.3A10.891,10.891,0,0,0,12,23,11.013,11.013,0,0,0,23,12,1,1,0,0,0,22,11Z"></path>
               </g>
             </svg>
-            Reload
+            {t("Reload")}
           </InoButton>
         </>
       )}

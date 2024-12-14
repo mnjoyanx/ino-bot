@@ -17,8 +17,10 @@ import styles from "@styles/components/movieInfo.module.scss";
 import { useMovieInfo } from "@context/movieInfoContext";
 import { formatTime } from "@utils/util";
 import { InoProtectInput, Modal, toast } from "@ino-ui/tv";
+import { useTranslation } from "react-i18next";
 
 const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isProtectedModalOpen = useSelector(selectIsProtectedModalOpen);
@@ -117,7 +119,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
               setIsShowProtected(false);
               handleWatchClick(clickByWatch ? true : false);
             } else {
-              toast.error("Invalid parental code");
+              toast.error(t("Invalid parental code"));
             }
           }}
         />
@@ -140,7 +142,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
               }
             }}
             onMouseEnter={() => setActiveButton(0)}
-            title="Watch"
+            title={t("Watch")}
             isActive={activeButton === 0 && ctrl === "movieInfo"}
             icon={<SvgPlay />}
           />

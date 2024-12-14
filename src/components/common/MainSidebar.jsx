@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { MoviesContext } from "@context/moviesContext";
+import { useTranslation } from "react-i18next";
 
 import {
   selectCtrl,
@@ -20,6 +21,7 @@ import {
 } from "@app/global";
 
 const MainSidebar = ({ categories }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { menuList } = useContext(MoviesContext);
 
@@ -34,7 +36,7 @@ const MainSidebar = ({ categories }) => {
 
   const items = [
     {
-      name: "Search",
+      name: t("Search"),
       icon: <SvgSearch />,
     },
   ];
@@ -47,7 +49,7 @@ const MainSidebar = ({ categories }) => {
         ...menuList
           .filter((item) => supportedTypes.includes(item.type))
           .map((item) => ({
-            name: item.name,
+            name: t(item.name),
             id: item.id,
             selectedIcon: item.selectedIcon,
             type:

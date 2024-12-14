@@ -23,6 +23,7 @@ import {
 import Search from "@components/search/Search";
 import BackButton from "@components/common/BackButton";
 import LOCAL_STORAGE from "@utils/localStorage.js";
+import { useTranslation } from "react-i18next";
 
 import "@styles/moviePage.scss";
 import { getAppSettings } from "../../server/requests";
@@ -41,6 +42,7 @@ const MoviesPage = () => {
     dynamicContent,
     setMenuList,
   } = useContext(MoviesContext);
+  const { t } = useTranslation();
 
   const isPlayerOpen = useSelector(selectIsPlayerOpen);
   const selectedType = useSelector(selectSelectedType);
@@ -57,11 +59,19 @@ const MoviesPage = () => {
       const response = await getAllGenres();
       const parsedResponse = JSON.parse(response);
       const { error, message } = parsedResponse;
-
       if (error) {
         console.log(error);
       } else {
-        setGenres(message.rows);
+        // message.rows.forEach((genre) => {
+        //   genre.name = t(genre.name);
+        // });
+        const genres = message.rows.map((genre) => {
+          return {
+            ...genre,
+            name: t(genre.name),
+          };
+        });
+        setGenres(genres);
       }
     } catch (error) {
       console.log(error);

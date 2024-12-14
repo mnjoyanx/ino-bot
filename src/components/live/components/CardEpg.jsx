@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { formatDate } from "@utils/util";
-
+import { useTranslation } from "react-i18next";
 export default memo(function CardEpg({
   item,
   isActive,
@@ -10,6 +10,7 @@ export default memo(function CardEpg({
   nextEpg,
   type,
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className={`card-epg${isActive ? " active" : ""}`}
@@ -18,17 +19,17 @@ export default memo(function CardEpg({
       <div className={`square ${type} ${hasArchive}${nextEpg ? " next" : ""}`}>
         {type == "past" ? (
           hasArchive ? (
-            <span>Rec</span>
+            <span>{t("Rec")}</span>
           ) : (
-            <span>N/A</span>
+            <span>{t("N/A")}</span>
           )
         ) : type == "now" ? (
-          <span>Now</span>
+          <span>{t("Now")}</span>
         ) : type == "future" ? (
           nextEpg ? (
-            <span>Next</span>
+            <span>{t("Next")}</span>
           ) : (
-            <span>N/A</span>
+            <span>{t("N/A")}</span>
           )
         ) : null}
       </div>

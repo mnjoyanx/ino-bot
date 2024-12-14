@@ -6,7 +6,12 @@ import MovieContent from "./components/MovieContent";
 import MovieActions from "./components/MovieActions";
 import TvShowSeasons from "./components/TvShowSeasons";
 import Player from "@components/player/Player";
-import { getMovieById, getMovieCasts, rememberTime } from "@server/requests";
+import {
+  getMovieById,
+  getMovieCasts,
+  getTranslationsMovie,
+  rememberTime,
+} from "@server/requests";
 import useKeydown from "@hooks/useKeydown";
 import {
   selectIsPlayerOpen,
@@ -41,13 +46,14 @@ const MovieInfoContent = () => {
   } = useMovieInfo();
   const onEpisodes = useSelector(selectOnEpisodes);
   const [isLoading, setIsLoading] = useState(false);
-  const [isCropHostLoading, setIsCropHostLoading] = useState(false);
   const cropHost = useSelector(selectCropHost);
   const fetchMovie = async () => {
     try {
       setIsLoading(true);
       const response = await getMovieById({ movie_id: id });
+      const translationsResponse = await getTranslationsMovie({ movie_id: id });
       const parsedResponse = JSON.parse(response);
+      const parsedTranslationsResponse = JSON.parse(translationsResponse);
       if (!parsedResponse.error) {
         setStartTime(parsedResponse.message.watched?.time || 0);
         const castsResponse = await getMovieCasts({ movie_id: id });
@@ -56,6 +62,7 @@ const MovieInfoContent = () => {
           ...parsedResponse.message,
           casts: parsedCastsResponse.message,
           favorite: !!parsedResponse.message.favorites,
+          translations: parsedTranslationsResponse.message[0],
         });
       } else {
         console.error(parsedResponse.error);
@@ -200,7 +207,6 @@ const MovieInfoContent = () => {
                 <TvShowSeasons seasons={movieInfo.seasons} seriesId={id} />
               )}
             </div>
-            -----{startTime}-------
             {isPlayerOpen && (
               <Player
                 type="vod"

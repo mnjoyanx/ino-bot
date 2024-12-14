@@ -4,8 +4,7 @@ import { useSelector } from "react-redux";
 import useKeydown from "@hooks/useKeydown";
 import PATHS from "@utils/paths";
 import MenuItem from "./MenuItem";
-import MainModal from "../modal/MainModal";
-import AppExit from "../common/AppExit";
+import { useTranslation } from "react-i18next";
 
 import SvgApps from "@assets/images/menu/SvgApps";
 import SvgLive from "@assets/images/menu/SvgLive";
@@ -22,32 +21,33 @@ import { selectIsUpdateModalOpen } from "@app/global";
 export default function MenuItems() {
   const isUpdateModalOpen = useSelector(selectIsUpdateModalOpen);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const list = [
     {
       id: 0,
-      title: "Live Action",
+      title: t("Live Action"),
       icon: <SvgLive />,
       bg_image: bgLive,
       path: PATHS.LIVE,
     },
     {
       id: 1,
-      title: "Movies",
+      title: t("Movies"),
       icon: <SvgMovies />,
       bg_image: bgMovies,
       path: PATHS.MOVIES,
     },
     {
       id: 2,
-      title: "Settings",
+      title: t("Settings"),
       icon: <SvgSettings />,
       bg_image: bgSettings,
       path: PATHS.SETTINGS,
     },
     {
       id: 3,
-      title: "Apps",
+      title: t("Apps"),
       icon: <SvgApps />,
       bg_image: bgApps,
       path: PATHS.APPS,

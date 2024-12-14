@@ -11,7 +11,8 @@ store.subscribe(() => {
 function useKeydown(props) {
   useEffect(() => {
     const handleKeydown = (e) => {
-      event.preventDefault();
+      e.preventDefault();
+      e.stopPropagation();
       let key = check_key(e);
 
       if (key && !isNaN(key) && props["number"]) key = "number";

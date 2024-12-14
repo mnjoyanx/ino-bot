@@ -1,5 +1,5 @@
 import { memo } from "react";
-
+import { useTranslation } from "react-i18next";
 import LOCAL_STORAGE from "@utils/localStorage";
 
 import SvgArrow from "@assets/images/live/SvgArrow";
@@ -10,6 +10,7 @@ export default memo(function InfoLiveControl({
   active,
   playerType,
 }) {
+  const { t } = useTranslation();
   return (
     <>
       <div className={`parent-number-channel${active === 0 ? " active" : ""}`}>
@@ -37,7 +38,7 @@ export default memo(function InfoLiveControl({
             className={`timeshift-btn${active === 1 ? " active" : ""}`}
             style={{ opacity: currentChannel?.has_archive ? "1" : "0" }}
           >
-            <span className="timeshift-btn_text">Archive</span>
+            <span className="timeshift-btn_text">{t("Archive")}</span>
             <SvgBackward />
           </div>
         </>

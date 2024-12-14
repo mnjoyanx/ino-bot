@@ -25,6 +25,7 @@ export default function Settings() {
       dispatch(setProfile(null));
     } else {
       dispatch(setProfile(message));
+      localStorage.setItem("userLangId", JSON.stringify(message.languageId));
     }
   };
   return (

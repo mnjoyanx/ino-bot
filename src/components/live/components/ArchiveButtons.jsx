@@ -6,7 +6,7 @@ import SvgRewind from "@assets/images/player/SvgRewind";
 import SvgForward from "@assets/images/player/SvgForward";
 import SvgPause from "@assets/images/player/SvgPause";
 import { InoRow } from "@ino-ui/tv";
-
+import { useTranslation } from "react-i18next";
 import "../styles/ArchiveButtons.scss";
 import LiveIcon from "./LiveIcon";
 
@@ -18,6 +18,7 @@ export default memo(function ArchiveButtons({
   actionHandler,
   onLiveHandler,
 }) {
+  const { t } = useTranslation();
   const isPaused = useSelector(selectIsPaused);
 
   const [isOnLive, setIsOnLive] = useState(false);
@@ -51,15 +52,15 @@ export default memo(function ArchiveButtons({
           }}
         >
           <div className={`rewind btn-group-live`}>
-            <p className="archive-btn_text">-5 MIN</p>
+            <p className="archive-btn_text">-5 {t("MIN")}</p>
             <SvgRewind />
           </div>
           <div className={`rewind btn-group-live`}>
-            <p className="archive-btn_text">-1 MIN</p>
+            <p className="archive-btn_text">-1 {t("MIN")}</p>
             <SvgRewind />
           </div>
           <div className={`rewind btn-group-live`}>
-            <p className="archive-btn_text">-30 SEC</p>
+            <p className="archive-btn_text">-30 {t("SEC")}</p>
             <SvgRewind />
           </div>
           <div className={`play-pause btn-group-live`} onClick={handleClick}>
@@ -67,15 +68,15 @@ export default memo(function ArchiveButtons({
           </div>
           <div className={`forward btn-group-live`}>
             <SvgForward />
-            <p className="archive-btn_text">+30 SEC</p>
+            <p className="archive-btn_text">+30 {t("SEC")}</p>
           </div>
           <div className={`forward btn-group-live`}>
             <SvgForward />
-            <p className="archive-btn_text">+1 MIN</p>
+            <p className="archive-btn_text">+1 {t("MIN")}</p>
           </div>
           <div className={`forward btn-group-live`}>
             <SvgForward />
-            <p className="archive-btn_text">+5 MIN</p>
+            <p className="archive-btn_text">+5 {t("MIN")}</p>
           </div>
         </InoRow>
       </div>
