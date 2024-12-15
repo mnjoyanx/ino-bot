@@ -206,6 +206,7 @@ export default function SettingsWrapper({ children }) {
               </div>
             </>
           </div>
+
           <InoButton
             isActive={ctrl === "reload"}
             onUp={() => setCtrl("items")}
