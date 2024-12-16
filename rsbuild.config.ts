@@ -21,6 +21,7 @@ export default defineConfig({
       html: "index.html",
     },
     distPath: {
+      root: "build",
       js: ".",
       css: ".",
       html: ".",
