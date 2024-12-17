@@ -13,6 +13,7 @@ export default defineConfig({
     },
     include: [path.resolve(__dirname, 'node_modules')],
   },
+  mode: "development",
   output: {
     filenameHash: false,
     injectStyles: true,
@@ -39,9 +40,11 @@ export default defineConfig({
     },
   },
   tools: {
-    webpackChain: (chain) => {
-      chain.module.rule('svg').test(/\.svg$/).use('file-loader').loader('file-loader');
-    },
+    rspack: {
+      output: {
+        path: path.resolve(__dirname, 'build'),
+      }
+    }
   },
   resolve: {
     alias: {
