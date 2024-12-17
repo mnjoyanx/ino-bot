@@ -22,14 +22,27 @@ export default defineConfig({
       css: "index.css",
       html: "index.html",
     },
+
     distPath: {
       root: "build",
       js: ".",
       css: ".",
       html: ".",
+
     },
     assetPrefix: "./",
   },
+
+  html: {
+    template: './src/index.html',
+  },
+  // tools: {
+  //   htmlPlugin: {
+  //     filename(entryName) {
+  //       return 'index.html';
+  //     },
+  //   }
+  // },
 
   dev: {
     assetPrefix: "./",
@@ -39,13 +52,7 @@ export default defineConfig({
     chunkSplit: {
       strategy: 'all-in-one',
     },
-  },
-  tools: {
-    rspack: {
-      output: {
-        path: path.resolve(__dirname, 'build'),
-      }
-    }
+
   },
   resolve: {
 
