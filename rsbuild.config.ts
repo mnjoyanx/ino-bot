@@ -13,7 +13,7 @@ export default defineConfig({
     },
     include: [path.resolve(__dirname, 'node_modules')],
   },
-  mode: "development",
+  mode: "production",
   output: {
     filenameHash: false,
     injectStyles: true,
