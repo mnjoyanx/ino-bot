@@ -28,9 +28,9 @@ export default defineConfig({
       css: ".",
       html: ".",
     },
-    // assetPrefix: "./",
-    assetPrefix: path.resolve(__dirname, 'build'),
+    assetPrefix: "./",
   },
+
   dev: {
     assetPrefix: "./",
   },
@@ -40,13 +40,13 @@ export default defineConfig({
       strategy: 'all-in-one',
     },
   },
-  // tools: {
-  //   rspack: {
-  //     output: {
-  //       path: path.resolve(__dirname, 'build'),
-  //     }
-  //   }
-  // },
+  tools: {
+    rspack: {
+      output: {
+        path: path.resolve(__dirname, 'build'),
+      }
+    }
+  },
   resolve: {
 
     alias: {
