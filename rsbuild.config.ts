@@ -15,6 +15,7 @@ export default defineConfig({
   },
   output: {
     filenameHash: false,
+    injectStyles: true,
     filename: {
       js: "bundle.js",
       css: "index.css",
