@@ -16,7 +16,7 @@ export default defineConfig({
   output: {
     filenameHash: false,
     filename: {
-      js: "build.js",
+      js: "bundle.js",
       css: "index.css",
       html: "index.html",
     },
