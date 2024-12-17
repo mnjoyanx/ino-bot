@@ -37,6 +37,11 @@ export default defineConfig({
       strategy: 'all-in-one',
     },
   },
+  tools: {
+    webpackChain: (chain) => {
+      chain.module.rule('svg').test(/\.svg$/).use('file-loader').loader('file-loader');
+    },
+  },
   resolve: {
     alias: {
       '@components': './src/components',
