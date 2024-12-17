@@ -1,6 +1,7 @@
-export default function AppBgSvg() {
+export default function AppBgSvg({ classNames }) {
   return (
     <svg
+      className={classNames}
       width="1280"
       height="720"
       viewBox="0 0 1280 720"
