@@ -34,7 +34,7 @@ export default defineConfig({
   },
 
   dev: {
-    assetPrefix: "./",
+    // assetPrefix: "./",
   },
 
   performance: {

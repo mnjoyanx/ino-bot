@@ -73,7 +73,7 @@ export default function AppsPage() {
             }}
           />
           <div className="app-logo">
-            <AppLogo />
+            <AppLogo classNames={"app-logo_top"} />
           </div>
           <div className={styles["apps-content"]}>
             <h2 className={styles["apps-title"]}>{t("Apps Launcher")}</h2>
