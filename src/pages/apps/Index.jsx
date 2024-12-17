@@ -11,6 +11,7 @@ import Loading from "@components/common/Loading";
 import { useTranslation } from "react-i18next";
 
 import styles from "@styles/components/appsPage.module.scss";
+import AppBgSvg from "@assets/icons/AppBgSvg";
 
 export default function AppsPage() {
   const dispatch = useDispatch();
@@ -54,6 +55,7 @@ export default function AppsPage() {
 
   return (
     <div className={styles["apps-page"]}>
+      <AppBgSvg classNames={styles["app-bg-svg"]} />
       {isLoading ? (
         <div className={styles["loading-container"]}>
           <Loading />
