@@ -163,3 +163,11 @@ p {
 .apk-update_btn {
   font-size: 2rem !important;
 }
+
+.app-logo {
+  top: 2.5rem !important;
+}
+
+.app-logo_top.logo {
+  height: 5rem;
+}

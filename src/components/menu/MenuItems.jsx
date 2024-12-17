@@ -11,7 +11,7 @@ import SvgLive from "@assets/images/menu/SvgLive";
 import SvgMovies from "@assets/images/menu/SvgMovies";
 import SvgSettings from "@assets/images/menu/SvgSettings";
 import bgApps from "@assets/images/menu/bg_apps.png";
-import bgLive from "@assets/images/menu/bg_live.png";
+import bgLive from "/public/image/bg_live.png";
 import bgMovies from "@assets/images/menu/bg_movies.png";
 import bgSettings from "@assets/images/menu/bg_settings.png";
 
