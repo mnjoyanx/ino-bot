@@ -33,24 +33,13 @@ export default defineConfig({
     assetPrefix: "./",
   },
 
-  html: {
-    template: './src/index.html',
-  },
-  // tools: {
-  //   htmlPlugin: {
-  //     filename(entryName) {
-  //       return 'index.html';
-  //     },
-  //   }
-  // },
-
   dev: {
     assetPrefix: "./",
   },
 
   performance: {
     chunkSplit: {
-      strategy: 'all-in-one',
+      strategy: "all-in-one",
     },
 
   },
