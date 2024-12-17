@@ -9,7 +9,7 @@ export default defineConfig({
 
   source: {
     entry: {
-      main: './src/Index.jsx',
+      main: './src/index.jsx',
     },
     include: [path.resolve(__dirname, 'node_modules')],
   },
