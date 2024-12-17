@@ -28,7 +28,8 @@ export default defineConfig({
       css: ".",
       html: ".",
     },
-    assetPrefix: "./",
+    // assetPrefix: "./",
+    assetPrefix: path.resolve(__dirname, 'build'),
   },
   dev: {
     assetPrefix: "./",
@@ -39,14 +40,15 @@ export default defineConfig({
       strategy: 'all-in-one',
     },
   },
-  tools: {
-    rspack: {
-      output: {
-        path: path.resolve(__dirname, 'build'),
-      }
-    }
-  },
+  // tools: {
+  //   rspack: {
+  //     output: {
+  //       path: path.resolve(__dirname, 'build'),
+  //     }
+  //   }
+  // },
   resolve: {
+
     alias: {
       '@components': './src/components',
       '@pages': './src/pages',
