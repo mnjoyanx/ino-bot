@@ -55,7 +55,6 @@ export default function AppsPage() {
 
   return (
     <div className={styles["apps-page"]}>
-      <AppBgSvg classNames={styles["app-bg-svg"]} />
       {isLoading ? (
         <div className={styles["loading-container"]}>
           <Loading />

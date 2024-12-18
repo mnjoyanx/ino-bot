@@ -23,7 +23,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@ino-ui/tv": "^7.0.53",
+    "@ino-ui/tv": "^7.0.57",
     "@reduxjs/toolkit": "^1.0.0",
     "i18next": "^24.1.0",
     "i18next-browser-languagedetector": "^8.0.2",

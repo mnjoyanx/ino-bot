@@ -34,14 +34,22 @@ export default defineConfig({
   },
 
   dev: {
-    // assetPrefix: "./",
+    assetPrefix: "./",
+    hmr: true,
+    lazyCompilation: true,
   },
+
 
   performance: {
     chunkSplit: {
       strategy: "all-in-one",
     },
+  },
 
+  tools: {
+    htmlPlugin: {
+      template: `./src/template.html`,
+    },
   },
   resolve: {
 

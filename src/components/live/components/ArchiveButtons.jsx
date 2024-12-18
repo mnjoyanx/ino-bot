@@ -17,6 +17,8 @@ export default memo(function ArchiveButtons({
   setActive,
   actionHandler,
   onLiveHandler,
+  showControl,
+  hideControls,
 }) {
   const { t } = useTranslation();
   const isPaused = useSelector(selectIsPaused);
@@ -24,6 +26,10 @@ export default memo(function ArchiveButtons({
   const [isOnLive, setIsOnLive] = useState(false);
 
   const handleClick = (e) => {
+    if (hideControls) {
+      showControl();
+      return;
+    }
     if (isPaused) play();
     else pause();
   };
@@ -33,9 +39,19 @@ export default memo(function ArchiveButtons({
       <InoRow
         isActive={isOnLive}
         onDown={() => {
+          if (hideControls) {
+            showControl();
+            return;
+          }
           setIsOnLive(false);
         }}
-        onOk={onLiveHandler}
+        onOk={() => {
+          if (hideControls) {
+            showControl();
+            return;
+          }
+          onLiveHandler();
+        }}
       >
         <LiveIcon type={"archive"} isActive={isOnLive} />
       </InoRow>
@@ -45,9 +61,17 @@ export default memo(function ArchiveButtons({
           isActive={active && !isOnLive}
           onLeft={setActive}
           onOk={(_e, index) => {
+            if (hideControls) {
+              showControl();
+              return;
+            }
             actionHandler(index);
           }}
           onUp={() => {
+            if (hideControls) {
+              showControl();
+              return;
+            }
             setIsOnLive(true);
           }}
         >

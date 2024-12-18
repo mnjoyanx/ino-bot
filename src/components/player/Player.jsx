@@ -127,6 +127,7 @@ export default memo(function Player({
   };
 
   const pause = () => {
+    console.warn("pause");
     if (!window.Android) {
       refVideo.current.pause();
     } else {

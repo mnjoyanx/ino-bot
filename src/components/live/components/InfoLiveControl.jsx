@@ -38,7 +38,7 @@ export default memo(function InfoLiveControl({
             className={`timeshift-btn${active === 1 ? " active" : ""}`}
             style={{ opacity: currentChannel?.has_archive ? "1" : "0" }}
           >
-            <span className="timeshift-btn_text">{t("Archive")}</span>
+            {/* <span className="timeshift-btn_text">{t("Archive")}</span> */}
             <SvgBackward />
           </div>
         </>

@@ -565,9 +565,18 @@ export default memo(function LiveControls({
       }
     },
 
+    back: () => {
+      showControl();
+      if (hideControls) return;
+      dispatch(setIsCategoriesOpen(true));
+      setPipMode(true);
+      window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
+    },
+
     ok: () => {
       showControl();
       if (hideControls) return;
+
       if (active === 0) {
         dispatch(setIsCategoriesOpen(true));
         setPipMode(true);
@@ -684,6 +693,8 @@ export default memo(function LiveControls({
                 actionHandler={(index) => {
                   handleArchiveAction(index);
                 }}
+                showControl={showControl}
+                hideControls={hideControls}
                 onLiveHandler={() => {
                   dispatch(setPlayerType("live"));
                   setUrl(refUrlLive.current.url);
@@ -706,6 +717,8 @@ export default memo(function LiveControls({
                 actionHandler={(index) => {
                   handleArchiveAction(index);
                 }}
+                showControl={showControl}
+                hideControls={hideControls}
                 onLiveHandler={() => {
                   dispatch(setPlayerType("live"));
                   setUrl(refUrlLive.current.url);
@@ -722,9 +735,9 @@ export default memo(function LiveControls({
         </div>
         {playerType === "live" ? (
           <div className={"live-fav_wrapper"}>
-            <p className={`live-fav_text ${active === 2 ? "active" : ""}`}>
+            {/* <p className={`live-fav_text ${active === 2 ? "active" : ""}`}>
               Favorite
-            </p>
+            </p> */}
             {currentChannel?.favorite ? (
               <img
                 src={favFill}
