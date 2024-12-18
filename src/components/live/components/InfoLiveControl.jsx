@@ -13,25 +13,30 @@ export default memo(function InfoLiveControl({
   const { t } = useTranslation();
   return (
     <>
-      <div className={`parent-number-channel${active === 0 ? " active" : ""}`}>
-        <span className="arrow arrow-up">
-          <SvgArrow />
-        </span>
-        <p className="number-channel">{currentChannel?.position}</p>
-        <span className="arrow arrow-down">
-          <SvgArrow />
-        </span>
+      <div className="info-live-control_wrapper">
+        <div
+          className={`parent-number-channel${active === 0 ? " active" : ""}`}
+        >
+          <span className="arrow arrow-up">
+            <SvgArrow />
+          </span>
+          <p className="number-channel">{currentChannel?.position}</p>
+          <span className="arrow arrow-down">
+            <SvgArrow />
+          </span>
+        </div>
+        <div className="logo">
+          <img
+            src={currentChannel?.image}
+            onError={(e) => (e.target.src = LOCAL_STORAGE.LOGO.GET())}
+            alt=""
+          />
+        </div>
+        <div className="name-channel">
+          <p>{currentChannel?.name}</p>
+        </div>
       </div>
-      <div className="logo">
-        <img
-          src={currentChannel?.image}
-          onError={(e) => (e.target.src = LOCAL_STORAGE.LOGO.GET())}
-          alt=""
-        />
-      </div>
-      <div className="name-channel">
-        <p>{currentChannel?.name}</p>
-      </div>
+
       {playerType === "live" ? (
         <>
           <div

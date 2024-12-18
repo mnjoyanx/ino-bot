@@ -178,6 +178,7 @@ export default function LivePage() {
               toast.error("Invalid parental code");
             }
           }}
+          clearOnComplete={true}
         />
       </Modal>
       <Player

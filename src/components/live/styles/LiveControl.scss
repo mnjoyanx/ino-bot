@@ -127,7 +127,9 @@
   .logo {
     width: 10rem; //6rem;
     height: 10rem;
-    margin-right: 2rem;
+    min-width: 10rem;
+    min-height: 10rem;
+    // margin-right: 2rem;
     border-radius: 0.5rem;
     overflow: hidden;
     img {
@@ -151,7 +153,6 @@
 
   .progress-field {
     width: 80rem;
-    // width: 80%;
     position: relative;
     .archive-duration {
       right: 0rem;
@@ -226,4 +227,9 @@
     position: relative;
     z-index: 1;
   }
+}
+
+.info-live-control_wrapper {
+  display: flex;
+  align-items: center;
 }

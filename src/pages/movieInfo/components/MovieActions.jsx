@@ -122,6 +122,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
               toast.error(t("Invalid parental code"));
             }
           }}
+          clearOnComplete={true}
         />
       </Modal>
       <div

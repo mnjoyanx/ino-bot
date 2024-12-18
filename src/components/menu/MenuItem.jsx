@@ -15,7 +15,7 @@ export default memo(function MenuItem({
       onMouseEnter={() => onMouseEnter(index)}
     >
       <div className="icon">{item.icon}</div>
-      <p className="title">{item.title}--</p>
+      <p className="title">{item.title}</p>
     </div>
   );
 });

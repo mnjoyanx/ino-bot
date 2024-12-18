@@ -18,7 +18,6 @@ export default memo(function CategoriesWrapper({
 }) {
   const { t } = useTranslation();
   const categories = useSelector(selectChannels);
-
   const [active, setActive] = useState(0);
 
   const handleClick = useCallback(
