@@ -11,14 +11,11 @@
   padding: 20rem 5rem 5rem 5rem;
   background-image: linear-gradient(to top, #000000, transparent);
   opacity: 1;
-  // transition:
-  //   opacity 0.3s,
-  //   transform 0.3s;
-  transition: transform 0.2s linear;
+  transition: opacity 0.2s linear;
 
   &.hide {
     opacity: 0;
-    transform: translateY(10rem);
+    // transform: translateY(10rem);
   }
 
   .vod-info {

@@ -118,6 +118,7 @@ export default memo(function Player({
 
   const play = () => {
     if (!window.Android) {
+      console.log("play------");
       refVideo.current.play();
     } else {
       window.Android.play();
@@ -127,7 +128,6 @@ export default memo(function Player({
   };
 
   const pause = () => {
-    console.warn("pause");
     if (!window.Android) {
       refVideo.current.pause();
     } else {

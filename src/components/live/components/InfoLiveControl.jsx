@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import LOCAL_STORAGE from "@utils/localStorage";
 
@@ -11,6 +11,14 @@ export default memo(function InfoLiveControl({
   playerType,
 }) {
   const { t } = useTranslation();
+  const [logoSrc, setLogoSrc] = useState(LOCAL_STORAGE.LOGO.GET());
+
+  useEffect(() => {
+    if (currentChannel?.image) {
+      setLogoSrc(currentChannel.image);
+    }
+  }, [currentChannel]);
+
   return (
     <>
       <div className="info-live-control_wrapper">
@@ -26,8 +34,26 @@ export default memo(function InfoLiveControl({
           </span>
         </div>
         <div className="logo">
-          <img
+          {/* <img
             src={currentChannel?.image}
+            // onLoad={(e) => {
+            //   console.log(e, "----");
+            // }}
+            onLoad={(e) => {
+              console.log(e, "----");
+              alert("kkkk");
+            }}
+            onError={(e) => (e.target.src = LOCAL_STORAGE.LOGO.GET())}
+            alt=""
+          /> */}
+
+          <img
+            src={logoSrc}
+            onLoad={(e) => {
+              if (currentChannel?.image) {
+                e.target.src = currentChannel.image;
+              }
+            }}
             onError={(e) => (e.target.src = LOCAL_STORAGE.LOGO.GET())}
             alt=""
           />

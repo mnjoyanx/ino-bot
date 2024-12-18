@@ -30,6 +30,7 @@ import InfoLiveControl from "./components/InfoLiveControl";
 import ArchiveButtons from "./components/ArchiveButtons";
 import favImg from "../../assets/images/live/fav.png";
 import favFill from "../../assets/images/live/favFill.png";
+import FavActiveSvg from "@assets/icons/FavActiveSvg";
 
 import "./styles/LiveControl.scss";
 import { addLiveFavorite, removeLiveFavorite } from "../../server/requests";
@@ -421,7 +422,6 @@ export default memo(function LiveControls({
       showControl();
       if (hideControls) return;
       // if (currentChannel?.has_archive) setActive(1);
-
       if (currentChannel?.has_archive) {
         if (active < 2) {
           setActive(active + 1);
@@ -739,15 +739,30 @@ export default memo(function LiveControls({
               Favorite
             </p> */}
             {currentChannel?.favorite ? (
-              <img
-                src={favFill}
-                className="live-fav_icon"
+              //   <img
+              //     src={favFill}
+              //     className="live-fav_icon"
+              //     onClick={() => toggleFavorite(false)}
+              //   />
+              // ) : (
+              //   <img
+              //     src={favImg}
+              //     className="live-fav_icon"
+              //     onClick={() => toggleFavorite(true)}
+              //   />
+              // )}
+
+              <FavActiveSvg
+                onClick={() => toggleFavorite(false)}
+                isFill={true}
+                isActive={active == 2}
                 onClick={() => toggleFavorite(false)}
               />
             ) : (
-              <img
-                src={favImg}
-                className="live-fav_icon"
+              <FavActiveSvg
+                onClick={() => toggleFavorite(true)}
+                isFill={false}
+                isActive={active == 2}
                 onClick={() => toggleFavorite(true)}
               />
             )}

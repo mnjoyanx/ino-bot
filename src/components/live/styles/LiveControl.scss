@@ -178,6 +178,12 @@
   width: 2.5rem;
   height: 2.5rem;
   object-fit: contain;
+
+  &.active {
+    path {
+      fill: $active-color;
+    }
+  }
 }
 
 .live-channel_name {
@@ -232,4 +238,9 @@
 .info-live-control_wrapper {
   display: flex;
   align-items: center;
+}
+
+.fav_active {
+  margin-left: 2rem;
+  margin-top: 0.5rem;
 }
