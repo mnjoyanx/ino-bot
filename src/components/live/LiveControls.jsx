@@ -195,7 +195,7 @@ export default memo(function LiveControls({
         const res = await addLiveFavorite({ channel_id: currentChannel.id });
 
         const categoryChannelsClone = JSON.parse(
-          JSON.stringify(categoryChannels),
+          JSON.stringify(categoryChannels)
         );
 
         if (categoryChannelsClone) {
@@ -224,7 +224,7 @@ export default memo(function LiveControls({
         dispatch(setCurrentChannel({ ...currentChannel, favorite: false }));
         const res = await removeLiveFavorite({ channel_id: currentChannel.id });
         const categoryChannelsClone = JSON.parse(
-          JSON.stringify(categoryChannels),
+          JSON.stringify(categoryChannels)
         );
 
         console.log(categoryChannelsClone, "categoryChannelsClone");
@@ -232,7 +232,7 @@ export default memo(function LiveControls({
         if (categoryChannelsClone && categoryChannelsClone.favorites) {
           const filteredCatChannels =
             categoryChannelsClone.favorites.content.filter(
-              (channel) => channel.id !== currentChannel.id,
+              (channel) => channel.id !== currentChannel.id
             );
 
           categoryChannelsClone.favorites.content = filteredCatChannels;

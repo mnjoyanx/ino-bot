@@ -103,7 +103,7 @@ export default function SettingsWrapper({ children }) {
       // const defaultLanguage = message.find((item) => item.default === true);
       const defaultLanguageId = JSON.parse(localStorage.getItem("userLangId"));
       const defaultLanguage = message.find(
-        (item) => +item.id === +defaultLanguageId,
+        (item) => +item.id === +defaultLanguageId
       );
       setSelectedLanguage(defaultLanguage);
     } catch (err) {
@@ -213,6 +213,7 @@ export default function SettingsWrapper({ children }) {
             onClick={() => {
               window.location.reload();
             }}
+            onBack={() => navigate("/menu")}
             size="large"
             classNames="reload-btn"
             variant="outline"

@@ -142,7 +142,7 @@ export default function VodControls({
           } else {
             imitateTimeUpdate(
               refVideo.current.currentTime,
-              refVideo.current.duration,
+              refVideo.current.duration
             );
           }
           handleSeek("backward");
@@ -155,7 +155,7 @@ export default function VodControls({
           } else {
             imitateTimeUpdate(
               refVideo.current.currentTime,
-              refVideo.current.duration,
+              refVideo.current.duration
             );
           }
           handleSeek("forward");
@@ -212,7 +212,7 @@ export default function VodControls({
             value={(movieCurrentTime / 50) * 100}
             duration={videoDuration}
             onChange={(value) => {
-              setMovieCurrentTime((value * videoDuration) / 100);
+              setMovieCurrentTime((videoDuration * value) / 100);
             }}
             showTooltip={false}
             showTime={true}
