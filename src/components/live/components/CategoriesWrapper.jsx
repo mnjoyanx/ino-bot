@@ -54,6 +54,7 @@ export default memo(function CategoriesWrapper({
           itemsTotal={Object.keys(categories).length}
           gap={0}
           buffer={5}
+          withTransition={false}
           itemWidth={25}
           itemHeight={7}
           isActive={control}

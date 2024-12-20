@@ -28,6 +28,7 @@ export default memo(function PipModeLive({
   pipMode,
   refUrlLive,
   url,
+  setIsShowProtected,
 }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -199,6 +200,8 @@ export default memo(function PipModeLive({
             selectedCategory={selectedCategory}
             control={activeControl === "channel" && !showSearch}
             setPipMode={setPipMode}
+            isPipMode={pipMode}
+            setIsShowProtected={setIsShowProtected}
           />
           <EpgListWrapper
             url={url}

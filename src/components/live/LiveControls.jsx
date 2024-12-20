@@ -107,7 +107,6 @@ export default memo(function LiveControls({
     const response = await channelInfo({ id: id });
     const parsedResponse = JSON.parse(response);
     const { error, message } = parsedResponse;
-    1;
 
     if (error) {
     } else {
@@ -363,13 +362,14 @@ export default memo(function LiveControls({
     isActive: showPreviewImages && ctrl !== "protected",
 
     back: () => {
+      console.log("baccckkckc");
       if (!window.Android) {
         if (!isPaused) refVideo.current.play();
       } else {
-        window.Android.play();
+        // window.Android.play();
       }
       dispatch(setShowPreviewImages(false));
-      if (!isPaused) secCurrentTime.current = 0;
+      // if (!isPaused) secCurrentTime.current = 0;
     },
 
     fast_prev: leftKeyPrevImage,
@@ -477,6 +477,7 @@ export default memo(function LiveControls({
     },
 
     back: () => {
+      console.log("baccckkckc 2");
       dispatch(setIsCategoriesOpen(true));
       setPipMode(true);
       window.PLAYER.setPositionPlayer(720, 403, 1061, 224);

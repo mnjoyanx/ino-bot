@@ -118,7 +118,6 @@ export default memo(function Player({
 
   const play = () => {
     if (!window.Android) {
-      console.log("play------");
       refVideo.current.play();
     } else {
       window.Android.play();
@@ -145,12 +144,13 @@ export default memo(function Player({
       durationRef.current = refVideo.current.duration;
     }
 
+    setRetryC(0);
+
     if (startTime) {
       if (refVideo.current) {
         refVideo.current.currentTime = startTime;
       }
     }
-    play();
   }, [startTime, durationRef]);
 
   const handleTimeUpdate = (currentTime, duration) => {
@@ -211,32 +211,48 @@ export default memo(function Player({
   };
 
   const retryPlayback = useCallback(async () => {
-    if (!refVideo.current) return;
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (!window.Android) {
+          const video = document.getElementById("video_player");
+          if (video) {
+            // Reset the video source to force reload
+            const currentSrc = video.src;
+            video.src = "";
+            video.load();
+            video.src = currentSrc;
 
-    return new Promise((resolve, reject) => {
-      if (!window.Android) {
-        if (refVideo.current) {
-          refVideo.current.load();
-          refVideo.current.play().then(resolve).catch(reject);
-        }
-      } else {
-        try {
-          window.Android.reload();
+            await video.play();
+            setIsPlayedOnce(true);
+            resolve();
+          } else {
+            reject(new Error("Video element not found"));
+          }
+        } else {
+          // window.Android.reload();
+          // window.Android.destroyPlayer();
+          // window.Android.initPlayer(url, +time);
+          // window.Android.play();
+
+          window.Android.destroyPlayer();
+          if (startTime) {
+            window.Android.initPlayer(url, startTime);
+          } else {
+            window.Android.initPlayer(url);
+          }
+          window.Android.play();
+          setIsPlayedOnce(true);
           resolve();
-        } catch (error) {
-          reject(error);
         }
+      } catch (err) {
+        console.error("Retry playback error:", err);
+        reject(err);
       }
     });
-  }, [refVideo.current]);
+  }, []);
 
   const onErrorHandler = async (err) => {
-    if (retryC < maxRetries) {
-      showToast(
-        `Attempting to replay... (${retryC + 1}/${maxRetries})`,
-        "retrying",
-      );
-    } else {
+    if (retryC >= maxRetries) {
       hideToast();
       setAlreadyRetryed(true);
       showToast(
@@ -248,12 +264,17 @@ export default memo(function Player({
       return;
     }
 
-    setRetryC(retryC + 1);
+    showToast(
+      `Attempting to replay... (${retryC + 1}/${maxRetries})`,
+      "retrying",
+    );
+
     try {
       await retryPlayback();
+      play();
       setRetryC(0);
     } catch (error) {
-      console.error("All retry attempts failed:", error);
+      setRetryC((prev) => prev + 1);
     }
   };
 

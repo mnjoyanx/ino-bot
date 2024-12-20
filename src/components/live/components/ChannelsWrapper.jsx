@@ -19,6 +19,7 @@ import useKeydown from "@hooks/useKeydown";
 import CardChannel from "./CardChannel";
 
 import "../styles/ChannelsWrapper.scss";
+import { selectCtrl, setCtrl } from "@app/global";
 
 export default memo(function ChannelsWrapper({
   control,
@@ -26,6 +27,8 @@ export default memo(function ChannelsWrapper({
   setControl,
   setUrl,
   setPipMode,
+  isPipMode,
+  setIsShowProtected,
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -34,19 +37,35 @@ export default memo(function ChannelsWrapper({
   const categories = useSelector(selectChannels);
   const currentChannel = useSelector(selectCurrentChannel);
   const playerType = useSelector(selectPlayerType);
-
+  const ctrl = useSelector(selectCtrl);
   const [active, setActive] = useState(0);
 
   const handleClick = useCallback(
     (index, id) => {
-      getChannelInfo(id);
-      dispatch(setPlayerType("live"));
+      const clickedChannel = categories[selectedCategory].content.find(
+        (item) => item.id === id,
+      );
+
+      if (clickedChannel?.is_protected) {
+        setIsShowProtected(clickedChannel.id);
+        dispatch(setCtrl("protected"));
+      } else {
+        getChannelInfo(id);
+        dispatch(setPlayerType("live"));
+      }
     },
-    [currentChannel, playerType],
+    [currentChannel, playerType, categories, selectedCategory],
   );
+
+  const findCurrentIndex = useCallback(() => {
+    return categories[selectedCategory]?.content?.findIndex(
+      (item) => item.id === currentChannel?.id,
+    );
+  }, [categories, selectedCategory, currentChannel]);
 
   const getChannelInfo = async (id) => {
     if (id === currentChannel?.id && playerType === "live") {
+      console.warn("full");
       setPipMode(false);
       window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
       return;
@@ -70,7 +89,7 @@ export default memo(function ChannelsWrapper({
   };
 
   useKeydown({
-    isActive: control,
+    isActive: control && ctrl !== "protected",
 
     left: () => setControl("category"),
 
@@ -100,7 +119,8 @@ export default memo(function ChannelsWrapper({
               itemWidth={31}
               itemHeight={7}
               isActive={control}
-              initialActiveIndex={0}
+              initialActiveIndex={findCurrentIndex()}
+              withTransition={false}
               startScrollIndex={0}
               direction="ltr"
               onMouseEnter={() => {}}

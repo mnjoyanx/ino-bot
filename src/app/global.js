@@ -16,6 +16,7 @@ const initialState = {
   isConnected: true,
   selectedType: "",
   isProtectedModalOpen: false,
+  isLiveProtectedModalOpen: false,
   onEpisodes: false,
   isCategoriesOpen: false,
   isUpdateModalOpen: false,
@@ -72,6 +73,9 @@ const globalSlice = createSlice({
     setIsProtectedModalOpen: (state, action) => {
       state.isProtectedModalOpen = action.payload;
     },
+    setIsLiveProtectedModalOpen: (state, action) => {
+      state.isLiveProtectedModalOpen = action.payload;
+    },
     setOnEpisodes: (state, action) => {
       state.onEpisodes = action.payload;
     },
@@ -107,6 +111,7 @@ export const {
   setIsCategoriesOpen,
   setIsUpdateModalOpen,
   setIsLangActive,
+  setIsLiveProtectedModalOpen,
 } = globalSlice.actions;
 
 export const selectCtrl = (state) => state.global.ctrl;
@@ -133,4 +138,6 @@ export const selectIsCategoriesOpen = (state) => state.global.isCategoriesOpen;
 export const selectIsUpdateModalOpen = (state) =>
   state.global.isUpdateModalOpen;
 export const selectIsLangActive = (state) => state.global.isLangActive;
+export const selectIsLiveProtectedModalOpen = (state) =>
+  state.global.isLiveProtectedModalOpen;
 export default globalSlice.reducer;

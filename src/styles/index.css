@@ -164,10 +164,48 @@ p {
   font-size: 2rem !important;
 }
 
+.apk-update_btn.close {
+  margin-right: 1rem;
+}
+
 .app-logo {
   top: 2.5rem !important;
 }
 
 .app-logo_top.logo {
   height: 5rem;
+}
+
+.ino-modal_parent .ino-modal--full {
+  background-color: transparent !important;
+  background-image: url("@assets/images/splashscreen.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.ino-keyboard-overlay {
+  background-color: transparent !important;
+}
+
+.ino-keyboard--custom .ino-keyboard-key {
+  background-color: var(--ino-color-secondary) !important;
+  width: 7rem;
+  height: 5rem !important;
+}
+
+.ino-keyboard--custom .ino-keyboard-key.ino-button--active {
+  border-color: #fff !important;
+}
+
+.ino-protect-input-boxes .ino-protect-input-box {
+  width: 6rem;
+  height: 8rem;
+  border-radius: 0.7rem;
+  background-color: var(--ino-color-secondary) !important;
+  border-color: transparent !important;
+}
+
+.ino-protect-input-boxes .ino-protect-input-box.active {
+  border-color: #fff !important;
 }

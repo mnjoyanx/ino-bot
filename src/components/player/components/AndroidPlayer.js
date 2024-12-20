@@ -3,6 +3,10 @@ import { useEffect } from "react";
 window.PLAYER = {
   timeupdateEvent: false,
 
+  buffering: function () {
+    console.log("buffering");
+  },
+
   androidPlayerTimeUpdate: function () {
     const currentTime = window.Android.getCurrentTime();
     const duration = window.Android.getVideoDuration();
