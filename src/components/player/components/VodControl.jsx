@@ -1,9 +1,7 @@
-import React, { useMemo, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setPaused, selectIsPaused } from "@app/player/playerSlice";
+import { selectIsPaused } from "@app/player/playerSlice";
 import useKeydown from "@hooks/useKeydown";
-import Progress from "./Progress";
-import Duration from "./Duration";
 import { selectCtrl, setIsPlayerOpen, setCtrl } from "@app/global";
 import SvgSettings from "@assets/icons/SvgSettings";
 import PlaybackActions from "./PlaybackActions";
@@ -20,7 +18,6 @@ let hideControlsTimer = null;
 
 export default function VodControls({
   durationRef,
-  duration,
   currentTimeRef,
   refVideo,
   play,

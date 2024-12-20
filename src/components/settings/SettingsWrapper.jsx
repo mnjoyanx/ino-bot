@@ -211,7 +211,7 @@ export default function SettingsWrapper({ children }) {
             isActive={ctrl === "reload"}
             onUp={() => setCtrl("items")}
             onClick={() => {
-              window.location.reload();
+              window.location = "/menu";
             }}
             onBack={() => navigate("/menu")}
             size="large"

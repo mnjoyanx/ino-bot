@@ -9,7 +9,11 @@ export default function AppInfo({ description, companyName }) {
   return (
     <div className="info-settings parent-app-info">
       <p>{t(companyName)}</p>
-      <p>{LOCAL_STORAGE.DEVICE_OS.GET()}</p>
+      <p>
+        {LOCAL_STORAGE.DEVICE_OS.GET() === "android"
+          ? "Android Tv"
+          : LOCAL_STORAGE.DEVICE_OS.GET()}
+      </p>
       <p>
         {t("App Version")}: {appVersion}
       </p>

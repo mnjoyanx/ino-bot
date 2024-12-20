@@ -60,6 +60,7 @@ export default memo(function ArchiveButtons({
         <InoRow
           isActive={active && !isOnLive}
           onLeft={setActive}
+          initialActiveIndex={3}
           onOk={(_e, index) => {
             if (hideControls) {
               showControl();

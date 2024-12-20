@@ -230,6 +230,16 @@ export default memo(function Search({
         updateSearchQuery(newValue);
       }
     },
+
+    back: () => {
+      if (type === "live") {
+        refInp.current.blur();
+      } else if (type === "content") {
+        refContentInp.current.blur();
+      }
+
+      dispatch(setCtrl("backBtn"));
+    },
   });
 
   return (

@@ -17,6 +17,9 @@ export default memo(function HeadSearch({
           onOkHandler={() => {
             setShowSearchHandler(false);
           }}
+          onBackHandler={() => {
+            setShowSearchHandler(false);
+          }}
           onDownHandler={() => {
             setControl("result");
           }}

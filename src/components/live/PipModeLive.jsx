@@ -116,10 +116,17 @@ export default memo(function PipModeLive({
         content: [],
         total: 0,
       };
+
       for (let i = 0; i < allChannels.length; i++) {
         let channel = allChannels[i].categories.find(
-          (e) => e.id === category.id,
+          (e) => e.id === category.id
         );
+
+        favs.forEach((fav) => {
+          if (fav.favorite.channelId == allChannels[i].id) {
+            // allChannels[i].is_favorite = true;
+          }
+        });
 
         if (channel) {
           obj_categories[category.name].content = [

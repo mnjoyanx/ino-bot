@@ -30,8 +30,8 @@ export default defineConfig({
       html: ".",
 
     },
-    // assetPrefix: "http://tv.tctv.ge/",
-    assetPrefix: "./",
+    assetPrefix: "http://tv.tctv.ge/",
+    // assetPrefix: "./",
   },
 
   dev: {
