@@ -100,10 +100,7 @@ export default memo(function PipModeLive({
       total: allChannels.length,
     };
 
-    console.log("before faaaavs");
     const favs = await getAllFavoritesHadnler();
-
-    console.log(favs, "faaaavs");
 
     obj_categories["favorites"] = {
       id: 101010102,
@@ -138,6 +135,8 @@ export default memo(function PipModeLive({
           obj_categories[category.name].content.length;
       }
     });
+
+    console.log(obj_categories, "obj_categories");
 
     dispatch(setChannels({ ...obj_categories }));
   };
