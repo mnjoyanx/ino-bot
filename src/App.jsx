@@ -138,14 +138,13 @@ function App() {
       const appId = parsedRes.message[0].app_id;
       const apk = parsedRes.message[0].apk;
       const appVersion = window.Android.getAppVersion(appId);
-      console.log(appVersion, "----", version, "parsedRes", parsedRes);
       setApkUrl(apk);
       const realVersion = appVersion.slice(
         appVersion.indexOf("(") + 1,
         appVersion.indexOf(")"),
       );
 
-      if (realVersion > version) {
+      if (realVersion < version) {
         if (window.Android) {
           setIsApkModalOpen(true);
           dispatch(setIsUpdateModalOpen(true));
