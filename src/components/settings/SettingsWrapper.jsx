@@ -105,6 +105,7 @@ export default function SettingsWrapper({ children }) {
       const defaultLanguage = message.find(
         (item) => +item.id === +defaultLanguageId
       );
+      console.log(defaultLanguage, "defaultLanguage");
       setSelectedLanguage(defaultLanguage);
     } catch (err) {
       console.log(err);
