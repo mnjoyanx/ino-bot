@@ -37,7 +37,6 @@ export default function ActivationPage() {
       });
       const parsedUser = JSON.parse(user);
       const { message, error } = parsedUser;
-      console.log(message, "message user");
 
       if (error) {
         setActivationPageState(message.action);
@@ -48,6 +47,7 @@ export default function ActivationPage() {
         }
       } else {
         // need to login user
+        localStorage.setItem("userLangId", JSON.stringify(message.languageId));
         loginUserReq();
       }
     }

@@ -100,13 +100,10 @@ export default function SettingsWrapper({ children }) {
 
       setLanguages(message);
 
-      // const defaultLanguage = message.find((item) => item.default === true);
       const defaultLanguageId = JSON.parse(localStorage.getItem("userLangId"));
-      console.log(defaultLanguageId, "defaultLanguageId", message);
       const defaultLanguage = message.find(
         (item) => +item.id === +defaultLanguageId
       );
-      console.log(defaultLanguage, "defaultLanguage");
       setSelectedLanguage(defaultLanguage);
     } catch (err) {
       console.log(err);
@@ -140,7 +137,6 @@ export default function SettingsWrapper({ children }) {
   }, [isLangActive]);
 
   useEffect(() => {
-    console.log(appData, "appData", selectedLanguage);
     if (!selectedLanguage) return;
 
     if (!appData) {
