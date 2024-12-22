@@ -24,6 +24,7 @@ export default function Settings() {
     if (error) {
       dispatch(setProfile(null));
     } else {
+      console.log(message, "message set lang id");
       dispatch(setProfile(message));
       localStorage.setItem("userLangId", JSON.stringify(message.languageId));
     }
