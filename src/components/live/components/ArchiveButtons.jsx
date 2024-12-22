@@ -50,6 +50,7 @@ export default memo(function ArchiveButtons({
             showControl();
             return;
           }
+
           onLiveHandler();
         }}
       >
@@ -66,6 +67,8 @@ export default memo(function ArchiveButtons({
               showControl();
               return;
             }
+            showControl();
+
             actionHandler(index);
           }}
           onUp={() => {

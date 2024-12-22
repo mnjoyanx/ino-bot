@@ -1,4 +1,4 @@
-import { memo, useState, useCallback, useEffect } from "react";
+import { memo, useState, useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -7,6 +7,7 @@ import {
   setCurrentChannel,
   setPlayerType,
   selectPlayerType,
+  setChannels,
 } from "@app/channels/channelsSlice";
 import { ListView } from "@ino-ui/tv";
 
@@ -21,7 +22,7 @@ import CardChannel from "./CardChannel";
 import "../styles/ChannelsWrapper.scss";
 import { selectCtrl, setCtrl } from "@app/global";
 
-export default memo(function ChannelsWrapper({
+export default function ChannelsWrapper({
   control,
   selectedCategory,
   setControl,
@@ -43,7 +44,7 @@ export default memo(function ChannelsWrapper({
   const handleClick = useCallback(
     (index, id) => {
       const clickedChannel = categories[selectedCategory].content.find(
-        (item) => item.id === id,
+        (item) => item.id === id
       );
 
       if (clickedChannel?.is_protected) {
@@ -54,13 +55,13 @@ export default memo(function ChannelsWrapper({
         dispatch(setPlayerType("live"));
       }
     },
-    [currentChannel, playerType, categories, selectedCategory],
+    [currentChannel, playerType, categories, selectedCategory]
   );
 
   const findCurrentIndex = useCallback(() => {
-    return categories[selectedCategory]?.content?.findIndex(
-      (item) => item.id === currentChannel?.id,
-    );
+    return categories[selectedCategory]?.content?.findIndex((item) => {
+      return item.id === currentChannel?.id;
+    });
   }, [categories, selectedCategory, currentChannel]);
 
   const getChannelInfo = async (id) => {
@@ -100,26 +101,32 @@ export default memo(function ChannelsWrapper({
     },
   });
 
+  const channelContent = useMemo(() => {
+    return categories[selectedCategory]?.content || [];
+  }, [categories, selectedCategory]);
+
   return (
     <div className="parent-channels">
       <h3 className="title">{t("Channels")}</h3>
       <div className="channels-wrapper">
         <div className="list-channels">
-          {categories[selectedCategory]?.content?.length > 0 ? (
+          {channelContent.length > 0 ? (
             <ListView
-              data={categories[selectedCategory]?.content}
+              data={channelContent}
               id="channels-list"
               uniqueKey="list-channels"
               listType="vertical"
               nativeControle={true}
               itemsCount={5}
-              itemsTotal={categories[selectedCategory]?.content?.length}
+              itemsTotal={channelContent.length}
               gap={0}
               buffer={10}
               itemWidth={31}
               itemHeight={7}
               isActive={control}
-              initialActiveIndex={findCurrentIndex()}
+              initialActiveIndex={
+                findCurrentIndex() > 0 ? findCurrentIndex() : 0
+              }
               withTransition={false}
               startScrollIndex={0}
               direction="ltr"
@@ -132,15 +139,17 @@ export default memo(function ChannelsWrapper({
               }}
               renderItem={({ item, index, isActive, style }) => {
                 return (
-                  <CardChannel
-                    key={item.id}
-                    style={style}
-                    isActive={isActive}
-                    isSelected={item.id === currentChannel?.id}
-                    elem={item}
-                    index={index}
-                    onClick={handleClick}
-                  />
+                  <>
+                    <CardChannel
+                      key={item.id}
+                      style={style}
+                      isActive={isActive}
+                      isSelected={item.id === currentChannel?.id}
+                      elem={item}
+                      index={index}
+                      onClick={handleClick}
+                    />
+                  </>
                 );
               }}
             />
@@ -153,4 +162,4 @@ export default memo(function ChannelsWrapper({
       </div>
     </div>
   );
-});
+}

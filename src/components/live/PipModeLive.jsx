@@ -100,13 +100,13 @@ export default memo(function PipModeLive({
       total: allChannels.length,
     };
 
-    const favs = await getAllFavoritesHadnler();
+    const favs = [];
 
     obj_categories["favorites"] = {
       id: 101010102,
       name: "favorites",
-      content: favs,
-      total: favs.length,
+      content: [],
+      total: 0,
     };
 
     categories.forEach((category) => {
@@ -122,11 +122,11 @@ export default memo(function PipModeLive({
           (e) => e.id === category.id
         );
 
-        favs.forEach((fav) => {
-          if (fav.favorite.channelId == allChannels[i].id) {
-            // allChannels[i].is_favorite = true;
+        if (allChannels[i].is_favorite) {
+          if (!favs.some((fav) => fav.id === allChannels[i].id)) {
+            favs.push(allChannels[i]);
           }
-        });
+        }
 
         if (channel) {
           obj_categories[category.name].content = [
@@ -142,6 +142,9 @@ export default memo(function PipModeLive({
           obj_categories[category.name].content.length;
       }
     });
+
+    obj_categories["favorites"].content = favs;
+    obj_categories["favorites"].total = favs.length;
 
     console.log(obj_categories, "obj_categories");
 

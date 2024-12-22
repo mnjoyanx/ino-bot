@@ -8,6 +8,7 @@ import {
   setPlayerType,
   selectChannels,
   setChannels,
+  setAllChannels,
 } from "@app/channels/channelsSlice";
 import { useTranslation } from "react-i18next";
 import {

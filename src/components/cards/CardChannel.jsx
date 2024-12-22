@@ -1,6 +1,7 @@
 import { memo } from "react";
 
 import LOCAL_STORAGE from "@utils/localStorage";
+import FavActiveSvg from "@assets/icons/FavActiveSvg";
 
 import "./Cards.scss";
 
@@ -12,6 +13,8 @@ export default memo(function CardChannel({
   index,
   onClick,
   style,
+  isFavorite,
+  elem,
 }) {
   const handleClick = () => {
     if (onClick && typeof id !== "undefined" && typeof index !== "undefined") {
@@ -33,6 +36,11 @@ export default memo(function CardChannel({
         onClick={handleClick}
       >
         <img src={image} onError={handleImageError} alt="Channel logo" />
+        {isFavorite && (
+          <div className="favorite-icon">
+            <FavActiveSvg isActive={true} />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -15,7 +15,7 @@ import {
   selectShowPreviewImages,
 } from "@app/player/playerSlice";
 
-import { getChannels, channelInfo } from "@server/requests";
+import { getChannels, channelInfo, getLiveFavorite } from "@server/requests";
 
 import useKeydown from "@hooks/useKeydown";
 import LOCAL_STORAGE from "@utils/localStorage";
@@ -114,6 +114,20 @@ export default function LivePage() {
     }
   }, []);
 
+  const getAllFavoritesHadnler = async () => {
+    try {
+      const res = await getLiveFavorite();
+      const parsedRes = JSON.parse(res);
+      if (!parsedRes.error) {
+        return parsedRes.message.rows;
+      }
+
+      return [];
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const getAllChannels = async () => {
     const response = await getChannels({
       query: JSON.stringify({ pagination: false, sort: ["position", "ASC"] }),
@@ -124,16 +138,55 @@ export default function LivePage() {
     if (error) {
       if (message === "Forbidden") navigate("/");
     } else {
-      dispatch(setAllChannels(message));
-      getFirstChannel(message);
+      const favs = await getAllFavoritesHadnler();
+      const _message = message.map((item) => {
+        item.is_favorite = favs.some(
+          (fav) => fav.favorite.channelId === item.id
+        );
+        return item;
+      });
+      dispatch(setAllChannels(_message));
+      getFirstChannel(_message);
+    }
+  };
+
+  const findNextNotProtectedChannel = (array) => {
+    const currentIndex = currentChannel
+      ? array.findIndex((item) => item.id === currentChannel.id)
+      : -1;
+
+    const startIndex = currentIndex === -1 ? 0 : currentIndex;
+
+    for (let i = startIndex; i < array.length; i++) {
+      if (!array[i].is_protected) {
+        console.log("Found next non-protected channel:", array[i]);
+        setUrl(array[i].url);
+        dispatch(setCurrentChannel(array[i]));
+        return;
+      }
+    }
+
+    for (let i = startIndex - 1; i >= 0; i--) {
+      if (!array[i].is_protected) {
+        console.log("Found previous non-protected channel:", array[i]);
+        setUrl(array[i].url);
+        dispatch(setCurrentChannel(array[i]));
+        return;
+      }
+    }
+
+    const anyNonProtected = array.find((item) => !item.is_protected);
+    if (anyNonProtected) {
+      console.log("Found any non-protected channel:", anyNonProtected);
+      setUrl(anyNonProtected.url);
+      dispatch(setCurrentChannel(anyNonProtected));
     }
   };
 
   const getFirstChannel = (array) => {
     if (currentChannel) {
       if (currentChannel.is_protected) {
-        setIsShowProtected(true);
-        dispatch(setCtrl("protected"));
+        findNextNotProtectedChannel(array);
       } else {
         setUrl(currentChannel.url);
       }
@@ -142,14 +195,24 @@ export default function LivePage() {
 
       if (LOCAL_STORAGE.LAST_CHANNEL_ID.GET()) {
         channel_id = LOCAL_STORAGE.LAST_CHANNEL_ID.GET();
+        const savedChannel = array.find((ch) => ch.id === channel_id);
+        if (savedChannel?.is_protected) {
+          findNextNotProtectedChannel(array);
+          return;
+        }
       } else {
-        LOCAL_STORAGE.LAST_CHANNEL_ID.SET(channel_id);
+        const firstNonProtected = array.find((ch) => !ch.is_protected);
+        if (firstNonProtected) {
+          channel_id = firstNonProtected.id;
+          LOCAL_STORAGE.LAST_CHANNEL_ID.SET(channel_id);
+        }
       }
       getChannelInfo(channel_id);
     }
   };
 
   const getChannelInfo = async (id, showProtected = true) => {
+    console.log("getChannelInfo");
     const response = await channelInfo({ id: id });
     const parsedResponse = JSON.parse(response);
     const { error, message } = parsedResponse;
@@ -165,9 +228,8 @@ export default function LivePage() {
 
       dispatch(setCurrentChannel(message));
 
-      if (message.is_protected && showProtected) {
-        setIsShowProtected(true);
-        dispatch(setCtrl("protected"));
+      if (message.is_protected && showProtected && !allChannels.length) {
+        findNextNotProtectedChannel(allChannels);
       } else {
         setUrl(_url);
       }
@@ -183,17 +245,11 @@ export default function LivePage() {
 
   const handleShowProtected = (id) => {
     setIsShowProtected(true);
-    // getChannelInfo(id);
     setClickedChannelId(id);
   };
 
   useKeydown({
     isActive: !pipMode && !showPreviewImages && ctrl !== "protected",
-    back: () => {
-      // document.body.classList.remove("playing");
-      // window.PLAYER.destroyPlayer();
-      // navigate(PATH.MENU);
-    },
   });
 
   const handleNextArchive = () => {

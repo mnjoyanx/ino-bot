@@ -20,4 +20,12 @@
     object-fit: contain;
     object-position: center;
   }
+  position: relative;
+
+  .favorite-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1;
+  }
 }

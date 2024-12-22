@@ -14,6 +14,7 @@ export default memo(function CardChannel({
   isSelected,
   style,
 }) {
+  // console.log(elem, "elemelemelemelem");
   return (
     <div
       className={`card-channel${isActive ? " active" : ""}${isSelected ? " selected" : ""}`}
@@ -32,8 +33,9 @@ export default memo(function CardChannel({
         }
       />
       <p className="name">{elem.name}</p>
+
       <div className="icons">
-        {elem.is_favorite ? <img src={iconFavorite} alt="" /> : null}
+        {/* {elem.is_favorite ? <img src={iconFavorite} alt="" /> : null} */}
         {elem.is_protected ? <img src={iconLock} alt="" /> : null}
         {!elem.canWatch ? <img src={iconPremium} alt="" /> : null}
       </div>
