@@ -138,6 +138,7 @@ export default function SettingsWrapper({ children }) {
   }, [isLangActive]);
 
   useEffect(() => {
+    console.log(appData, "appData", selectedLanguage);
     if (!selectedLanguage) return;
 
     if (!appData) {
