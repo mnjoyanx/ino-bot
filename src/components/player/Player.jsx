@@ -506,6 +506,8 @@ export default memo(function Player({
   const renderPlayer = () => {
     if (!url) return null;
 
+    console.log(url, "------url");
+
     if (LOCAL_STORAGE.DEVICE_OS.GET() === "android") {
       return (
         <AndroidPlayer
