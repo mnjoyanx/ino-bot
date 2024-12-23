@@ -76,7 +76,7 @@ export default function AppsPage() {
           </div>
           <div className={styles["apps-content"]}>
             <h2 className={styles["apps-title"]}>{t("Apps Launcher")}</h2>
-            {!isAndroid ? (
+            {isAndroid ? (
               <div className={styles["grid-view_container"]}>
                 <GridView
                   id="apps-grid"
