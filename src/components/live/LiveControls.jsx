@@ -750,7 +750,7 @@ export default memo(function LiveControls({
                 hideControls={hideControls}
                 onLiveHandler={() => {
                   dispatch(setPlayerType("live"));
-                  setUrl(refUrlLive.current.url);
+                  setUrl(refUrlLive.current?.url);
                 }}
               />
               {/* <LiveIcon type={playerType} isActive={active === 4} /> */}
@@ -774,7 +774,7 @@ export default memo(function LiveControls({
                 hideControls={hideControls}
                 onLiveHandler={() => {
                   dispatch(setPlayerType("live"));
-                  setUrl(refUrlLive.current.url);
+                  setUrl(refUrlLive.current?.url);
                 }}
               />
               <LiveIcon type={playerType} isActive={active === 4} />
