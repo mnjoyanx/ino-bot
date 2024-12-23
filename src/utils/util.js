@@ -1,7 +1,4 @@
-import TIZEN from "@services/platform/tizen";
-import WEBOS from "@services/platform/webos";
-import BROWSER from "@services/platform/browser";
-import LOCAL_STORAGE from "@utils/localStorage";
+import LOCAL_STORAGE from "../utils/localStorage";
 
 const monthNames = [
   "january",
@@ -106,18 +103,6 @@ export const formatTime = (seconds) => {
   }
 };
 
-export const applicationExit = () => {
-  const os = LOCAL_STORAGE.DEVICE_OS.GET();
-
-  if (os == "tizen") {
-    TIZEN.EXIT();
-  } else if (os == "webos") {
-    WEBOS.EXIT();
-  } else {
-    BROWSER.EXIT();
-  }
-};
-
 export const setCssVariables = (colors) => {
   const root = document.documentElement;
 
@@ -137,7 +122,7 @@ export const constructQueryString = (queryParams) => {
   return Object.keys(queryParams)
     .map(
       (key) =>
-        encodeURIComponent(key) + "=" + encodeURIComponent(queryParams[key]),
+        encodeURIComponent(key) + "=" + encodeURIComponent(queryParams[key])
     )
     .join("&");
 };
@@ -193,7 +178,7 @@ export const scrollElement = (
   element,
   type = "X",
   size = "0rem",
-  duration = 0,
+  duration = 0
 ) => {
   if (!element) return;
 

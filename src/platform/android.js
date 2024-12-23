@@ -1,4 +1,4 @@
-import { generateMacAddress, generateRandomDeviceId } from "@/src/utils/util";
+import { generateMacAddress, generateRandomDeviceId } from "@/utils/util";
 import Storege from "../storage/storage";
 
 class Android {
@@ -65,7 +65,7 @@ class Android {
             0,
             0,
             window.innerWidth,
-            window.innerHeight,
+            window.innerHeight
           );
           window.Android.destroyPlayer();
         } catch (e) {
@@ -82,7 +82,7 @@ class Android {
           0,
           0,
           window.innerWidth,
-          window.innerHeight,
+          window.innerHeight
         );
         window.Android.destroyPlayer();
       } catch (e) {
