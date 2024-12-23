@@ -102,13 +102,13 @@ window.PLAYER = {
 
     if (window.innerWidth === 1280) size = 1.5;
 
-    let screenWidth = window.innerWidth;
-    let screenHeight = window.innerHeight;
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
 
-    let _block_width = width / size;
-    let _block_height = height / size;
-    let _offset_left = left / size;
-    let _offset_top = top / size;
+    const _block_width = width / size;
+    const _block_height = height / size;
+    const _offset_left = left / size;
+    const _offset_top = top / size;
 
     window.Android.setPlayerPositions(
       _block_width,

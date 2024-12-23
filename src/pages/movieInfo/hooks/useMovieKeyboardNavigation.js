@@ -50,6 +50,6 @@ export const useMovieKeyboardNavigation = ({
       handleContinueWatchingClick,
       handleFavoriteClick,
       movie,
-    ]
+    ],
   );
 };

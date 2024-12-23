@@ -44,7 +44,7 @@ export default function ChannelsWrapper({
   const handleClick = useCallback(
     (index, id) => {
       const clickedChannel = categories[selectedCategory].content.find(
-        (item) => item.id === id
+        (item) => item.id === id,
       );
 
       if (clickedChannel?.is_protected) {
@@ -55,7 +55,7 @@ export default function ChannelsWrapper({
         dispatch(setPlayerType("live"));
       }
     },
-    [currentChannel, playerType, categories, selectedCategory]
+    [currentChannel, playerType, categories, selectedCategory],
   );
 
   const findCurrentIndex = useCallback(() => {

@@ -1,7 +1,7 @@
-// import LOCAL_STORAGE from "./localStorage";
-// import TIZEN from "../services/platform/tizen";
-// import WEBOS from "../services/platform/webos";
-// import BROWSER from "../services/platform/browser";
+import TIZEN from "@services/platform/tizen";
+import WEBOS from "@services/platform/webos";
+import BROWSER from "@services/platform/browser";
+import LOCAL_STORAGE from "@utils/localStorage";
 
 const monthNames = [
   "january",
@@ -34,7 +34,7 @@ const twoDigitPad = (num) => {
 export const formatDate = (date, patternStr) => {
   if (!patternStr) patternStr = "M/d/yyyy";
 
-  let day = date.getDate(),
+  const day = date.getDate(),
     month = date.getMonth(),
     year = date.getFullYear(),
     hour = date.getHours(),
@@ -86,7 +86,7 @@ export const formatDate = (date, patternStr) => {
 export const formatTime = (seconds) => {
   if (!seconds) return "00:00";
 
-  let hh = Math.floor(seconds / 3600),
+  const hh = Math.floor(seconds / 3600),
     mm = Math.floor(seconds / 60) % 60,
     ss = Math.floor(seconds) % 60;
 
@@ -118,13 +118,10 @@ export const applicationExit = () => {
   }
 };
 
-export const applicationLogout = (callback) => {};
-
 export const setCssVariables = (colors) => {
   const root = document.documentElement;
 
   root.style.setProperty("--primary-color", colors.primary_color);
-  // root.style.setProperty("--primary-color", "#FFEF00");
   root.style.setProperty("--color-secondary", "#555");
   root.style.setProperty("--color-tertiary", "#777");
   root.style.setProperty("--color-quaternary", "#999");
@@ -173,12 +170,12 @@ export const generateMacAddress = (str) => {
 
   str = str.replace(/[^a-z0-9]/gi, "");
 
-  let mac = [];
+  const mac = [];
 
   if (str.length < 12) {
-    let chars = "abcdef0123456789";
+    const chars = "abcdef0123456789";
 
-    let count = 12 - str.length;
+    const count = 12 - str.length;
 
     for (let i = 0; i < count; i++) {
       str += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -208,8 +205,8 @@ export const imageResizer = (host, imageUrl, width, height, fit, format) => {
 
   if (!host) return;
   try {
-    let newurl = btoa(unescape(encodeURIComponent(imageUrl)));
-    let newhost = host;
+    const newurl = btoa(unescape(encodeURIComponent(imageUrl)));
+    const newhost = host;
     let size = "";
 
     if (height) {
@@ -218,7 +215,7 @@ export const imageResizer = (host, imageUrl, width, height, fit, format) => {
       size = width;
     }
 
-    let hash = "btoa_escape";
+    const hash = "btoa_escape";
     let is_blured = "";
 
     if (format) {

@@ -55,7 +55,7 @@ export const ToastProvider = ({ children }) => {
         setTimerId(id);
       }
     },
-    [timerId]
+    [timerId],
   );
 
   const hideToast = useCallback(() => {
@@ -100,7 +100,7 @@ export const useToast = () => {
         onSuccess,
         onError,
         errorDuration = 5000,
-      } = {}
+      } = {},
     ) => {
       const attempt = async () => {
         try {
@@ -113,7 +113,7 @@ export const useToast = () => {
             retryCountRef.current++;
             showToast(
               `Attempting to replay... (${retryCountRef.current}/${maxRetries})`,
-              "retrying"
+              "retrying",
             );
 
             await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -132,7 +132,7 @@ export const useToast = () => {
 
       return attempt();
     },
-    [showToast, hideToast]
+    [showToast, hideToast],
   );
 
   return {

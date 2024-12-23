@@ -12,12 +12,12 @@
   .btn-group-live {
     // margin: 0 1rem;
   }
-  .rewind, .forward {
+  .rewind,
+  .forward {
     border: 1px solid transparent;
     @include flex(center, center);
     flex-wrap: nowrap;
     margin: 0 1rem;
-
 
     &.active {
       border: 1px solid #fff;

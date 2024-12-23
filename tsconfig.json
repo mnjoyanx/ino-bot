@@ -26,9 +26,9 @@
       "@server/*": ["server/*"],
       "@app/*": ["app/*"],
       "@context/*": ["context/*"],
-      "@config/*": ["config/*"],
+      "@config/*": ["config/*"]
     }
   },
   "include": ["src"],
   "exclude": ["node_modules"]
-} 
+}

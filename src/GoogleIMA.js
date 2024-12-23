@@ -1,4 +1,4 @@
-export let GoogleIMA = {
+export const GoogleIMA = {
   isPlayling: false,
 
   destroy: function () {

@@ -33,7 +33,7 @@ export const useSeasonEpisodeActions = (seriesId) => {
         showToast("Error loading episode", "error", 3000);
       }
     },
-    [seriesId, dispatch, setUrl, showToast]
+    [seriesId, dispatch, setUrl, showToast],
   );
 
   const handleSeasonChange = useCallback((seasonNumber) => {

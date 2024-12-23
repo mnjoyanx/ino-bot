@@ -119,7 +119,7 @@ export default memo(function PipModeLive({
 
       for (let i = 0; i < allChannels.length; i++) {
         let channel = allChannels[i].categories.find(
-          (e) => e.id === category.id
+          (e) => e.id === category.id,
         );
 
         if (allChannels[i].is_favorite) {

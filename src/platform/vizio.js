@@ -1,67 +1,65 @@
-import { generateMacAddress, generateRandomDeviceId, loadScript } from "@/src/utils/util";
+import {
+  generateMacAddress,
+  generateRandomDeviceId,
+  loadScript,
+} from "@/src/utils/util";
 import Storege from "../storage/storage";
 
 class Vizio {
+  id = "";
+  mac = "";
+  model = "vizio";
+  version = "";
 
-    id = "";
-    mac = "";
-    model = "vizio";
-    version = "";
+  constructor() {}
 
-    constructor() { }
+  async init() {
+    try {
+      await loadScript(
+        "http://localhost:12345/scfs/cl/js/vizio-companion-lib.js",
+      );
+    } catch (e) {}
 
-    async init () {
+    return new Promise((resolve, reject) => {
+      document.addEventListener("VIZIO_LIBRARY_DID_LOAD", () => {
+        let deviceId = Storege.getDeviceId();
 
         try {
-            await loadScript("http://localhost:12345/scfs/cl/js/vizio-companion-lib.js");
-        } catch (e) { }
+          if (!deviceId) deviceId = window.VIZIO.getDeviceId();
+        } catch (e) {}
 
-        return new Promise((resolve, reject) => {
+        if (!deviceId) deviceId = generateRandomDeviceId();
 
-            document.addEventListener("VIZIO_LIBRARY_DID_LOAD", () => {
+        Storege.setDeviceId(deviceId);
 
-                let deviceId = Storege.getDeviceId();
+        let mac = Storege.getMac();
 
-                try {
-                    if (!deviceId) deviceId = window.VIZIO.getDeviceId();
-                } catch (e) { }
+        if (!mac) mac = generateMacAddress(deviceId);
 
-                if (!deviceId) deviceId = generateRandomDeviceId();
+        Storege.setMac(mac);
 
-                Storege.setDeviceId(deviceId);
+        let version = "0.0.0";
 
-                let mac = Storege.getMac();
-
-                if (!mac) mac = generateMacAddress(deviceId);
-
-                Storege.setMac(mac);
-
-                let version = "0.0.0";
-
-                try {
-                    version = window.VIZIO.getFirmwareVersion();
-                } catch (e) { }
-
-                this.id = deviceId;
-                this.mac = mac;
-                this.version = version;
-
-                resolve();
-
-            });
-
-        });
-
-    }
-
-    exit () {
         try {
-            window.VIZIO.exitApplication()
-        } catch (e) {
-            window.close();
-        }
-    }
+          version = window.VIZIO.getFirmwareVersion();
+        } catch (e) {}
 
+        this.id = deviceId;
+        this.mac = mac;
+        this.version = version;
+
+        resolve();
+      });
+    });
+  }
+
+  exit() {
+    try {
+      window.VIZIO.exitApplication();
+    } catch (e) {
+      window.close();
+    }
+  }
 }
 
 export default Vizio;

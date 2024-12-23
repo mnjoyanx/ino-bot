@@ -4,7 +4,7 @@ export default function os(callback) {
   if (window.tizen) {
     LOCAL_STORAGE.DEVICE_OS.SET("Tizen");
 
-    let script = document.createElement("script");
+    const script = document.createElement("script");
 
     script.setAttribute("async", "true");
 
@@ -118,7 +118,7 @@ export default function os(callback) {
                   LOCAL_STORAGE.DEVICE_IP.SET(device_ip);
                 },
                 onFailure: function (inError) {
-                  let device_ip = "1.1.1.1";
+                  const device_ip = "1.1.1.1";
                   LOCAL_STORAGE.DEVICE_IP.SET(device_ip);
                 },
               });
@@ -148,9 +148,9 @@ export default function os(callback) {
         LOCAL_STORAGE.DEVICE_ID.SET(deviceId);
       },
       onFailure: function (err) {
-        let deviceId = generateRandomDeviceId(12);
-        let device_model = generateRandomDeviceId(15);
-        let device_name = "WebOs";
+        const deviceId = generateRandomDeviceId(12);
+        const device_model = generateRandomDeviceId(15);
+        const device_name = "WebOs";
 
         LOCAL_STORAGE.DEVICE_ID.SET(deviceId);
         LOCAL_STORAGE.DEVICE_MODEL.SET(device_model);
@@ -162,10 +162,10 @@ export default function os(callback) {
   } else if (window.Android) {
     document.body.classList.add("android");
     LOCAL_STORAGE.DEVICE_OS.SET("android");
-    let device_name = "Android Tv";
-    let device_model = window.Android.getModel();
-    let deviceId = window.Android.getDeviceId();
-    let deviceIp = window.Android.getIP();
+    const device_name = "Android Tv";
+    const device_model = window.Android.getModel();
+    const deviceId = window.Android.getDeviceId();
+    const deviceIp = window.Android.getIP();
 
     LOCAL_STORAGE.DEVICE_ID.SET(deviceId);
     LOCAL_STORAGE.DEVICE_MODEL.SET(device_model);
@@ -174,7 +174,7 @@ export default function os(callback) {
 
     window.keydown = ({ keyName }) => {
       if (keyName == "back") {
-        let data = { bubbles: true, cancelable: true, keyCode: 8 };
+        const data = { bubbles: true, cancelable: true, keyCode: 8 };
         document.dispatchEvent(new KeyboardEvent("keydown", data));
         // document.dispatchEvent(new KeyboardEvent("keyup", data));
       }
@@ -184,9 +184,9 @@ export default function os(callback) {
   } else {
     LOCAL_STORAGE.DEVICE_OS.SET("Webos");
 
-    let deviceId = generateRandomDeviceId(12);
-    let device_model = generateRandomDeviceId(15);
-    let device_name = "WebOs";
+    const deviceId = generateRandomDeviceId(12);
+    const device_model = generateRandomDeviceId(15);
+    const device_name = "WebOs";
 
     LOCAL_STORAGE.DEVICE_ID.SET(deviceId);
     LOCAL_STORAGE.DEVICE_MODEL.SET(device_model);
@@ -199,7 +199,7 @@ export default function os(callback) {
     if (LOCAL_STORAGE.DEVICE_ID.GET()) return LOCAL_STORAGE.DEVICE_ID.GET();
 
     let text = "";
-    let possible =
+    const possible =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
     for (var i = 0; i < length; i++) {

@@ -139,7 +139,7 @@ export default function VodControls({
           } else {
             imitateTimeUpdate(
               refVideo.current.currentTime,
-              refVideo.current.duration
+              refVideo.current.duration,
             );
           }
           handleSeek("backward");
@@ -152,7 +152,7 @@ export default function VodControls({
           } else {
             imitateTimeUpdate(
               refVideo.current.currentTime,
-              refVideo.current.duration
+              refVideo.current.duration,
             );
           }
           handleSeek("forward");
