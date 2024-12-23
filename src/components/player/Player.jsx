@@ -519,6 +519,7 @@ export default memo(function Player({
           onLoadedMetadata={loadedMetadataHandler}
           onSeek={handleSeek}
           getTracks={getTracksHandler}
+          onErrorHandler={onErrorHandler}
         />
       );
     }

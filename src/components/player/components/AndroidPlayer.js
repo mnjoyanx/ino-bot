@@ -131,6 +131,7 @@ export default function AndroidPlayer({
   startTime,
   onLoadedMetadata,
   getTracks,
+  onErrorHandler,
 }) {
   const streamEnded = () => {
     streamEnd();
@@ -149,12 +150,18 @@ export default function AndroidPlayer({
     getTracks(tracks.detail.tracksList);
   };
 
+  const playerErrorHandler = (err) => {
+    console.log("playerErrorHandler", err);
+    onErrorHandler(err);
+  };
+
   useEffect(() => {
     window.addEventListener("playerTimeUpdate", timeUpdateHandler);
     window.addEventListener("streamEnded", streamEnded);
     window.addEventListener("seekTo", seekToHandler);
     window.addEventListener("playbackLoaded", onLoadedMetadata);
     window.addEventListener("getTracks", getTracksHandler);
+    window.addEventListener("playerError", playerErrorHandler);
 
     return () => {
       window.removeEventListener("playerTimeUpdate", timeUpdateHandler);
@@ -162,11 +169,14 @@ export default function AndroidPlayer({
       window.removeEventListener("seekTo", seekToHandler);
       window.removeEventListener("playbackLoaded", onLoadedMetadata);
       window.removeEventListener("getTracks", getTracksHandler);
+      window.removeEventListener("playerError", playerErrorHandler);
     };
   }, []);
 
   useEffect(() => {
     window.Android.destroyPlayer();
+
+    console.log("url", url);
 
     if (time) {
       window.Android.initPlayer(url, +time);
