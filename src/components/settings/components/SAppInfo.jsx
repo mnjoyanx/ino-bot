@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 export default function AppInfo({ description, companyName }) {
   const { t } = useTranslation();
 
-  const appVersion = localStorage.getItem("app_version");
+  const appVersion = LOCAL_STORAGE.APP_VERSION.GET();
 
   return (
     <div className="info-settings parent-app-info">

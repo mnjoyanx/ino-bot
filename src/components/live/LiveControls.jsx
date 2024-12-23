@@ -89,16 +89,24 @@ export default memo(function LiveControls({
     if (allChannels.length <= 1) return;
     for (let i = 0; i < allChannels.length; i++) {
       if (allChannels[i].id === currentChannel.id) {
-        if (i === 0) {
-          refNextChannel.current = allChannels[i + 1];
-          refPrevChannel.current = allChannels[allChannels.length - 1];
-        } else if (i === allChannels.length - 1) {
-          refNextChannel.current = allChannels[0];
-          refPrevChannel.current = allChannels[i - 1];
-        } else {
-          refPrevChannel.current = allChannels[i - 1];
-          refNextChannel.current = allChannels[i + 1];
+        let nextIdx = i;
+        do {
+          nextIdx = (nextIdx + 1) % allChannels.length;
+        } while (nextIdx !== i && allChannels[nextIdx].is_protected);
+
+        if (nextIdx !== i) {
+          refNextChannel.current = allChannels[nextIdx];
         }
+
+        let prevIdx = i;
+        do {
+          prevIdx = prevIdx === 0 ? allChannels.length - 1 : prevIdx - 1;
+        } while (prevIdx !== i && allChannels[prevIdx].is_protected);
+
+        if (prevIdx !== i) {
+          refPrevChannel.current = allChannels[prevIdx];
+        }
+
         break;
       }
     }
@@ -133,14 +141,17 @@ export default memo(function LiveControls({
 
     if ((number + num.toString()).length <= 4) {
       setNumber(_number);
-    } else return;
 
-    clearTimeout(timeOutNumber.current);
+      // Clear any existing timeout
+      if (timeOutNumber.current) {
+        clearTimeout(timeOutNumber.current);
+      }
 
-    timeOutNumber.current = setTimeout(() => {
-      findChannelByNumber(_number);
-      setNumber("");
-    }, 3000);
+      // Set new timeout to clear the number after 5 seconds
+      timeOutNumber.current = setTimeout(() => {
+        setNumber("");
+      }, 5000);
+    }
   };
 
   const findChannelByNumber = (num) => {
@@ -196,7 +207,7 @@ export default memo(function LiveControls({
         const res = await addLiveFavorite({ channel_id: currentChannel.id });
 
         const categoryChannelsClone = JSON.parse(
-          JSON.stringify(categoryChannels),
+          JSON.stringify(categoryChannels)
         );
 
         if (categoryChannelsClone) {
@@ -225,13 +236,13 @@ export default memo(function LiveControls({
         dispatch(setCurrentChannel({ ...currentChannel, favorite: false }));
         const res = await removeLiveFavorite({ channel_id: currentChannel.id });
         const categoryChannelsClone = JSON.parse(
-          JSON.stringify(categoryChannels),
+          JSON.stringify(categoryChannels)
         );
 
         if (categoryChannelsClone && categoryChannelsClone.favorites) {
           const filteredCatChannels =
             categoryChannelsClone.favorites.content.filter(
-              (channel) => channel.id !== currentChannel.id,
+              (channel) => channel.id !== currentChannel.id
             );
 
           categoryChannelsClone.favorites.content = filteredCatChannels;
@@ -325,6 +336,7 @@ export default memo(function LiveControls({
     showControl();
     if (hideControls) return;
     if (refNextChannel.current) {
+      console.log("nextChannel", refNextChannel.current);
       if (channelChangeTimeout.current) {
         clearTimeout(channelChangeTimeout.current);
       }
@@ -434,13 +446,38 @@ export default memo(function LiveControls({
       }
     },
 
-    up: nextChannel,
+    up: () => {
+      showControl();
+      if (hideControls) return;
+      // Clear number if it exists
+      if (number) {
+        setNumber("");
+        return;
+      }
+      nextChannel();
+    },
 
-    down: prevChannel,
+    down: () => {
+      showControl();
+      if (hideControls) return;
+      // Clear number if it exists
+      if (number) {
+        setNumber("");
+        return;
+      }
+      prevChannel();
+    },
 
     ok: () => {
       showControl();
       if (hideControls) return;
+
+      if (number) {
+        findChannelByNumber(Number(number));
+        setNumber("");
+        return;
+      }
+
       if (active === 0) {
         setPipMode(true);
         window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
@@ -476,6 +513,11 @@ export default memo(function LiveControls({
     },
 
     back: () => {
+      if (number) {
+        setNumber("");
+        return;
+      }
+
       console.log("baccckkckc 2");
       dispatch(setIsCategoriesOpen(true));
       setPipMode(true);
@@ -550,6 +592,7 @@ export default memo(function LiveControls({
     up: () => {
       showControl();
       if (hideControls) return;
+      console.log("up", refNextChannel.current);
       if (refNextChannel.current && active === 0) {
         dispatch(setPlayerType("live"));
         getChannelInfo(refNextChannel.current.id);
@@ -627,6 +670,16 @@ export default memo(function LiveControls({
     ? (cTime / (refVideo.current ? refVideo.current.duration : 0)) * 100
     : (window.Android.getCurrentTime() / window.Android.getVideoDuration()) *
       100;
+
+  // Clean up timeout when component unmounts
+  useEffect(() => {
+    return () => {
+      if (timeOutNumber.current) {
+        clearTimeout(timeOutNumber.current);
+      }
+    };
+  }, []);
+
   return (
     <>
       {number || displayChannel ? (

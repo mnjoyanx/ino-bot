@@ -1,6 +1,11 @@
 const LOCAL_STORAGE = {
   CLEAR: () => localStorage.clear(),
 
+  APP_VERSION: {
+    GET: () => localStorage.getItem("app_version"),
+    SET: (version) => localStorage.setItem("app_version", version),
+  },
+
   MAC_ADDRESS: {
     GET: () => localStorage.getItem("mac_address"),
     SET: (mac) => localStorage.setItem("mac_address", mac),
