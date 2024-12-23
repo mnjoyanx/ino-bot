@@ -4,18 +4,22 @@
   border-radius: 1.5rem;
   background-color: rgba(3, 3, 3, 0.4);
   overflow: hidden;
+  // padding: 1rem;
 
   .title {
     font-size: 2rem;
     font-weight: 500;
     color: white;
     padding: 2rem 0 0 2rem;
+    margin-bottom: 1rem;
   }
   .channels-wrapper {
     height: 50rem;
     overflow: hidden;
-    padding: 1rem;
+    // padding: 1rem;
     position: relative;
+    display: flex;
+    justify-content: center;
 
     .list-channels {
       .card-channel {

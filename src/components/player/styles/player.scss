@@ -46,7 +46,7 @@
   margin: 0;
 }
 
-.progress-field {
+.progres-field {
   width: 100%;
   margin-bottom: 15px;
   position: relative;
@@ -57,7 +57,7 @@
   height: 0.5rem;
   background-color: rgba(255, 255, 255, 0.3);
   border-radius: 2px;
-  overflow: hidden;
+  // overflow: hidden;
   transition: transform 0.2s ease;
   &:hover {
     cursor: pointer;

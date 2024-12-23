@@ -693,7 +693,7 @@ export default memo(function LiveControls({
           currentChannel={currentChannel}
           active={active}
         />
-        <div className="progress-field">
+        <div className="progres-field">
           {playerType === "live" ? (
             // <Progress
             //   playerType={playerType}

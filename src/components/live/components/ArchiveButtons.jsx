@@ -38,6 +38,7 @@ export default memo(function ArchiveButtons({
     <div className="archive-buttons_wrapper">
       <InoRow
         isActive={isOnLive}
+        classNames="first-row_archive"
         onDown={() => {
           if (hideControls) {
             showControl();

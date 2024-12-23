@@ -9,13 +9,15 @@
     font-weight: 500;
     color: white;
     padding: 2rem 0 0 2rem;
+    margin-bottom: 1rem;
   }
   .categories-wrapper {
     height: 50rem;
     overflow: hidden;
-    padding: 1rem;
+    // padding: 1rem;
     position: relative;
-
+    display: flex;
+    justify-content: center;
     .list-category {
       margin-top: 1rem;
     }

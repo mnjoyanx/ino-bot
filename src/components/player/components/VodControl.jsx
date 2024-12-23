@@ -139,7 +139,7 @@ export default function VodControls({
           } else {
             imitateTimeUpdate(
               refVideo.current.currentTime,
-              refVideo.current.duration,
+              refVideo.current.duration
             );
           }
           handleSeek("backward");
@@ -152,7 +152,7 @@ export default function VodControls({
           } else {
             imitateTimeUpdate(
               refVideo.current.currentTime,
-              refVideo.current.duration,
+              refVideo.current.duration
             );
           }
           handleSeek("forward");
@@ -202,13 +202,14 @@ export default function VodControls({
           />
         </div>
 
-        <div className="progress-field">
+        <div className="progres-field">
           {" "}
           <InoPlayerProgress
             isActive={false}
             value={(movieCurrentTime / 50) * 100}
             duration={videoDuration}
             onChange={(value) => {
+              console.log("value", value, "---", videoDuration);
               setMovieCurrentTime((videoDuration * value) / 100);
             }}
             showTooltip={false}
