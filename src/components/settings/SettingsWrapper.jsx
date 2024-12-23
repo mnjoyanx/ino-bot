@@ -102,7 +102,7 @@ export default function SettingsWrapper({ children }) {
 
       const defaultLanguageId = JSON.parse(localStorage.getItem("userLangId"));
       const defaultLanguage = message.find(
-        (item) => +item.id === +defaultLanguageId,
+        (item) => +item.id === +defaultLanguageId
       );
       setSelectedLanguage(defaultLanguage);
     } catch (err) {
@@ -213,6 +213,7 @@ export default function SettingsWrapper({ children }) {
               const url = window.location.href;
               const updateUrl = url.replace("/settings", "/menu");
               window.location.href = updateUrl;
+              window.location.reload();
             }}
             onBack={() => navigate("/menu")}
             size="large"
