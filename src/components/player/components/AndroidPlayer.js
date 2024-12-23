@@ -15,7 +15,7 @@ window.PLAYER = {
     dispatchEvent(
       new CustomEvent("playerTimeUpdate", {
         detail: { current: currentTime, duration: duration },
-      }),
+      })
     );
   },
 
@@ -51,15 +51,15 @@ window.PLAYER = {
     });
 
     const filteredSubs = trackList.filter(
-      (track) => track.is_supported || !track.hasOwnProperty("is_supported"),
+      (track) => track.is_supported || !track.hasOwnProperty("is_supported")
     );
 
     const filteredAudio = audioTracks.filter(
-      (track) => track.is_supported || !track.hasOwnProperty("is_supported"),
+      (track) => track.is_supported || !track.hasOwnProperty("is_supported")
     );
 
     const filteredVideo = videoTracks.filter(
-      (track) => track.is_supported || !track.hasOwnProperty("is_supported"),
+      (track) => track.is_supported || !track.hasOwnProperty("is_supported")
     );
 
     dispatchEvent(
@@ -71,13 +71,14 @@ window.PLAYER = {
             video: filteredVideo,
           },
         },
-      }),
+      })
     );
 
     // console.log(trackList, "trackList");
   },
 
   playerError: () => {
+    console.log("playerError");
     dispatchEvent(new CustomEvent("playerError", {}));
   },
 
@@ -94,7 +95,7 @@ window.PLAYER = {
     width = window.innerWidth,
     height = window.innerHeight,
     left = 0,
-    top = 0,
+    top = 0
   ) => {
     if (!window.Android) return;
 
@@ -116,7 +117,7 @@ window.PLAYER = {
       _offset_left,
       _offset_top,
       screenWidth,
-      screenHeight,
+      screenHeight
     );
   },
 };
