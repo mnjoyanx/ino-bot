@@ -27,7 +27,7 @@ export default memo(function CategoriesWrapper({
       }
       setCategory(name);
     },
-    [category, control],
+    [category, control]
   );
 
   useKeydown({
@@ -53,7 +53,7 @@ export default memo(function CategoriesWrapper({
           itemsCount={5}
           itemsTotal={Object.keys(categories).length}
           gap={0}
-          buffer={5}
+          buffer={10}
           withTransition={false}
           itemWidth={25}
           itemHeight={7}
