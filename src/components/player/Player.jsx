@@ -81,7 +81,7 @@ export default memo(function Player({
   const [alreadyRetryed, setAlreadyRetryed] = useState(false);
   const [showAds, setShowAds] = useState(false);
   const [adTagUrl, setAdTagUrl] = useState(
-    "https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=",
+    "https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator="
   ); // Set this from your ad server
   const [cTime, setCTime] = useState(0);
   const cTimeRef = useRef(0);
@@ -252,13 +252,14 @@ export default memo(function Player({
   }, []);
 
   const onErrorHandler = async (err) => {
+    console.log("onErrorHandler", err);
     if (retryC >= maxRetries) {
       hideToast();
       setAlreadyRetryed(true);
       showToast(
         t("Unable to play video. Please try again later."),
         "error",
-        5000,
+        5000
       );
       setRetryC(0);
       return;
@@ -266,7 +267,7 @@ export default memo(function Player({
 
     showToast(
       `Attempting to replay... (${retryC + 1}/${maxRetries})`,
-      "retrying",
+      "retrying"
     );
 
     try {
@@ -300,7 +301,7 @@ export default memo(function Player({
     clearTimeout(timeout);
 
     setCTime((old) =>
-      direction === "forward" ? old + seconds : old - seconds,
+      direction === "forward" ? old + seconds : old - seconds
     );
     cTimeRef.current =
       direction === "forward"
@@ -321,12 +322,12 @@ export default memo(function Player({
       if (window.Android) {
         if (selectedSubtitle && selectedSubtitle.id !== "Off") {
           const foundIndex = subtitles.findIndex(
-            (subtitle) => subtitle.id == selectedSubtitle.id,
+            (subtitle) => subtitle.id == selectedSubtitle.id
           );
           window.Android.selectTrack(
             "TEXT",
             subtitles[foundIndex].track_index,
-            subtitles[foundIndex].group_index,
+            subtitles[foundIndex].group_index
           );
         } else if (selectedSubtitle === "Off") {
           window.Android.selectTrack("TEXT", -1, -1);
@@ -344,13 +345,13 @@ export default memo(function Player({
           audioTracks.length
         ) {
           const foundIndex = audioTracks.findIndex(
-            (audio) => audio.id == selectedAudio.id,
+            (audio) => audio.id == selectedAudio.id
           );
           if (foundIndex !== -1) {
             window.Android.selectTrack(
               "AUDIO",
               audioTracks[foundIndex].track_index,
-              audioTracks[foundIndex].group_index,
+              audioTracks[foundIndex].group_index
             );
           }
         } else if (selectedAudio === "Default") {
@@ -369,13 +370,13 @@ export default memo(function Player({
           resolutions.length
         ) {
           const foundIndex = resolutions.findIndex(
-            (resolution) => resolution.id == selectedQuality.id,
+            (resolution) => resolution.id == selectedQuality.id
           );
           if (foundIndex !== -1) {
             window.Android.selectTrack(
               "VIDEO",
               resolutions[foundIndex].track_index,
-              resolutions[foundIndex].group_index,
+              resolutions[foundIndex].group_index
             );
           }
         } else if (selectedQuality === "Auto") {
@@ -545,7 +546,7 @@ export default memo(function Player({
         onTimeUpdate={() =>
           handleTimeUpdate(
             refVideo.current.currentTime,
-            refVideo.current.duration,
+            refVideo.current.duration
           )
         }
         onEnded={streamEnd}
