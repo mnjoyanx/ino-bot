@@ -807,7 +807,10 @@ export default memo(function LiveControls({
                   console.log(currentChannel, "current channel");
                   dispatch(setPlayerType("live"));
                   // setUrl(refUrlLive.current?.url);
-                  setUrl(currentChannel?.share_url);
+                  // setUrl(currentChannel?.share_url);
+                  const lastChannelId = LOCAL_STORAGE.LAST_CHANNEL_ID.GET();
+                  console.log(lastChannelId, "last channel id");
+                  getChannelInfo(lastChannelId);
                 }}
               />
               <LiveIcon type={playerType} isActive={active === 4} />

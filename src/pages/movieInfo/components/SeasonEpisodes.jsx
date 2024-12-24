@@ -39,7 +39,7 @@ const SeasonEpisodes = ({
   const { handleEpisodeClick, handleSeasonChange } = useSeasonEpisodeActions(
     seriesId,
     setUrl,
-    episodes[activeEpisode]?.watched?.time || 0,
+    episodes[activeEpisode]?.watched?.time || 0
   );
 
   useKeydown({
@@ -79,7 +79,7 @@ const SeasonEpisodes = ({
     setCurrentEpisode(episodes[activeEpisode + 1]);
 
     const foundNextEpisode = episodes.find(
-      (_episode, index) => index === activeEpisode + 1,
+      (_episode, index) => index === activeEpisode + 1
     );
 
     if (foundNextEpisode) {
@@ -99,12 +99,12 @@ const SeasonEpisodes = ({
   }, [selectedSeason, handleSeasonChange]);
 
   useEffect(() => {
-    if (currentEpisode && currentEpisode.is_last) {
+    if (episodes && episodes.length && episodes[episodes.length - 1].is_last) {
       setIsLastEpisode(true);
     } else {
       setIsLastEpisode(false);
     }
-  }, [currentEpisode]);
+  }, [episodes]);
 
   const renderEpisodeCard = useCallback(
     ({ index, style, isActive, item }) => (
@@ -126,7 +126,7 @@ const SeasonEpisodes = ({
         }}
       />
     ),
-    [handleEpisodeClick],
+    [handleEpisodeClick]
   );
 
   return (

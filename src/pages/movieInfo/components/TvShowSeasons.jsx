@@ -52,12 +52,13 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
         seasons.map((season) => {
           allEpisodesClone[season.id] = [];
           return getEpisodeBySeasonId(season.id);
-        }),
+        })
       );
 
       let lastWatchedEpisodeId = null;
+      let lastSeasonHasEpisodeIndex = null;
 
-      res.forEach((item) => {
+      res.forEach((item, idx) => {
         if (!item.error) {
           item.message.forEach((episode, index) => {
             if (!episode.watched && index === item.message.length - 1) {
@@ -65,7 +66,24 @@ const TvShowSeasons = ({ seasons, seriesId }) => {
             }
             allEpisodesClone[episode.seasonId].push(episode);
           });
-        } else {
+
+          // if (idx === res.length - 1) {
+          //   // lastSeasonHasEpisodeIndex = idx;
+          //   console.log(item, "item");
+
+          // }
+
+          if (item.message.length) {
+            lastSeasonHasEpisodeIndex = idx;
+          }
+        }
+
+        if (lastSeasonHasEpisodeIndex && idx === res.length - 1) {
+          const lastEpisode =
+            res[lastSeasonHasEpisodeIndex].message[
+              res[lastSeasonHasEpisodeIndex].message.length - 1
+            ];
+          lastEpisode.is_last = true;
         }
 
         setCurrentEpisode(lastWatchedEpisodeId);
