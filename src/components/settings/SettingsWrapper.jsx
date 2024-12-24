@@ -147,6 +147,12 @@ export default function SettingsWrapper({ children }) {
       const version = parsedRes.message[0].version_string;
       const appId = parsedRes.message[0].app_id;
       const apk = parsedRes.message[0].apk;
+
+      if (!window.Android) {
+        setIsLastVersion(true);
+        return;
+      }
+
       const appVersion = window.Android?.getAppVersion(appId);
 
       setApkUrl(apk);
@@ -254,18 +260,20 @@ export default function SettingsWrapper({ children }) {
               >
                 {t("Close")}
               </InoButton>
-              <InoButton
-                isActive
-                size="large"
-                variant="outline"
-                classNames="apk-update_btn update"
-                onClick={() => {
-                  setIsApkModalOpen(false);
-                  updateApkHandler();
-                }}
-              >
-                {t("Update")}
-              </InoButton>
+              {!isLastVersion ? (
+                <InoButton
+                  isActive
+                  size="large"
+                  variant="outline"
+                  classNames="apk-update_btn update"
+                  onClick={() => {
+                    setIsApkModalOpen(false);
+                    updateApkHandler();
+                  }}
+                >
+                  {t("Update")}
+                </InoButton>
+              ) : null}
             </InoRow>
           </>
         )}

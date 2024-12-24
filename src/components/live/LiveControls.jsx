@@ -33,10 +33,11 @@ import ArchiveButtons from "./components/ArchiveButtons";
 import favImg from "../../assets/images/live/fav.png";
 import favFill from "../../assets/images/live/favFill.png";
 import FavActiveSvg from "@assets/icons/FavActiveSvg";
+import SvgBackward from "@assets/images/live/backward";
 
 import "./styles/LiveControl.scss";
 import { addLiveFavorite, removeLiveFavorite } from "../../server/requests";
-import { InoPlayerProgress } from "@ino-ui/tv";
+import { InoButton, InoPlayerProgress } from "@ino-ui/tv";
 
 let hideControlsTimer = null;
 
@@ -313,7 +314,7 @@ export default memo(function LiveControls({
     clearTimeout(hideControlsTimer);
 
     hideControlsTimer = setTimeout(() => {
-      setHideControls(true);
+      // setHideControls(true);
     }, 5000);
   };
 
@@ -783,15 +784,11 @@ export default memo(function LiveControls({
                 showControl={showControl}
                 hideControls={hideControls}
                 onLiveHandler={() => {
+                  console.log(currentChannel, "current channel 2");
                   dispatch(setPlayerType("live"));
                   setUrl(refUrlLive.current?.url);
                 }}
               />
-              {/* <LiveIcon type={playerType} isActive={active === 4} /> */}
-              {/* <Duration
-                _ref={currentTimeRef}
-                className={"timeshift-duration"}
-              /> */}
             </>
           ) : (
             <>
@@ -807,50 +804,54 @@ export default memo(function LiveControls({
                 showControl={showControl}
                 hideControls={hideControls}
                 onLiveHandler={() => {
+                  console.log(currentChannel, "current channel");
                   dispatch(setPlayerType("live"));
                   setUrl(refUrlLive.current?.url);
                 }}
               />
               <LiveIcon type={playerType} isActive={active === 4} />
-              {/* <Duration _ref={durationRef} className={"archive-duration"} /> */}
-              {/* <Duration
-                _ref={currentTimeRef}
-                className={"archive-current_time"}
-              /> */}
             </>
           )}
         </div>
         {playerType === "live" ? (
-          <div className={"live-fav_wrapper"}>
-            {/* <p className={`live-fav_text ${active === 2 ? "active" : ""}`}>
-              Favorite
-            </p> */}
-            {currentChannel?.favorite ? (
-              //   <img
-              //     src={favFill}
-              //     className="live-fav_icon"
-              //     onClick={() => toggleFavorite(false)}
-              //   />
-              // ) : (
-              //   <img
-              //     src={favImg}
-              //     className="live-fav_icon"
-              //     onClick={() => toggleFavorite(true)}
-              //   />
-              // )}
-
-              <FavActiveSvg
-                onClick={() => toggleFavorite(false)}
-                isFill={true}
-                isActive={active == 2}
-              />
-            ) : (
-              <FavActiveSvg
-                onClick={() => toggleFavorite(true)}
-                isFill={false}
-                isActive={active == 2}
-              />
-            )}
+          <div className="live-control_actions_wrapper">
+            {/* <div
+              className={`timeshift-btn`}
+              style={{ opacity: currentChannel?.has_archive ? "1" : "0" }}
+            > */}
+            <InoButton
+              size="small"
+              classNames="timeshift-btn"
+              isActive={active === 1}
+            >
+              <SvgBackward />
+            </InoButton>
+            {/* </div> */}
+            <div className={"live-fav_wrapper"}>
+              {currentChannel?.favorite ? (
+                <InoButton
+                  classNames="rounded-btn"
+                  size="small"
+                  isActive={active == 2}
+                >
+                  <FavActiveSvg
+                    onClick={() => toggleFavorite(false)}
+                    isFill={true}
+                  />
+                </InoButton>
+              ) : (
+                <InoButton
+                  classNames="rounded-btn"
+                  size="small"
+                  isActive={active == 2}
+                >
+                  <FavActiveSvg
+                    onClick={() => toggleFavorite(true)}
+                    isFill={false}
+                  />
+                </InoButton>
+              )}
+            </div>
           </div>
         ) : null}
       </div>

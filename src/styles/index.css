@@ -221,3 +221,7 @@ p {
 .ino-player-progress__time_current {
   color: white !important;
 }
+
+.ino-player-progress__value {
+  background-color: #fff !important;
+}

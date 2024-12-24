@@ -203,16 +203,22 @@
   }
 }
 
-.timeshift-btn {
+.ino-button--small.timeshift-btn {
   width: 4.5rem;
   height: 4.5rem;
   display: flex;
+  border-radius: 50% !important;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   margin-right: 1rem;
   position: relative;
+  background-color: $secondary-bg !important;
+  border-color: transparent !important;
 
+  &.ino-button--active {
+    background-color: $active-color !important;
+  }
   .timeshift-btn_text {
     font-size: 1.5rem;
     color: #fff;
@@ -240,10 +246,10 @@
   align-items: center;
 }
 
-.fav_active {
-  margin-left: 2rem;
-  margin-top: 0.5rem;
-}
+// .fav_active {
+//   margin-left: 2rem;
+//   margin-top: 0.5rem;
+// }
 
 .progress__time_current,
 .timeshift-progress__time_current {
@@ -270,4 +276,27 @@
 
 .ino-player-progress__container.archive .ino-player-progress__time-remaining {
   display: none !important;
+}
+
+.live-control_actions_wrapper {
+  position: absolute;
+  right: 5rem;
+  bottom: 2rem;
+  display: flex;
+  align-items: center;
+}
+
+.ino-button--small.rounded-btn {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50% !important;
+  background-color: $secondary-bg !important;
+  border-color: transparent !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.ino-button--active {
+    background-color: $active-color !important;
+  }
 }

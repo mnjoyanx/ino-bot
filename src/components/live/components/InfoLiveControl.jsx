@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import LOCAL_STORAGE from "@utils/localStorage";
 
 import SvgArrow from "@assets/images/live/SvgArrow";
-import SvgBackward from "../../../assets/images/live/backward";
 
 export default memo(function InfoLiveControl({
   currentChannel,
@@ -34,19 +33,6 @@ export default memo(function InfoLiveControl({
           </span>
         </div>
         <div className="logo">
-          {/* <img
-            src={currentChannel?.image}
-            // onLoad={(e) => {
-            //   console.log(e, "----");
-            // }}
-            onLoad={(e) => {
-              console.log(e, "----");
-              alert("kkkk");
-            }}
-            onError={(e) => (e.target.src = LOCAL_STORAGE.LOGO.GET())}
-            alt=""
-          /> */}
-
           <img
             src={logoSrc}
             onLoad={(e) => {
@@ -62,18 +48,6 @@ export default memo(function InfoLiveControl({
           <p>{currentChannel?.name}</p>
         </div>
       </div>
-
-      {playerType === "live" ? (
-        <>
-          <div
-            className={`timeshift-btn${active === 1 ? " active" : ""}`}
-            style={{ opacity: currentChannel?.has_archive ? "1" : "0" }}
-          >
-            {/* <span className="timeshift-btn_text">{t("Archive")}</span> */}
-            <SvgBackward />
-          </div>
-        </>
-      ) : null}
     </>
   );
 });
