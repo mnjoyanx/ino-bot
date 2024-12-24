@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { selectIsLangActive, setIsLangActive } from "@app/global";
 import PATHS from "@utils/paths.js";
 import { useTranslation } from "react-i18next";
+import LOCAL_STORAGE from "@utils/localStorage";
 
 import useKeydown from "@hooks/useKeydown";
 import { selectAllSettings, setAllSettings } from "@app/configs/configsSlice";
@@ -17,9 +18,14 @@ import SLanguage from "./components/SLanguage";
 import SAppInfo from "./components/SAppInfo";
 
 import "./styles/SettingsWrapper.scss";
-import { changeLang, getAppSettings, getLanguages } from "@server/requests";
+import {
+  changeLang,
+  getAppSettings,
+  getLanguages,
+  getApps,
+} from "@server/requests";
 import Loading from "@components/common/Loading";
-import { InoButton } from "@ino-ui/tv";
+import { InoButton, InoRow, Modal } from "@ino-ui/tv";
 
 export default function SettingsWrapper({ children }) {
   const dispatch = useDispatch();
@@ -34,11 +40,15 @@ export default function SettingsWrapper({ children }) {
   const [selectedLanguage, setSelectedLanguage] = useState(null);
   const [languages, setLanguages] = useState([]);
   const [list, setList] = useState([]);
+  const [isApkModalOpen, setIsApkModalOpen] = useState(false);
+  const [isLastVersion, setIsLastVersion] = useState(false);
+  const [apkUrl, setApkUrl] = useState("");
+  const [checkUpdatesLoading, setCheckUpdatesLoading] = useState(false);
 
   const isLangActive = useSelector(selectIsLangActive);
 
   useKeydown({
-    isActive: ctrl === "items" && !isLangActive,
+    isActive: ctrl === "items" && !isLangActive && !isApkModalOpen,
 
     back: () => {
       navigate(PATHS.MENU);
@@ -65,7 +75,7 @@ export default function SettingsWrapper({ children }) {
 
     down: () => {
       if (active === list.length - 1) {
-        setCtrl("reload");
+        setCtrl("checkUpdates");
         return;
       }
 
@@ -76,7 +86,6 @@ export default function SettingsWrapper({ children }) {
   const getConfigs = async (lang) => {
     setIsLoading(true);
     try {
-      // const lang = JSON.parse(localStorage.getItem("language"));
       const langId = lang.id;
       const configs = await getAppSettings({
         languageId: langId,
@@ -126,6 +135,49 @@ export default function SettingsWrapper({ children }) {
       console.log(err);
     }
   };
+
+  const getAppsHandler = async () => {
+    setCheckUpdatesLoading(true);
+    try {
+      const res = await getApps({
+        device_id: LOCAL_STORAGE.MAC_ADDRESS.GET(),
+      });
+
+      const parsedRes = JSON.parse(res);
+      const version = parsedRes.message[0].version_string;
+      const appId = parsedRes.message[0].app_id;
+      const apk = parsedRes.message[0].apk;
+      const appVersion = window.Android?.getAppVersion(appId);
+
+      setApkUrl(apk);
+      const realVersion = appVersion.slice(
+        appVersion.indexOf("(") + 1,
+        appVersion.indexOf(")")
+      );
+
+      if (realVersion < version) {
+        if (window.Android) {
+          setIsLastVersion(false);
+        } else {
+          setIsLastVersion(true);
+        }
+      } else {
+        setIsLastVersion(true);
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setCheckUpdatesLoading(false);
+    }
+  };
+
+  const updateApkHandler = async () => {
+    const appsRes = await getAppsHandler();
+    const splited = apkUrl.split("/");
+    const fileName = splited[splited.length - 1];
+    window.Android?.installApp(apkUrl, fileName);
+  };
+
   useEffect(() => {
     getLanguagesHandler();
   }, []);
@@ -179,6 +231,46 @@ export default function SettingsWrapper({ children }) {
 
   return (
     <>
+      <Modal isOpen={isApkModalOpen} onClose={() => {}} size="full">
+        {checkUpdatesLoading ? (
+          <Loading />
+        ) : (
+          <>
+            <h2 className="no-interen-title">
+              {!isLastVersion
+                ? t("There is a new version available")
+                : t("You have the latest version")}
+            </h2>
+
+            <InoRow isActive={true} classNames="apk-update_row">
+              <InoButton
+                isActive
+                variant="outline"
+                size="large"
+                classNames="apk-update_btn close"
+                onClick={() => {
+                  setIsApkModalOpen(false);
+                }}
+              >
+                {t("Close")}
+              </InoButton>
+              <InoButton
+                isActive
+                size="large"
+                variant="outline"
+                classNames="apk-update_btn update"
+                onClick={() => {
+                  setIsApkModalOpen(false);
+                  updateApkHandler();
+                }}
+              >
+                {t("Update")}
+              </InoButton>
+            </InoRow>
+          </>
+        )}
+      </Modal>
+
       {isLoading || !list.length ? (
         <div className="settings-loader">
           <Loading />
@@ -206,39 +298,44 @@ export default function SettingsWrapper({ children }) {
             </>
           </div>
 
-          <InoButton
-            isActive={ctrl === "reload"}
-            onUp={() => setCtrl("items")}
-            onClick={() => {
-              const url = window.location.href;
-              const updateUrl = url.replace("/settings", "/menu");
-              window.location.href = updateUrl;
-              window.location.reload();
-            }}
-            onBack={() => navigate("/menu")}
-            size="large"
-            classNames="reload-btn"
-            variant="outline"
-          >
-            <svg
-              fill="#fff"
-              viewBox="0 0 24 24"
-              width={24}
-              height={24}
-              className="reload-btn_icon"
+          <div className="app-settings_actions_row">
+            <InoButton
+              isActive={ctrl === "checkUpdates"}
+              onUp={() => setCtrl("items")}
+              onClick={() => {
+                // const url = window.location.href;
+                // const updateUrl = url.replace("/settings", "/menu");
+                // window.location.href = updateUrl;
+                // window.location.reload();
+                setIsApkModalOpen(true);
+                getAppsHandler();
+              }}
+              onBack={() => navigate("/menu")}
+              size="large"
+              classNames="reload-btn updates-btn"
+              variant="outline"
+              onRight={() => setCtrl("reload")}
             >
-              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                <path d="M1,12A11,11,0,0,1,17.882,2.7l1.411-1.41A1,1,0,0,1,21,2V6a1,1,0,0,1-1,1H16a1,1,0,0,1-.707-1.707l1.128-1.128A8.994,8.994,0,0,0,3,12a1,1,0,0,1-2,0Zm21-1a1,1,0,0,0-1,1,9.01,9.01,0,0,1-9,9,8.9,8.9,0,0,1-4.42-1.166l1.127-1.127A1,1,0,0,0,8,17H4a1,1,0,0,0-1,1v4a1,1,0,0,0,.617.924A.987.987,0,0,0,4,23a1,1,0,0,0,.707-.293L6.118,21.3A10.891,10.891,0,0,0,12,23,11.013,11.013,0,0,0,23,12,1,1,0,0,0,22,11Z"></path>
-              </g>
-            </svg>
-            {t("Reload")}
-          </InoButton>
+              {t("Check for updates")}
+            </InoButton>
+            <InoButton
+              isActive={ctrl === "reload"}
+              onUp={() => setCtrl("items")}
+              onClick={() => {
+                const url = window.location.href;
+                const updateUrl = url.replace("/settings", "/menu");
+                window.location.href = updateUrl;
+                window.location.reload();
+              }}
+              onBack={() => navigate("/menu")}
+              size="large"
+              classNames="reload-btn"
+              variant="outline"
+              onLeft={() => setCtrl("checkUpdates")}
+            >
+              {t("Reload")}
+            </InoButton>
+          </div>
         </>
       )}
     </>

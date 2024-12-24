@@ -160,8 +160,16 @@ p {
 .apk-update_row {
   justify-content: center;
 }
-.apk-update_btn {
+
+.ino-button.apk-update_btn {
   font-size: 2rem !important;
+  border-radius: 3.5rem !important;
+  border-color: #fff !important;
+}
+
+.apk-update_btn.ino-button--active {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  transform: scale(1) !important;
 }
 
 .apk-update_btn.close {

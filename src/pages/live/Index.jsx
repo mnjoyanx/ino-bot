@@ -141,7 +141,7 @@ export default function LivePage() {
       const favs = await getAllFavoritesHadnler();
       const _message = message.map((item) => {
         item.is_favorite = favs.some(
-          (fav) => fav.favorite.channelId === item.id,
+          (fav) => fav.favorite.channelId === item.id
         );
         return item;
       });
@@ -288,6 +288,7 @@ export default function LivePage() {
           isActive={ctrl === "protected"}
           count={4}
           isOpenKeyboard={true}
+          isAsterisk={true}
           customType={customKeyboard}
           onChange={(value) => {}}
           onComplete={(value) => {

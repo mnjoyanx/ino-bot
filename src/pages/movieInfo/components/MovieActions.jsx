@@ -89,7 +89,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
       setMovieInfo,
       movieInfo.favorite,
       movieInfo.watched?.time || 0,
-      setStartTime,
+      setStartTime
     );
 
   const [clickByWatch, setClickByWatch] = useState(true);
@@ -164,6 +164,7 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
         <InoProtectInput
           isActive={ctrl === "protected"}
           count={4}
+          isAsterisk={true}
           isOpenKeyboard={true}
           customType={customKeyboard}
           onChange={(value) => {}}

@@ -49,12 +49,25 @@
   padding-bottom: 0 !important;
 }
 
-.reload-btn {
-  margin-left: 10rem;
+.app-settings_actions_row {
   display: flex;
+  align-items: center;
+  margin-left: 10rem;
+  margin-top: 12rem;
+
+  .updates-btn {
+    margin-right: 2rem;
+  }
+}
+
+.ino-button.reload-btn {
+  // margin-left: 10rem;
+  display: flex;
+  border-radius: 3.5rem;
+  border-color: #fff !important;
 
   &.ino-button--active {
-    background-color: $active-color !important;
+    background-color: rgba(255, 255, 255, 0.2) !important;
     transform: scale(1) !important;
   }
 }

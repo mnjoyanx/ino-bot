@@ -29,8 +29,8 @@ export default defineConfig({
       css: ".",
       html: ".",
     },
-    // assetPrefix: "http://tv.tctv.ge/",
-    assetPrefix: "./",
+    assetPrefix: "http://tv.tctv.ge/",
+    // assetPrefix: "./",
   },
 
   dev: {
