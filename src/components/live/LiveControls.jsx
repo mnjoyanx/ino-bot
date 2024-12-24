@@ -8,7 +8,6 @@ import {
   setPlayerType,
   selectChannels,
   setChannels,
-  setAllChannels,
 } from "@app/channels/channelsSlice";
 import { useTranslation } from "react-i18next";
 import {
@@ -25,13 +24,9 @@ import useKeydown from "@hooks/useKeydown";
 
 import LOCAL_STORAGE from "@utils/localStorage";
 
-import Duration from "../player/components/Duration";
-import Progress from "../player/components/Progress";
 import LiveIcon from "./components/LiveIcon";
 import InfoLiveControl from "./components/InfoLiveControl";
 import ArchiveButtons from "./components/ArchiveButtons";
-import favImg from "../../assets/images/live/fav.png";
-import favFill from "../../assets/images/live/favFill.png";
 import FavActiveSvg from "@assets/icons/FavActiveSvg";
 import SvgBackward from "@assets/images/live/backward";
 
@@ -147,15 +142,14 @@ export default memo(function LiveControls({
     if ((number + num.toString()).length <= 4) {
       setNumber(_number);
 
-      // Clear any existing timeout
       if (timeOutNumber.current) {
         clearTimeout(timeOutNumber.current);
       }
 
-      // Set new timeout to clear the number after 5 seconds
       timeOutNumber.current = setTimeout(() => {
+        findChannelByNumber(_number);
         setNumber("");
-      }, 5000);
+      }, 1000);
     }
   };
 
@@ -314,7 +308,7 @@ export default memo(function LiveControls({
     clearTimeout(hideControlsTimer);
 
     hideControlsTimer = setTimeout(() => {
-      // setHideControls(true);
+      setHideControls(true);
     }, 5000);
   };
 
@@ -393,7 +387,6 @@ export default memo(function LiveControls({
         // window.Android.play();
       }
       dispatch(setShowPreviewImages(false));
-      // if (!isPaused) secCurrentTime.current = 0;
     },
 
     fast_prev: leftKeyPrevImage,
@@ -445,7 +438,6 @@ export default memo(function LiveControls({
     right: () => {
       showControl();
       if (hideControls) return;
-      // if (currentChannel?.has_archive) setActive(1);
       if (currentChannel?.has_archive) {
         if (active < 2) {
           setActive(active + 1);
@@ -462,8 +454,11 @@ export default memo(function LiveControls({
     up: () => {
       showControl();
       if (hideControls) return;
-      // Clear number if it exists
       if (number) {
+        // Clear both the number and the timeout
+        if (timeOutNumber.current) {
+          clearTimeout(timeOutNumber.current);
+        }
         setNumber("");
         return;
       }
@@ -473,12 +468,28 @@ export default memo(function LiveControls({
     down: () => {
       showControl();
       if (hideControls) return;
-      // Clear number if it exists
       if (number) {
+        if (timeOutNumber.current) {
+          clearTimeout(timeOutNumber.current);
+        }
         setNumber("");
         return;
       }
       prevChannel();
+    },
+
+    back: () => {
+      if (number) {
+        if (timeOutNumber.current) {
+          clearTimeout(timeOutNumber.current);
+        }
+        setNumber("");
+        return;
+      }
+      console.log("baccckkckc 2");
+      dispatch(setIsCategoriesOpen(true));
+      setPipMode(true);
+      window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
     },
 
     ok: () => {
@@ -523,18 +534,6 @@ export default memo(function LiveControls({
         }
         dispatch(setPlayerType("live"));
       }
-    },
-
-    back: () => {
-      if (number) {
-        setNumber("");
-        return;
-      }
-
-      console.log("baccckkckc 2");
-      dispatch(setIsCategoriesOpen(true));
-      setPipMode(true);
-      window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
     },
   });
 
