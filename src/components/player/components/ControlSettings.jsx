@@ -89,7 +89,7 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
   const [expandedOption, setExpandedOption] = useState(null);
   const [activeChild, setActiveChild] = useState(0);
   const [settingsOptions, setSettingsOptions] = useState(
-    initialSettingsOptions,
+    initialSettingsOptions
   );
 
   useEffect(() => {
@@ -221,7 +221,7 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
           window.Android.selectTrack(
             "VIDEO",
             newValue.track_index,
-            newValue.group_index,
+            newValue.group_index
           );
           dispatch(setSelectedQuality(newValue));
           break;
@@ -229,7 +229,7 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
           window.Android.selectTrack(
             "AUDIO",
             newValue.track_index,
-            newValue.group_index,
+            newValue.group_index
           );
           dispatch(setSelectedAudio(newValue));
           break;
@@ -240,7 +240,7 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
             window.Android.selectTrack(
               "TEXT",
               newValue.track_index,
-              newValue.group_index,
+              newValue.group_index
             );
           }
           dispatch(setSelectedSubtitle(newValue));
@@ -284,12 +284,12 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
         setActiveChild((prev) =>
           Math.min(
             settingsOptions[expandedOption].children.length - 1,
-            prev + 1,
-          ),
+            prev + 1
+          )
         );
       } else {
         setActiveOption((prev) =>
-          Math.min(settingsOptions.length - 1, prev + 1),
+          Math.min(settingsOptions.length - 1, prev + 1)
         );
       }
     },
@@ -311,6 +311,12 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
     ok: () => {
       showControl();
       if (expandedOption !== null) {
+        if (
+          settingsOptions[expandedOption].children[activeChild].id ===
+          settingsOptions[expandedOption].value.id
+        ) {
+          return;
+        }
         const newValue = settingsOptions[expandedOption].children[activeChild];
         handleOptionSelect(expandedOption, newValue);
       } else {

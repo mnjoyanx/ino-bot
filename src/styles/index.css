@@ -225,3 +225,6 @@ p {
 .ino-player-progress__value {
   background-color: #fff !important;
 }
+.ino-player-progress {
+  background-color: rgba(143, 143, 143, 0.6) !important;
+}
