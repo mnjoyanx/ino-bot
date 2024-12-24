@@ -15,9 +15,10 @@ import {
   setShowPreviewImages,
   selectShowPreviewImages,
   selectIsPaused,
+  selectCurrentArchive,
 } from "@app/player/playerSlice";
 import { channelInfo } from "@server/requests";
-import { formatTime } from "@utils/util";
+import { formatDate, formatTime } from "@utils/util";
 import { selectCtrl, setIsCategoriesOpen } from "@app/global";
 
 import useKeydown from "@hooks/useKeydown";
@@ -80,10 +81,13 @@ export default memo(function LiveControls({
   const [number, setNumber] = useState("");
   const [active, setActive] = useState(0);
   const [hideControls, setHideControls] = useState(false);
+  const [time, setTime] = useState(new Date().getTime());
 
   const channelChangeTimeout = useRef(null);
 
   const [displayChannel, setDisplayChannel] = useState(null);
+
+  const currentArchive = useSelector(selectCurrentArchive);
 
   const findChannel = () => {
     if (allChannels.length <= 1) return;
@@ -287,6 +291,14 @@ export default memo(function LiveControls({
         break;
     }
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(new Date().getTime());
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -695,16 +707,6 @@ export default memo(function LiveControls({
         />
         <div className="progres-field">
           {playerType === "live" ? (
-            // <Progress
-            //   playerType={playerType}
-            //   color="#FFFFFF"
-            //   refProgress={refProgress}
-            //   refVal={refVal}
-            //   duration={secDuration}
-            //   currentTime={currentTimeSeekto.current}
-            //   onSeekTo={seekToHandler}
-            //   seekByClick={seekByClick}
-            // />
             <InoPlayerProgress
               isActive={false}
               value={remainingTime}
@@ -718,15 +720,47 @@ export default memo(function LiveControls({
             />
           ) : (
             <>
+              <div>
+                {playerType === "timeshift" ? (
+                  <div className="timeshift-progress__time_current">
+                    {formatDate(
+                      new Date(time - duration * 1000 + cTime * 1000),
+                      "hh:mm aaa"
+                    )}
+                  </div>
+                ) : (
+                  <div className={`progress__time_current ${playerType}`}>
+                    {formatDate(
+                      new Date((currentArchive?.start_ut + cTime) * 1000),
+                      "hh:mm aaa"
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="progress__time_current">
+                {playerType === "timeshift" ? (
+                  <>{formatDate(new Date(time), "hh:mm aaa")}</>
+                ) : (
+                  <>
+                    {formatDate(
+                      new Date(currentArchive?.stop_ut * 1000),
+                      "hh:mm aaa"
+                    )}
+                  </>
+                )}
+              </div>
               <InoPlayerProgress
                 isActive={false}
                 value={remainingTime}
                 duration={duration}
-                showTime={true}
+                showTime={false}
                 onChange={(value) => {
                   changeCTime((value * refVideo.current.duration) / 100);
                 }}
+                showDuration={false}
+                showLastTime={false}
                 showTooltip={false}
+                classNames={playerType}
               />
             </>
           )}

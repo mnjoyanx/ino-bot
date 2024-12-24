@@ -244,3 +244,30 @@
   margin-left: 2rem;
   margin-top: 0.5rem;
 }
+
+.progress__time_current,
+.timeshift-progress__time_current {
+  color: white;
+  font-size: 1.6rem;
+  position: absolute;
+  top: -2rem;
+  z-index: 100;
+}
+
+.progress__time_current {
+  right: 0;
+}
+.progress__time_current.archive {
+  left: 0;
+}
+
+.timeshift-progress__time_current {
+  left: 0;
+}
+.ino-player-progress__container.timeshift .ino-player-progress__time-remaining {
+  display: none !important;
+}
+
+.ino-player-progress__container.archive .ino-player-progress__time-remaining {
+  display: none !important;
+}

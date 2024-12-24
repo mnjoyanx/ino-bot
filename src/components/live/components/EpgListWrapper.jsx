@@ -61,7 +61,7 @@ export default memo(function EpgListWrapper({
       const currentEpgIndex = message.findIndex(
         (e) =>
           e.start_ut * 1000 < currnetDate.current &&
-          e.stop_ut * 1000 > currnetDate.current,
+          e.stop_ut * 1000 > currnetDate.current
       );
 
       if (currentEpgIndex !== -1) {
@@ -112,7 +112,7 @@ export default memo(function EpgListWrapper({
         window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
       }
     },
-    [currentChannel],
+    [currentChannel]
   );
 
   // const setUrlArchive = (item) => {

@@ -208,12 +208,12 @@ export default function VodControls({
             isActive={false}
             value={(movieCurrentTime / 50) * 100}
             duration={videoDuration}
+            showDuration={true}
             onChange={(value) => {
-              console.log("value", value, "---", videoDuration);
               setMovieCurrentTime((videoDuration * value) / 100);
             }}
             showTooltip={false}
-            showTime={true}
+            showTime={false}
           />
           <div className="vod-actions_wrapper">
             <div className="vod-ctrl_btns_right">

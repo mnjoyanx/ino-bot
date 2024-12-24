@@ -91,7 +91,7 @@ const getVersion = () => {
 
   setTimeout(function () {
     getVersion();
-  }, 30000);
+  }, 300000);
 };
 
 getVersion();
@@ -141,7 +141,7 @@ function App() {
       setApkUrl(apk);
       const realVersion = appVersion.slice(
         appVersion.indexOf("(") + 1,
-        appVersion.indexOf(")"),
+        appVersion.indexOf(")")
       );
 
       if (realVersion < version) {
@@ -171,7 +171,7 @@ function App() {
     } else {
       localStorage.setItem(
         "parental_code",
-        JSON.stringify(message.parental_code),
+        JSON.stringify(message.parental_code)
       );
     }
   };

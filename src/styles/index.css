@@ -209,3 +209,7 @@ p {
 .ino-protect-input-boxes .ino-protect-input-box.active {
   border-color: #fff !important;
 }
+
+.ino-player-progress__time_current {
+  color: white !important;
+}
