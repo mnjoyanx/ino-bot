@@ -806,7 +806,8 @@ export default memo(function LiveControls({
                 onLiveHandler={() => {
                   console.log(currentChannel, "current channel");
                   dispatch(setPlayerType("live"));
-                  setUrl(refUrlLive.current?.url);
+                  // setUrl(refUrlLive.current?.url);
+                  setUrl(currentChannel?.share_url);
                 }}
               />
               <LiveIcon type={playerType} isActive={active === 4} />
