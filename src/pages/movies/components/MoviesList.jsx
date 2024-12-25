@@ -83,7 +83,7 @@ const MoviesList = ({ isVertical, isLoading }) => {
         />
       );
     },
-    [isVertical, cropHost],
+    [isVertical, cropHost]
   );
 
   return (
@@ -103,13 +103,14 @@ const MoviesList = ({ isVertical, isLoading }) => {
                     data={currentMovies}
                     rowsCount={currentMovies.length}
                     visibleRowsCount={1}
+                    itemsCount={5}
+                    initialActiveIndex={3}
                     itemWidth={20}
                     itemHeight={30}
                     withTitle={true}
                     buffer={3}
                     debounce={200}
                     onFirstRow={({ key }) => {
-                      console.log(key, "keeey");
                       if (key === "up") {
                         dispatch(setCtrl("backBtn"));
                       } else {
