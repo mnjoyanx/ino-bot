@@ -77,7 +77,7 @@ const MovieInfoContent = () => {
   const rememberTimeHandler = async (
     currentTime,
     percent,
-    needToRefetch = false,
+    needToRefetch = false
   ) => {
     const body = {
       movieId: id,
@@ -172,7 +172,7 @@ const MovieInfoContent = () => {
               1280,
               720,
               "0",
-              "jpg",
+              "jpg"
             )}
           />
         ) : null}
@@ -207,7 +207,7 @@ const MovieInfoContent = () => {
                 <TvShowSeasons seasons={movieInfo.seasons} seriesId={id} />
               )}
             </div>
-            {isPlayerOpen && (
+            {isPlayerOpen && url && (
               <Player
                 type="vod"
                 url={url}

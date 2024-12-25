@@ -7,6 +7,10 @@ window.PLAYER = {
     console.log("buffering");
   },
 
+  goHome: function () {
+    dispatchEvent(new CustomEvent("goHome", {}));
+  },
+
   androidPlayerTimeUpdate: function () {
     const currentTime = window.Android.getCurrentTime();
     const duration = window.Android.getVideoDuration();
@@ -132,6 +136,7 @@ export default function AndroidPlayer({
   onLoadedMetadata,
   getTracks,
   onErrorHandler,
+  goHome,
 }) {
   const streamEnded = () => {
     streamEnd();
@@ -155,6 +160,10 @@ export default function AndroidPlayer({
     onErrorHandler(err);
   };
 
+  const goHomeHandler = () => {
+    goHome();
+  };
+
   useEffect(() => {
     window.addEventListener("playerTimeUpdate", timeUpdateHandler);
     window.addEventListener("streamEnded", streamEnded);
@@ -162,7 +171,7 @@ export default function AndroidPlayer({
     window.addEventListener("playbackLoaded", onLoadedMetadata);
     window.addEventListener("getTracks", getTracksHandler);
     window.addEventListener("playerError", playerErrorHandler);
-
+    window.addEventListener("goHome", goHomeHandler);
     return () => {
       window.removeEventListener("playerTimeUpdate", timeUpdateHandler);
       window.removeEventListener("streamEnded", streamEnded);
@@ -170,6 +179,7 @@ export default function AndroidPlayer({
       window.removeEventListener("playbackLoaded", onLoadedMetadata);
       window.removeEventListener("getTracks", getTracksHandler);
       window.removeEventListener("playerError", playerErrorHandler);
+      window.removeEventListener("goHome", goHomeHandler);
     };
   }, []);
 

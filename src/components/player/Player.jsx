@@ -30,6 +30,7 @@ import { GoogleIMA } from "../../GoogleIMA";
 
 import "./styles/player.scss";
 import { setMoviesView, setChannelsView } from "@server/requests";
+import { InoButton, Modal } from "@ino-ui/tv";
 
 let timeout = null;
 
@@ -75,6 +76,7 @@ export default memo(function Player({
   const selectedSubtitle = useSelector(selectSelectedSubtitle);
   const selectedQuality = useSelector(selectSelectedQuality);
   const [isPlayedOnce, setIsPlayedOnce] = useState(false);
+  const [isMovieLoaded, setIsMovieLoaded] = useState(true);
 
   const [secDuration, setSecDuration] = useState(0);
   const [retryCount, setRetryCount] = useState(0);
@@ -253,6 +255,9 @@ export default memo(function Player({
 
   const onErrorHandler = async (err) => {
     console.log("onErrorHandler", err);
+    if (type === "vod") {
+      setIsMovieLoaded(false);
+    }
     if (retryC >= maxRetries) {
       hideToast();
       setAlreadyRetryed(true);
@@ -387,6 +392,9 @@ export default memo(function Player({
   }, [resolutions, selectedQuality]);
 
   useEffect(() => {
+    if (type === "vod") {
+      setIsMovieLoaded(true);
+    }
     document.addEventListener("playerError", onErrorHandler);
     setRetryC(0);
     hideToast();
@@ -504,9 +512,7 @@ export default memo(function Player({
   }, [type === "live" ? currentChannel?.id : movieId]);
 
   const renderPlayer = () => {
-    if (!url) return null;
-
-    console.log(url, "------url", LOCAL_STORAGE.DEVICE_OS.GET());
+    if (!url) return;
 
     if (LOCAL_STORAGE.DEVICE_OS.GET() === "android") {
       return (
@@ -522,6 +528,9 @@ export default memo(function Player({
           onSeek={handleSeek}
           getTracks={getTracksHandler}
           onErrorHandler={onErrorHandler}
+          goHome={() => {
+            navigate("/menu");
+          }}
         />
       );
     }
@@ -564,6 +573,18 @@ export default memo(function Player({
 
   return (
     <>
+      <Modal
+        isOpen={!isMovieLoaded}
+        onClose={() => setIsMovieLoaded(false)}
+        size="full"
+      >
+        <div>
+          <p>{t("Unable to play video. Please try again later.")}</p>
+          <InoButton size="large" onClick={() => setIsMovieLoaded(false)}>
+            {t("Close")}
+          </InoButton>
+        </div>
+      </Modal>
       <div ref={adContainerRef} id="adContainerRef"></div>
       <div id="controls_player">
         {type === "live" && !pipMode && (

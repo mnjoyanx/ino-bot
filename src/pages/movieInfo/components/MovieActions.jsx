@@ -132,6 +132,10 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
             setIsShowProtected(true);
             dispatch(setCtrl("protected"));
           } else {
+            if (!url) {
+              toast.error("Unable to play video. Please try again later.");
+              return;
+            }
             setStartTime(movie.watched.time);
             handleContinueWatchingClick();
           }
@@ -189,6 +193,10 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
           <Button
             className={styles["action-btn"]}
             onClick={() => {
+              if (!url) {
+                toast.error("Unable to play video. Please try again later.");
+                return;
+              }
               setClickByWatch(true);
               if (movie.is_protected) {
                 setIsShowProtected(true);
@@ -207,6 +215,10 @@ const MovieActions = ({ movie, movieId, currentEpisode, isPlayerOpen }) => {
           <Button
             className={styles["action-btn"]}
             onClick={() => {
+              if (!url) {
+                toast.error("Unable to play video. Please try again later.");
+                return;
+              }
               setClickByWatch(false);
               if (movie.is_protected) {
                 setIsShowProtected(true);

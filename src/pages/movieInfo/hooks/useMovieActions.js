@@ -6,7 +6,7 @@ import { getMovieUrl, addFavorite } from "@server/requests";
 import { useToast } from "@hooks/useToast";
 import { removeFavorite } from "../../../server/requests";
 import { useMovieInfo } from "../../../context/movieInfoContext";
-
+import { toast } from "@ino-ui/tv";
 export const useMovieActions = (
   id,
   setUrl,
@@ -15,7 +15,7 @@ export const useMovieActions = (
   setMovieInfo,
   isFavorite,
   startTime,
-  setStartTime,
+  setStartTime
 ) => {
   const dispatch = useDispatch();
   const { showToast } = useToast();
@@ -37,14 +37,17 @@ export const useMovieActions = (
       const response = await getMovieUrl(body);
       const parsedResponse = JSON.parse(response);
       if (!parsedResponse.error) {
-        dispatch(setIsPlayerOpen(true));
-        dispatch(setPlayerType("vod"));
-        dispatch(setCtrl("vodCtrl"));
-        setUrl(parsedResponse.message.stream_url);
-        // setUrl("https://stream-akamai.castr.com/5b9352dbda7b8c769937e459/live_2361c920455111ea85db6911fe397b9e/index.fmp4.m3u8");
+        if (parsedResponse.message.stream_url) {
+          setUrl(parsedResponse.message.stream_url);
+          dispatch(setIsPlayerOpen(true));
+          dispatch(setPlayerType("vod"));
+          dispatch(setCtrl("vodCtrl"));
+        } else {
+          toast.error("Unable to play video. Please try again later.");
+        }
       }
     },
-    [id, dispatch, setUrl, setStartTime, startTime],
+    [id, dispatch, setUrl, setStartTime, startTime]
   );
 
   const handleContinueWatchingClick = useCallback(() => {
