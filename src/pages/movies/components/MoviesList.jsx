@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useContext, useEffect } from "react";
+import React, {
+  useState,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -32,6 +38,9 @@ const MoviesList = ({ isVertical, isLoading }) => {
   const { moviesByGenre, dynamicContent } = useContext(MoviesContext);
   const isMovieSearchBarOpen = useSelector(selectIsMovieSearchBarOpen);
 
+  const lastIndex = useRef(0);
+  const lastRow = useRef(0);
+
   const [activeCategory, setActiveCategory] = useState(0);
 
   useEffect(() => {
@@ -47,6 +56,15 @@ const MoviesList = ({ isVertical, isLoading }) => {
   useEffect(() => {
     setActiveCategory(0);
   }, [selectedType]);
+
+  // useEffect(() => {
+  //   const lastIndex = localStorage.getItem("lastIndex");
+  //   const lastRow = localStorage.getItem("lastRow");
+  //   if (lastIndex && lastRow) {
+  //     lastIndex.current = lastIndex;
+  //     lastRow.current = lastRow;
+  //   }
+  // }, []);
 
   useKeydown({
     isActive: ctrl === "moviesSeries" && !isMovieSearchBarOpen,
@@ -67,6 +85,11 @@ const MoviesList = ({ isVertical, isLoading }) => {
     // },
   });
 
+  const onCardClick = useCallback(() => {
+    localStorage.setItem("lastIndex", lastIndex.current);
+    localStorage.setItem("lastRow", lastRow.current);
+  }, []);
+
   const renderMovieCard = useCallback(
     ({ index, style, isActive, item }) => {
       return (
@@ -80,6 +103,7 @@ const MoviesList = ({ isVertical, isLoading }) => {
           }
           poster={`${imageResizer(cropHost, item.poster, 200, 300, "0", "jpg")}`}
           isVertical={isVertical}
+          onCardClick={onCardClick}
         />
       );
     },
@@ -104,14 +128,32 @@ const MoviesList = ({ isVertical, isLoading }) => {
                     rowsCount={currentMovies.length}
                     visibleRowsCount={1}
                     itemsCount={5}
-                    initialActiveIndex={3}
                     itemWidth={20}
                     itemHeight={30}
                     withTitle={true}
+                    // initialActiveIndex={2}
+                    initialActiveIndex={
+                      lastIndex.current
+                        ? lastIndex.current
+                        : localStorage.getItem("lastIndex")
+                    }
+                    initialRowActiveIndex={
+                      lastRow.current
+                        ? lastRow.current
+                        : localStorage.getItem("lastRow")
+                    }
+                    // initialRowActiveIndex={2}
                     buffer={3}
                     debounce={200}
+                    onRowChange={(row) => {
+                      lastRow.current = row;
+                    }}
+                    onIndexChange={(index) => {
+                      lastIndex.current = index;
+                    }}
                     onFirstRow={({ key }) => {
                       if (key === "up") {
+                        alert("up");
                         dispatch(setCtrl("backBtn"));
                       } else {
                         navigate("/menu");
