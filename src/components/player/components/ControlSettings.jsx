@@ -97,9 +97,10 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
       const newOptions = [...prevOptions];
 
       if (window.Android) {
-        console.log(newOptions, "newOptions");
-        newOptions.splice(1, 1);
-        console.log(newOptions, "newOptions");
+        // newOptions.splice(1, 1);
+        newOptions = newOptions.filter(
+          (option) => option.name !== "Playback Speed"
+        );
       }
 
       if (resolutions?.length > 0) {
