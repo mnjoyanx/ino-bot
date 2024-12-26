@@ -274,7 +274,7 @@ function App() {
   useEffect(() => {
     getConfigs();
     if (window.Android) {
-      os();
+      os(() => {});
     }
   }, []);
 
