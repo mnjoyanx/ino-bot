@@ -147,6 +147,9 @@ function App() {
         appVersion.indexOf(")")
       );
 
+      const versionApp = window.Android.getAppVersion(appId);
+      localStorage.setItem("app_version", versionApp);
+
       if (realVersion < version) {
         if (window.Android) {
           setIsApkModalOpen(true);

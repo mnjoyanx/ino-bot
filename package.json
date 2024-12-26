@@ -1,6 +1,6 @@
 {
   "name": "tstv",
-  "version": "1.5.35",
+  "version": "1.5.36",
   "main": "index.js",
   "scripts": {
     "dev": "rsbuild dev --open",

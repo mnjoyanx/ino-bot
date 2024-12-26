@@ -256,6 +256,7 @@ export default memo(function Player({
   const onErrorHandler = async (err) => {
     if (type === "vod") {
       setIsMovieLoaded(false);
+      return;
     }
     if (retryC >= maxRetries) {
       hideToast();
@@ -579,7 +580,11 @@ export default memo(function Player({
       >
         <div>
           <p>{t("Unable to play video. Please try again later.")}</p>
-          <InoButton size="large" onClick={() => setIsMovieLoaded(false)}>
+          <InoButton
+            size="large"
+            isActive={!isMovieLoaded}
+            onClick={() => setIsMovieLoaded(false)}
+          >
             {t("Close")}
           </InoButton>
         </div>
