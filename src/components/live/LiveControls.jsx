@@ -130,10 +130,6 @@ export default memo(function LiveControls({
       if (message.stream_type === "internal" && LOCAL_STORAGE.TOKEN.GET()) {
         _url += "?token=" + LOCAL_STORAGE.TOKEN.GET();
       }
-      console.log(
-        message,
-        "messagemessagemessagemessagemessagemessagemessagemessage"
-      );
 
       if (!message?.id_protected) {
         LOCAL_STORAGE.LAST_CHANNEL_ID.SET(id);
@@ -355,7 +351,6 @@ export default memo(function LiveControls({
     showControl();
     if (hideControls) return;
     if (refNextChannel.current) {
-      console.log("nextChannel", refNextChannel.current);
       if (channelChangeTimeout.current) {
         clearTimeout(channelChangeTimeout.current);
       }

@@ -31,12 +31,23 @@
   .progres-field {
     width: 100%;
     position: relative;
-    margin-bottom: 2rem;
+    // margin-bottom: 2rem;
+    height: 5rem;
+    overflow: hidden !important;
 
     .vod-current-time,
     .vod-duration {
       font-size: 1.4rem;
     }
+  }
+
+  .ino-player-progress__time-remaining,
+  .ino-player-progress__duration {
+    top: 0 !important;
+  }
+
+  .ino-player-progress__container {
+    height: 5rem !important;
   }
 
   .vod-control-btns {
