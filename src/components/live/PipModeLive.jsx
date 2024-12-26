@@ -6,6 +6,8 @@ import {
   selectChannels,
   selectAllChannels,
   setChannels,
+  selectCurrentChannel,
+  setSelectedCategory as setSelectedCategorySlice,
 } from "@app/channels/channelsSlice";
 import { getChannelCategories, getLiveFavorite } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
@@ -20,7 +22,7 @@ import SearchHandler from "./components/SearchHandler";
 
 import "./styles/PipModeLive.scss";
 import Search from "../search/Search";
-import { setCtrl } from "../../app/global";
+import { setCtrl, setLastActiveIndex } from "../../app/global";
 
 export default memo(function PipModeLive({
   setUrl,
@@ -36,10 +38,11 @@ export default memo(function PipModeLive({
   const configs = useSelector(selectConfigs);
   const channelCategories = useSelector(selectChannels);
   const allChannels = useSelector(selectAllChannels);
+  const currentChannel = useSelector(selectCurrentChannel);
 
   const refSetIndex = useRef(false);
 
-  const [activeControl, setActiveControl] = useState("channel"); // category, channel,epg,search
+  const [activeControl, setActiveControl] = useState("channel");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [showSearch, setShowSearch] = useState(false);
 
@@ -54,6 +57,15 @@ export default memo(function PipModeLive({
       getCategories();
     }
   }, [allChannels]);
+
+  useEffect(() => {
+    if (currentChannel) {
+      const foundIndex = allChannels.findIndex(
+        (item) => item.id === currentChannel.id
+      );
+      dispatch(setLastActiveIndex(foundIndex));
+    }
+  }, [currentChannel]);
 
   useEffect(() => {
     if (activeControl === "search") {
@@ -73,20 +85,6 @@ export default memo(function PipModeLive({
       } else {
         sortCategories(message);
       }
-    }
-  };
-
-  const getAllFavoritesHadnler = async () => {
-    try {
-      const res = await getLiveFavorite();
-      const parsedRes = JSON.parse(res);
-      if (!parsedRes.error) {
-        return parsedRes.message.rows;
-      }
-
-      return [];
-    } catch (err) {
-      console.log(err);
     }
   };
 
@@ -119,7 +117,7 @@ export default memo(function PipModeLive({
 
       for (let i = 0; i < allChannels.length; i++) {
         let channel = allChannels[i].categories.find(
-          (e) => e.id === category.id,
+          (e) => e.id === category.id
         );
 
         if (allChannels[i].is_favorite) {
@@ -146,10 +144,12 @@ export default memo(function PipModeLive({
     obj_categories["favorites"].content = favs;
     obj_categories["favorites"].total = favs.length;
 
-    console.log(obj_categories, "obj_categories");
-
     dispatch(setChannels({ ...obj_categories }));
   };
+
+  useEffect(() => {
+    dispatch(setSelectedCategorySlice(selectedCategory));
+  }, [selectedCategory]);
 
   useKeydown({
     isActive: !showSearch,

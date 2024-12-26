@@ -35,7 +35,9 @@ export default memo(function ResultSearch({
     const { error, message } = parsedResponse;
 
     if (!error) {
-      LOCAL_STORAGE.LAST_CHANNEL_ID.SET(id);
+      if (!message?.id_protected) {
+        LOCAL_STORAGE.LAST_CHANNEL_ID.SET(id);
+      }
       dispatch(setCurrentChannel(message));
       setUrl(message.url);
       setShow(false);

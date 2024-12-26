@@ -5,6 +5,7 @@ const initialState = {
   allChannels: [],
   currentChannel: null,
   playerType: "live", // live,archive or timeshift
+  selectedCategory: "All",
 };
 
 const channelsSlice = createSlice({
@@ -25,6 +26,10 @@ const channelsSlice = createSlice({
 
     setPlayerType: (state, action) => {
       state.playerType = action.payload;
+    },
+
+    setSelectedCategory: (state, action) => {
+      state.selectedCategory = action.payload;
     },
 
     toggleFavorite: (state, action) => {
@@ -60,10 +65,11 @@ export const { setAllChannels } = channelsSlice.actions;
 export const { setCurrentChannel } = channelsSlice.actions;
 export const { setPlayerType } = channelsSlice.actions;
 export const { toggleFavorite } = channelsSlice.actions;
-
+export const { setSelectedCategory } = channelsSlice.actions;
 export const selectChannels = (state) => state.channels.channels;
 export const selectAllChannels = (state) => state.channels.allChannels;
 export const selectCurrentChannel = (state) => state.channels.currentChannel;
 export const selectPlayerType = (state) => state.channels.playerType;
-
+export const selectSelectedCategory = (state) =>
+  state.channels.selectedCategory;
 export default channelsSlice.reducer;

@@ -21,6 +21,7 @@ const initialState = {
   isCategoriesOpen: false,
   isUpdateModalOpen: false,
   isLangActive: false,
+  lastActiveIndex: 0,
 };
 
 const globalSlice = createSlice({
@@ -88,6 +89,9 @@ const globalSlice = createSlice({
     setIsLangActive: (state, action) => {
       state.isLangActive = action.payload;
     },
+    setLastActiveIndex: (state, action) => {
+      state.lastActiveIndex = action.payload;
+    },
   },
 });
 
@@ -112,6 +116,7 @@ export const {
   setIsUpdateModalOpen,
   setIsLangActive,
   setIsLiveProtectedModalOpen,
+  setLastActiveIndex,
 } = globalSlice.actions;
 
 export const selectCtrl = (state) => state.global.ctrl;
@@ -140,4 +145,5 @@ export const selectIsUpdateModalOpen = (state) =>
 export const selectIsLangActive = (state) => state.global.isLangActive;
 export const selectIsLiveProtectedModalOpen = (state) =>
   state.global.isLiveProtectedModalOpen;
+export const selectLastActiveIndex = (state) => state.global.lastActiveIndex;
 export default globalSlice.reducer;

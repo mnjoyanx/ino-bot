@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   selectCurrentChannel,
@@ -8,6 +8,7 @@ import {
   setPlayerType,
   selectChannels,
   setChannels,
+  selectSelectedCategory,
 } from "@app/channels/channelsSlice";
 import { useTranslation } from "react-i18next";
 import {
@@ -18,7 +19,11 @@ import {
 } from "@app/player/playerSlice";
 import { channelInfo } from "@server/requests";
 import { formatDate, formatTime } from "@utils/util";
-import { selectCtrl, setIsCategoriesOpen } from "@app/global";
+import {
+  selectCtrl,
+  setIsCategoriesOpen,
+  setLastActiveIndex,
+} from "@app/global";
 
 import useKeydown from "@hooks/useKeydown";
 
@@ -66,6 +71,7 @@ export default memo(function LiveControls({
   const isPaused = useSelector(selectIsPaused);
   const ctrl = useSelector(selectCtrl);
   const categoryChannels = useSelector(selectChannels);
+  const selectedCategory = useSelector(selectSelectedCategory);
 
   const refNextChannel = useRef(null);
   const refPrevChannel = useRef(null);
@@ -124,8 +130,14 @@ export default memo(function LiveControls({
       if (message.stream_type === "internal" && LOCAL_STORAGE.TOKEN.GET()) {
         _url += "?token=" + LOCAL_STORAGE.TOKEN.GET();
       }
+      console.log(
+        message,
+        "messagemessagemessagemessagemessagemessagemessagemessage"
+      );
 
-      LOCAL_STORAGE.LAST_CHANNEL_ID.SET(id);
+      if (!message?.id_protected) {
+        LOCAL_STORAGE.LAST_CHANNEL_ID.SET(id);
+      }
       dispatch(setCurrentChannel(message));
 
       if (message.is_protected) {
@@ -376,11 +388,16 @@ export default memo(function LiveControls({
     }
   };
 
+  const findCurrentIndex = useCallback(() => {
+    return categoryChannels[selectedCategory]?.content?.findIndex((item) => {
+      return item.id === currentChannel?.id;
+    });
+  }, [categoryChannels, selectedCategory, currentChannel]);
+
   useKeydown({
     isActive: showPreviewImages && ctrl !== "protected",
 
     back: () => {
-      console.log("baccckkckc");
       if (!window.Android) {
         if (!isPaused) refVideo.current.play();
       } else {
@@ -479,6 +496,9 @@ export default memo(function LiveControls({
     },
 
     back: () => {
+      const currentIndex = findCurrentIndex();
+      dispatch(setLastActiveIndex(currentIndex));
+
       if (number) {
         if (timeOutNumber.current) {
           clearTimeout(timeOutNumber.current);
@@ -486,7 +506,6 @@ export default memo(function LiveControls({
         setNumber("");
         return;
       }
-      console.log("baccckkckc 2");
       dispatch(setIsCategoriesOpen(true));
       setPipMode(true);
       window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
@@ -604,7 +623,6 @@ export default memo(function LiveControls({
     up: () => {
       showControl();
       if (hideControls) return;
-      console.log("up", refNextChannel.current);
       if (refNextChannel.current && active === 0) {
         dispatch(setPlayerType("live"));
         getChannelInfo(refNextChannel.current.id);
@@ -783,7 +801,6 @@ export default memo(function LiveControls({
                 showControl={showControl}
                 hideControls={hideControls}
                 onLiveHandler={() => {
-                  console.log(currentChannel, "current channel 2");
                   dispatch(setPlayerType("live"));
                   setUrl(refUrlLive.current?.url);
                 }}
@@ -803,12 +820,10 @@ export default memo(function LiveControls({
                 showControl={showControl}
                 hideControls={hideControls}
                 onLiveHandler={() => {
-                  console.log(currentChannel, "current channel");
                   dispatch(setPlayerType("live"));
                   // setUrl(refUrlLive.current?.url);
                   // setUrl(currentChannel?.share_url);
                   const lastChannelId = LOCAL_STORAGE.LAST_CHANNEL_ID.GET();
-                  console.log(lastChannelId, "last channel id");
                   getChannelInfo(lastChannelId);
                 }}
               />

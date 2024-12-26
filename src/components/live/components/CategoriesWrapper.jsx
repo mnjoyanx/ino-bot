@@ -1,5 +1,5 @@
 import { memo, useState, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { selectChannels } from "@app/channels/channelsSlice";
 import useKeydown from "@hooks/useKeydown";
 import { useTranslation } from "react-i18next";
@@ -8,6 +8,7 @@ import CardCategory from "./CardCategory";
 import { ListView } from "@ino-ui/tv";
 
 import "../styles/CategoriesWrapper.scss";
+import { setLastActiveIndex } from "@app/global";
 
 export default memo(function CategoriesWrapper({
   control,
@@ -19,6 +20,7 @@ export default memo(function CategoriesWrapper({
   const { t } = useTranslation();
   const categories = useSelector(selectChannels);
   const [active, setActive] = useState(0);
+  const dispatch = useDispatch();
 
   const handleClick = useCallback(
     (name) => {
@@ -26,6 +28,7 @@ export default memo(function CategoriesWrapper({
         refSetIndex.current = true;
       }
       setCategory(name);
+      dispatch(setLastActiveIndex(0));
     },
     [category, control]
   );
@@ -60,6 +63,7 @@ export default memo(function CategoriesWrapper({
           isActive={control}
           initialActiveIndex={0}
           startScrollIndex={0}
+          stopScrollIndex={Object.keys(categories).length - 7}
           direction="ltr"
           onMouseEnter={() => {}}
           onIndexChange={(index) => {

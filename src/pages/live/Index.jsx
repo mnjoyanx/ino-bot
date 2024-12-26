@@ -27,7 +27,7 @@ import PipModeLive from "@components/live/PipModeLive.jsx";
 import "@styles/components/livePage.scss";
 import { setUrlArchive } from "@utils/util";
 import { InoProtectInput, Modal, toast } from "@ino-ui/tv";
-import { selectCtrl, setCtrl } from "@app/global";
+import { selectCtrl, setCtrl, setLastActiveIndex } from "@app/global";
 
 export default function LivePage() {
   const navigate = useNavigate();
@@ -162,6 +162,7 @@ export default function LivePage() {
         console.log("Found next non-protected channel:", array[i]);
         setUrl(array[i].url);
         dispatch(setCurrentChannel(array[i]));
+        dispatch(setLastActiveIndex(i));
         return;
       }
     }
@@ -171,6 +172,7 @@ export default function LivePage() {
         console.log("Found previous non-protected channel:", array[i]);
         setUrl(array[i].url);
         dispatch(setCurrentChannel(array[i]));
+        dispatch(setLastActiveIndex(i));
         return;
       }
     }
@@ -180,26 +182,24 @@ export default function LivePage() {
       console.log("Found any non-protected channel:", anyNonProtected);
       setUrl(anyNonProtected.url);
       dispatch(setCurrentChannel(anyNonProtected));
+      dispatch(setLastActiveIndex(0));
     }
   };
 
   const getFirstChannel = (array) => {
     if (currentChannel) {
-      console.log("currentChannel", currentChannel);
       if (currentChannel.is_protected) {
         findNextNotProtectedChannel(array);
       } else {
+        const foundIndex = array.findIndex(
+          (item) => item.id === currentChannel.id
+        );
+        dispatch(setLastActiveIndex(foundIndex));
         setUrl(currentChannel.url);
       }
     } else {
       let channel_id = array[0]?.id;
 
-      console.log(
-        "channel_id",
-        channel_id,
-        "----",
-        LOCAL_STORAGE.LAST_CHANNEL_ID.GET()
-      );
       if (LOCAL_STORAGE.LAST_CHANNEL_ID.GET()) {
         channel_id = LOCAL_STORAGE.LAST_CHANNEL_ID.GET();
         const savedChannel = array.find((ch) => ch.id === channel_id);
@@ -211,7 +211,10 @@ export default function LivePage() {
         const firstNonProtected = array.find((ch) => !ch.is_protected);
         if (firstNonProtected) {
           channel_id = firstNonProtected.id;
-          LOCAL_STORAGE.LAST_CHANNEL_ID.SET(channel_id);
+          console.log(firstNonProtected, "channel_id");
+          if (!firstNonProtected?.id_protected) {
+            LOCAL_STORAGE.LAST_CHANNEL_ID.SET(channel_id);
+          }
         }
       }
       getChannelInfo(channel_id);
@@ -219,7 +222,6 @@ export default function LivePage() {
   };
 
   const getChannelInfo = async (id, showProtected = true) => {
-    console.log("getChannelInfo");
     const response = await channelInfo({ id: id });
     const parsedResponse = JSON.parse(response);
     const { error, message } = parsedResponse;

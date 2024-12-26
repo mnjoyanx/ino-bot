@@ -254,7 +254,6 @@ export default memo(function Player({
   }, []);
 
   const onErrorHandler = async (err) => {
-    console.log("onErrorHandler", err);
     if (type === "vod") {
       setIsMovieLoaded(false);
     }

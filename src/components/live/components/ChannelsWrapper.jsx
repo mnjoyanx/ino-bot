@@ -20,7 +20,7 @@ import useKeydown from "@hooks/useKeydown";
 import CardChannel from "./CardChannel";
 
 import "../styles/ChannelsWrapper.scss";
-import { selectCtrl, setCtrl } from "@app/global";
+import { selectCtrl, selectLastActiveIndex, setCtrl } from "@app/global";
 
 export default function ChannelsWrapper({
   control,
@@ -32,15 +32,14 @@ export default function ChannelsWrapper({
   setIsShowProtected,
 }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   const dispatch = useDispatch();
   const categories = useSelector(selectChannels);
   const currentChannel = useSelector(selectCurrentChannel);
   const playerType = useSelector(selectPlayerType);
+  const lastActiveIndex = useSelector(selectLastActiveIndex);
   const ctrl = useSelector(selectCtrl);
   const [active, setActive] = useState(0);
-
   const handleClick = useCallback(
     (index, id) => {
       const clickedChannel = categories[selectedCategory].content.find(
@@ -58,15 +57,8 @@ export default function ChannelsWrapper({
     [currentChannel, playerType, categories, selectedCategory]
   );
 
-  const findCurrentIndex = useCallback(() => {
-    return categories[selectedCategory]?.content?.findIndex((item) => {
-      return item.id === currentChannel?.id;
-    });
-  }, [categories, selectedCategory, currentChannel]);
-
   const getChannelInfo = async (id) => {
     if (id === currentChannel?.id && playerType === "live") {
-      console.warn("full");
       setPipMode(false);
       window.PLAYER.setPositionPlayer(1920, 1080, 0, 0);
       return;
@@ -83,7 +75,11 @@ export default function ChannelsWrapper({
         _url += "?token=" + LOCAL_STORAGE.TOKEN.GET();
       }
 
-      LOCAL_STORAGE.LAST_CHANNEL_ID.SET(id);
+      console.log(message, "message2222222222222");
+
+      if (!message?.id_protected) {
+        LOCAL_STORAGE.LAST_CHANNEL_ID.SET(id);
+      }
       dispatch(setCurrentChannel(message));
       setUrl(_url);
     }
@@ -124,11 +120,10 @@ export default function ChannelsWrapper({
               itemWidth={31}
               itemHeight={7}
               isActive={control}
-              initialActiveIndex={
-                findCurrentIndex() > 0 ? findCurrentIndex() : 0
-              }
+              initialActiveIndex={lastActiveIndex}
               withTransition={false}
               startScrollIndex={0}
+              stopScrollIndex={channelContent.length - 7}
               direction="ltr"
               onMouseEnter={() => {}}
               onUp={() => {
