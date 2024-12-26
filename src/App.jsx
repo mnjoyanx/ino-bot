@@ -52,8 +52,8 @@ window.setRequestResult = (url, code, response) => {
 
 const getVersion = () => {
   if (window.Android) {
-    // const version = window.Android.getAppVersion();
-    // localStorage.setItem("app_version", version);
+    const version = window.Android.getAppVersion();
+    localStorage.setItem("app_version", version);
     const sriptEl = document.getElementById("bundlejs");
     const hostUrl =
       sriptEl.src.split("bundle.js")[0] + "version.js/?" + Date.now();
