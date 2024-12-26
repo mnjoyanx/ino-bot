@@ -185,6 +185,7 @@ export default function LivePage() {
 
   const getFirstChannel = (array) => {
     if (currentChannel) {
+      console.log("currentChannel", currentChannel);
       if (currentChannel.is_protected) {
         findNextNotProtectedChannel(array);
       } else {
@@ -193,6 +194,12 @@ export default function LivePage() {
     } else {
       let channel_id = array[0]?.id;
 
+      console.log(
+        "channel_id",
+        channel_id,
+        "----",
+        LOCAL_STORAGE.LAST_CHANNEL_ID.GET()
+      );
       if (LOCAL_STORAGE.LAST_CHANNEL_ID.GET()) {
         channel_id = LOCAL_STORAGE.LAST_CHANNEL_ID.GET();
         const savedChannel = array.find((ch) => ch.id === channel_id);
