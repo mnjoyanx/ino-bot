@@ -99,6 +99,7 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
       if (window.Android) {
         console.log(newOptions, "newOptions");
         newOptions.splice(1, 1);
+        console.log(newOptions, "newOptions");
       }
 
       if (resolutions?.length > 0) {
