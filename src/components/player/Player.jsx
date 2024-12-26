@@ -24,6 +24,7 @@ import {
   selectSubtitles,
   selectAudioTracks,
   selectResolutions,
+  setCtrl,
 } from "@app/global";
 
 import { GoogleIMA } from "../../GoogleIMA";
@@ -163,6 +164,7 @@ export default memo(function Player({
     if (Math.floor(currentTime) >= duration - 1) {
       if (type === "vod") {
         onEnded();
+        onRememberTime(Math.floor(currentTime), 100, true);
       } else {
         if (onNextArchive) {
           onNextArchive();
@@ -579,11 +581,19 @@ export default memo(function Player({
         size="full"
       >
         <div>
-          <p>{t("Unable to play video. Please try again later.")}</p>
+          <p className="unable-to-play">
+            {t("Unable to play video. Please try again later.")}
+          </p>
           <InoButton
-            size="large"
+            size="medium"
             isActive={!isMovieLoaded}
-            onClick={() => setIsMovieLoaded(false)}
+            onClick={() => {
+              setIsMovieLoaded(true);
+              dispatch(setIsPlayerOpen(false));
+              dispatch(setCtrl("movieInfo"));
+              setUrl("");
+            }}
+            classNames="apk-update_btn centered"
           >
             {t("Close")}
           </InoButton>

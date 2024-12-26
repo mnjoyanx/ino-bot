@@ -84,11 +84,6 @@ p {
   font-weight: bold;
 }
 
-.back-button:hover,
-.back-button.active .back-button-text {
-  /* color: #ccc; */
-}
-
 .back-button:hover svg,
 .back-button.active svg path {
   stroke: #ccc;
@@ -172,6 +167,12 @@ p {
   transform: scale(1) !important;
 }
 
+.apk-update_btn.centered {
+  display: flex;
+  justify-content: center;
+  margin: 2rem auto 0 !important;
+}
+
 .apk-update_btn.close {
   margin-right: 1rem;
 }
@@ -226,5 +227,6 @@ p {
   background-color: #fff !important;
 }
 .ino-player-progress {
+  overflow: hidden !important;
   background-color: rgba(143, 143, 143, 0.6) !important;
 }
