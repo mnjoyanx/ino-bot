@@ -334,6 +334,10 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
     },
   });
 
+  useEffect(() => {
+    console.log(settingsOptions, "settingsOptions");
+  }, [settingsOptions]);
+
   if (!isVisible) return null;
 
   return (
