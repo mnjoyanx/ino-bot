@@ -18,6 +18,8 @@ export default function Menu() {
 
   useEffect(() => {
     dispatch(setPlayerType("live"));
+    localStorage.removeItem("lastIndex");
+    localStorage.removeItem("lastRow");
   }, []);
 
   return (

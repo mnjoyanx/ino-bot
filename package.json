@@ -1,6 +1,6 @@
 {
   "name": "tstv",
-  "version": "1.5.37",
+  "version": "1.5.38",
   "main": "index.js",
   "scripts": {
     "dev": "rsbuild dev --open",
@@ -33,7 +33,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@ino-ui/tv": "^7.1.26",
+    "@ino-ui/tv": "^7.2.5",
     "@reduxjs/toolkit": "^1.0.0",
     "@typescript-eslint/parser": "^8.18.1",
     "i18next": "^24.1.0",

@@ -196,7 +196,7 @@ const MoviesPage = () => {
         // setSelectedType(firstItem.type);
         if (!selectedType) {
           dispatch(
-            setSelectedType(firstItem.type === "movies" ? "movie" : "tv_show"),
+            setSelectedType(firstItem.type === "movies" ? "movie" : "tv_show")
           );
         }
         setMenuList(menu);

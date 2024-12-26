@@ -131,18 +131,16 @@ const MoviesList = ({ isVertical, isLoading }) => {
                     itemWidth={20}
                     itemHeight={30}
                     withTitle={true}
-                    // initialActiveIndex={2}
                     initialActiveIndex={
                       lastIndex.current
-                        ? lastIndex.current
-                        : localStorage.getItem("lastIndex")
+                        ? +lastIndex.current
+                        : +localStorage.getItem("lastIndex")
                     }
                     initialRowActiveIndex={
                       lastRow.current
-                        ? lastRow.current
-                        : localStorage.getItem("lastRow")
+                        ? +lastRow.current
+                        : +localStorage.getItem("lastRow")
                     }
-                    // initialRowActiveIndex={2}
                     buffer={3}
                     debounce={200}
                     onRowChange={(row) => {
@@ -153,13 +151,13 @@ const MoviesList = ({ isVertical, isLoading }) => {
                     }}
                     onFirstRow={({ key }) => {
                       if (key === "up") {
-                        alert("up");
                         dispatch(setCtrl("backBtn"));
                       } else {
                         navigate("/menu");
                       }
                     }}
                     gap={2}
+                    onBackScrollIndex={+localStorage.getItem("lastIndex")}
                     rowGap={10}
                     isActive={ctrl === "moviesSeries"}
                     renderItem={renderMovieCard}
