@@ -1,6 +1,8 @@
 import { memo, useEffect, useMemo, useState, useRef } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import os from "@utils/os.js";
+
 import {
   getApps,
   getAppSettings,
@@ -270,6 +272,7 @@ function App() {
 
   useEffect(() => {
     getConfigs();
+    os();
   }, []);
 
   const langId = JSON.parse(localStorage.getItem("language"))?.id;
