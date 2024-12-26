@@ -97,6 +97,7 @@ const ControlSettings = ({ isVisible, onClose, showControl }) => {
       const newOptions = [...prevOptions];
 
       if (window.Android) {
+        console.log(newOptions, "newOptions");
         newOptions.splice(1, 1);
       }
 
