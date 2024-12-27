@@ -56,7 +56,9 @@ export default memo(function ResultSearch({
         image={item.image}
         isActive={isActive}
         index={index}
-        onClick={() => selectChannel(item.id)}
+        onClick={() => {
+          selectChannel(item.id);
+        }}
         style={style}
       />
     ) : (
@@ -105,6 +107,10 @@ export default memo(function ResultSearch({
           }}
           renderItem={renderItem}
           data={result}
+          onIndexChange={(index) => {
+            console.log(index, "index");
+            setActive(index);
+          }}
           onOk={() => {
             if (!empty) {
               selectChannel(result[active].id, active);

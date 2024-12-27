@@ -11,6 +11,7 @@ const MovieCard = React.memo(
     const dispatch = useDispatch();
 
     const handleNavigation = useCallback(() => {
+      console.log("id", id);
       navigate(`/movie/${id}`);
       dispatch(setCtrl("movieInfo"));
     }, [navigate, id, dispatch]);
@@ -18,7 +19,9 @@ const MovieCard = React.memo(
     useKeydown({
       isActive,
       ok: (index, row) => {
-        onCardClick(index, row);
+        if (onCardClick) {
+          onCardClick(index, row);
+        }
         handleNavigation();
       },
     });

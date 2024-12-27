@@ -18,6 +18,7 @@ export default memo(function CardChannel({
 }) {
   const handleClick = () => {
     if (onClick && typeof id !== "undefined" && typeof index !== "undefined") {
+      console.log(id, index, "idindex");
       onClick(id, index);
     }
   };

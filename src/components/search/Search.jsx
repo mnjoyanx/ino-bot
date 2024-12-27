@@ -153,7 +153,7 @@ export default memo(function Search({
 
   useKeydown({
     // isActive: control === "keyboard",
-    isActive: true,
+    isActive: ctrl !== "result",
     // ok: () => {
     //   alert("ioj");
     //   if (type === "live") {

@@ -18,7 +18,10 @@ export default memo(function CardChannel({
   return (
     <div
       className={`card-channel${isActive ? " active" : ""}${isSelected ? " selected" : ""}`}
-      onClick={() => onClick(index, elem.id)}
+      onClick={() => {
+        console.log(elem.id, "alksdmvlaksdmvlkm");
+        onClick(index, elem.id);
+      }}
       style={style}
     >
       <div className="number">#{elem.position}</div>

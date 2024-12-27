@@ -75,8 +75,6 @@ export default function ChannelsWrapper({
         _url += "?token=" + LOCAL_STORAGE.TOKEN.GET();
       }
 
-      console.log(message, "message2222222222222");
-
       if (!message?.id_protected) {
         LOCAL_STORAGE.LAST_CHANNEL_ID.SET(id);
       }
