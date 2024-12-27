@@ -60,12 +60,25 @@ export default memo(function PipModeLive({
 
   useEffect(() => {
     if (currentChannel) {
-      const foundIndex = allChannels.findIndex(
-        (item) => item.id === currentChannel.id
-      );
+      let foundIndex = 0;
+
+      if (!Object.keys(channelCategories).length) {
+        foundIndex = allChannels.findIndex(
+          (item) => item.id === currentChannel.id
+        );
+      } else {
+        foundIndex = channelCategories[selectedCategory].content.findIndex(
+          (item) => item.id === currentChannel.id
+        );
+      }
+
+      if (foundIndex === -1) {
+        foundIndex = 0;
+      }
+
       dispatch(setLastActiveIndex(foundIndex));
     }
-  }, [currentChannel]);
+  }, [currentChannel, channelCategories, selectedCategory]);
 
   useEffect(() => {
     if (activeControl === "search") {

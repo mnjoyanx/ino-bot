@@ -36,7 +36,15 @@ export default memo(function CategoriesWrapper({
   useKeydown({
     isActive: control,
 
-    right: () => setControl("channel"),
+    right: () => {
+      const selectedCategoryName =
+        categories[Object.keys(categories)[active]].name;
+      if (categories[selectedCategoryName]?.total > 0) {
+        setControl("channel");
+      } else {
+        setControl("epg");
+      }
+    },
 
     ok: () => {
       handleClick(categories[Object.keys(categories)[active]].name);

@@ -39,6 +39,7 @@ export default function ChannelsWrapper({
   const playerType = useSelector(selectPlayerType);
   const lastActiveIndex = useSelector(selectLastActiveIndex);
   const ctrl = useSelector(selectCtrl);
+  console.log(lastActiveIndex, "lastActiveIndex");
   const [active, setActive] = useState(0);
   const handleClick = useCallback(
     (index, id) => {

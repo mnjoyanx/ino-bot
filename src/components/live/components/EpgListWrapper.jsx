@@ -4,6 +4,8 @@ import {
   setPlayerType,
   selectCurrentChannel,
   selectPlayerType,
+  selectChannels,
+  selectSelectedCategory,
 } from "@app/channels/channelsSlice";
 import { getEpgList } from "@server/requests";
 import LOCAL_STORAGE from "@utils/localStorage";
@@ -32,6 +34,9 @@ export default memo(function EpgListWrapper({
 
   const [emptyList, setEmptyList] = useState(false);
   const [epgList, setEpgList] = useState([]);
+
+  const channelCategories = useSelector(selectChannels);
+  const selectedCategory = useSelector(selectSelectedCategory);
 
   const [active, setActive] = useState(0);
   const [start, setStart] = useState(0);
@@ -149,7 +154,15 @@ export default memo(function EpgListWrapper({
 
     down: handleDown,
 
-    left: () => setControl("channel"),
+    left: () => {
+      const selectedCategoryChannels =
+        channelCategories[selectedCategory]?.total;
+      if (selectedCategoryChannels && selectedCategoryChannels > 0) {
+        setControl("channel");
+      } else {
+        setControl("category");
+      }
+    },
 
     ok: () => {
       handleClickEpg(epgList[active]);
