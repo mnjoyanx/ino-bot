@@ -828,17 +828,15 @@ export default memo(function LiveControls({
         </div>
         {playerType === "live" ? (
           <div className="live-control_actions_wrapper">
-            {/* <div
-              className={`timeshift-btn`}
-              style={{ opacity: currentChannel?.has_archive ? "1" : "0" }}
-            > */}
-            <InoButton
-              size="small"
-              classNames="timeshift-btn"
-              isActive={active === 1}
-            >
-              <SvgBackward />
-            </InoButton>
+            {currentChannel?.has_archive ? (
+              <InoButton
+                size="small"
+                classNames="timeshift-btn"
+                isActive={active === 1}
+              >
+                <SvgBackward />
+              </InoButton>
+            ) : null}
             {/* </div> */}
             <div className={"live-fav_wrapper"}>
               {currentChannel?.favorite ? (
