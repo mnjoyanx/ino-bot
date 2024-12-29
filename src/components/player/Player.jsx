@@ -1,7 +1,7 @@
 import { memo, useRef, useState, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { formatTime } from "@utils/util";
-import { setPaused } from "@app/player/playerSlice";
+import { selectIsPaused, setPaused } from "@app/player/playerSlice";
 import LOCAL_STORAGE from "@utils/localStorage";
 import HlsPlayer from "./components/HlsPlayer";
 import LiveControls from "@components/live/LiveControls.jsx";
@@ -69,6 +69,7 @@ export default memo(function Player({
   const lastRememberTimeUpdate = useRef(0);
   const maxRetries = 3;
   const adContainerRef = useRef(null);
+  const paused = useSelector(selectIsPaused);
 
   const audioTracks = useSelector(selectAudioTracks);
   const subtitles = useSelector(selectSubtitles);
@@ -153,6 +154,10 @@ export default memo(function Player({
       if (refVideo.current) {
         refVideo.current.currentTime = startTime;
       }
+    }
+
+    if (paused) {
+      dispatch(setPaused(false));
     }
   }, [startTime, durationRef]);
 

@@ -206,7 +206,7 @@ export default function VodControls({
           {" "}
           <InoPlayerProgress
             isActive={false}
-            value={(movieCurrentTime / 50) * 100}
+            value={(movieCurrentTime / videoDuration) * 100}
             duration={videoDuration}
             showDuration={true}
             onChange={(value) => {

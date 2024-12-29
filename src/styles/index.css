@@ -230,3 +230,7 @@ p {
   overflow: hidden !important;
   background-color: rgba(143, 143, 143, 0.6) !important;
 }
+
+.ino-list-title-wrapper {
+  overflow: visible !important;
+}
