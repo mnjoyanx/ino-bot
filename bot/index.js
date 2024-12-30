@@ -43,12 +43,6 @@ const AbsenceSchema = new mongoose.Schema({
   created_at: { type: Date, default: Date.now },
 });
 
-const WifiStatusSchema = new mongoose.Schema({
-  user_id: String,
-  status: String,
-  timestamp: { type: Date, default: Date.now },
-});
-
 // Add new schema for approval requirements
 const ApprovalRequirementSchema = new mongoose.Schema({
   team_leader_id: String,
@@ -61,7 +55,6 @@ const ApprovalRequirementSchema = new mongoose.Schema({
 // Create models
 const User = mongoose.model("User", UserSchema);
 const Absence = mongoose.model("Absence", AbsenceSchema);
-const WifiStatus = mongoose.model("WifiStatus", WifiStatusSchema);
 const ApprovalRequirement = mongoose.model(
   "ApprovalRequirement",
   ApprovalRequirementSchema
@@ -82,6 +75,7 @@ bot.on("callback_query", async (callbackQuery) => {
   const chatId = msg.chat.id;
   const data = callbackQuery.data;
 
+  // Registration handling
   if (data.startsWith("register_")) {
     const role = data.split("_")[1];
 
@@ -90,10 +84,25 @@ bot.on("callback_query", async (callbackQuery) => {
         // Get list of team leaders
         const teamLeaders = await User.find({ role: "teamleader" });
 
-        const teamLeaderButtons = teamLeaders.map((leader) => ({
-          text: `Team Leader ${leader.telegram_id}`,
-          callback_data: `choose_leader_${leader.telegram_id}`,
-        }));
+        const teamLeaderButtons = await Promise.all(
+          teamLeaders.map(async (leader) => {
+            const chatMember = await bot.getChatMember(
+              leader.telegram_id,
+              leader.telegram_id
+            );
+            const username = chatMember.user.username
+              ? `@${chatMember.user.username}`
+              : leader.telegram_id;
+            const displayName = chatMember.user.first_name
+              ? `${chatMember.user.first_name} (${username})`
+              : username;
+
+            return {
+              text: `Team Leader: ${displayName}`,
+              callback_data: `choose_leader_${leader.telegram_id}`,
+            };
+          })
+        );
 
         const opts = {
           reply_markup: {
@@ -141,10 +150,393 @@ bot.on("callback_query", async (callbackQuery) => {
     }
   }
 
-  if (data.startsWith("time_select_")) {
-    const selectedTime = data.split("_")[2];
-    bot.sendMessage(chatId, `You selected: ${selectedTime}`);
-    // Add logic to handle selected time
+  // Time selection handling
+  if (data === "time_now") {
+    const now = moment();
+    try {
+      // Set both date and time components
+      const startDateTime = now.toDate();
+      await Absence.findOneAndUpdate(
+        { user_id: chatId.toString(), status: "pending" },
+        { start_time: startDateTime }
+      );
+      requestEndTime(chatId, startDateTime);
+    } catch (err) {
+      bot.sendMessage(chatId, "Error saving start time.");
+      console.error(err);
+    }
+  }
+
+  if (data === "time_write") {
+    bot.sendMessage(chatId, "Please input the time you want (format: HH:mm):");
+    bot.once("message", async (timeMsg) => {
+      const inputTime = timeMsg.text;
+      const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+
+      if (timeRegex.test(inputTime)) {
+        try {
+          // Create a moment object with today's date and input time
+          const startDateTime = moment(inputTime, "HH:mm").toDate();
+          await Absence.findOneAndUpdate(
+            { user_id: chatId.toString(), status: "pending" },
+            { start_time: startDateTime }
+          );
+          requestEndTime(chatId, startDateTime);
+        } catch (err) {
+          bot.sendMessage(chatId, "Error saving start time.");
+          console.error(err);
+        }
+      } else {
+        bot.sendMessage(
+          chatId,
+          "Invalid time format. Please use the /notify command again and provide time in HH:mm format."
+        );
+      }
+    });
+  }
+
+  // Start time handling
+  if (data.startsWith("start_time_")) {
+    if (data === "start_time_manual") {
+      bot.sendMessage(
+        chatId,
+        "Please enter the start time in HH:mm format (e.g., 14:30):"
+      );
+
+      // Set up listener for manual time input
+      bot.once("message", async (timeMsg) => {
+        const inputTime = timeMsg.text;
+        const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+
+        if (timeRegex.test(inputTime)) {
+          try {
+            const startTime = moment(inputTime, "HH:mm");
+            await Absence.findOneAndUpdate(
+              { user_id: chatId.toString(), status: "pending" },
+              { start_time: startTime.toDate() }
+            );
+            requestEndTime(chatId, startTime.toDate());
+          } catch (err) {
+            bot.sendMessage(chatId, "Error saving start time.");
+            console.error(err);
+          }
+        } else {
+          bot.sendMessage(
+            chatId,
+            "Invalid time format. Please use the /notify command again and provide time in HH:mm format."
+          );
+        }
+      });
+    } else {
+      const startTime = data.split("_")[2];
+      try {
+        const startMoment = moment(startTime, "HH:mm");
+        await Absence.findOneAndUpdate(
+          { user_id: chatId.toString(), status: "pending" },
+          { start_time: startMoment.toDate() }
+        );
+        requestEndTime(chatId, startMoment.toDate());
+      } catch (err) {
+        bot.sendMessage(chatId, "Error saving start time.");
+        console.error(err);
+      }
+    }
+  }
+
+  // End time handling
+  if (data.startsWith("end_time_")) {
+    if (data === "end_time_manual") {
+      bot.sendMessage(
+        chatId,
+        "Please enter the end time in HH:mm format (e.g., 18:30):"
+      );
+
+      bot.once("message", async (timeMsg) => {
+        const inputTime = timeMsg.text;
+        const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+
+        if (timeRegex.test(inputTime)) {
+          try {
+            // Get the existing absence record to use its date
+            const absence = await Absence.findOne({
+              user_id: chatId.toString(),
+              status: "pending",
+            });
+
+            if (!absence) {
+              bot.sendMessage(
+                chatId,
+                "No pending absence found. Please start over with /notify"
+              );
+              return;
+            }
+
+            // Create end time using the same date as start_time
+            const endDateTime = moment(absence.start_time)
+              .hours(parseInt(inputTime.split(":")[0]))
+              .minutes(parseInt(inputTime.split(":")[1]))
+              .toDate();
+
+            const updatedAbsence = await Absence.findOneAndUpdate(
+              { user_id: chatId.toString(), status: "pending" },
+              { end_time: endDateTime },
+              { new: true }
+            );
+
+            if (updatedAbsence) {
+              handleAbsenceConfirmation(chatId, updatedAbsence);
+            }
+          } catch (err) {
+            console.error(err);
+            bot.sendMessage(chatId, "Error saving end time.");
+          }
+        } else {
+          bot.sendMessage(
+            chatId,
+            "Invalid time format. Please use the /notify command again."
+          );
+        }
+      });
+    } else {
+      const endTime = data.split("_")[2];
+      try {
+        // Get the existing absence record
+        const absence = await Absence.findOne({
+          user_id: chatId.toString(),
+          status: "pending",
+        });
+
+        if (!absence) {
+          bot.sendMessage(
+            chatId,
+            "No pending absence found. Please start over with /notify"
+          );
+          return;
+        }
+
+        // Create end time using the same date as start_time
+        const endDateTime = moment(absence.start_time)
+          .hours(parseInt(endTime.split(":")[0]))
+          .minutes(parseInt(endTime.split(":")[1]))
+          .toDate();
+
+        const updatedAbsence = await Absence.findOneAndUpdate(
+          { user_id: chatId.toString(), status: "pending" },
+          { end_time: endDateTime },
+          { new: true }
+        );
+
+        if (updatedAbsence) {
+          handleAbsenceConfirmation(chatId, updatedAbsence);
+        }
+      } catch (err) {
+        console.error(err);
+        bot.sendMessage(chatId, "Error saving end time.");
+      }
+    }
+  }
+
+  // Approval requirement handling
+  if (data.startsWith("approve_req_")) {
+    const [, type, id] = data.split("_");
+
+    try {
+      const teamMembers = await User.find({
+        team_leader_id: chatId.toString(),
+      });
+
+      // Create buttons with usernames
+      const keyboardButtons = [
+        [{ text: "Whole Team", callback_data: "approve_req_team_all" }],
+        ...(await Promise.all(
+          teamMembers.map(async (member) => {
+            const chatMember = await bot.getChatMember(
+              member.telegram_id,
+              member.telegram_id
+            );
+            const username = chatMember.user.username
+              ? `@${chatMember.user.username}`
+              : member.telegram_id;
+            const displayName = chatMember.user.first_name
+              ? `${chatMember.user.first_name} (${username})`
+              : username;
+
+            return [
+              {
+                text: displayName,
+                callback_data: `approve_req_user_${member.telegram_id}`,
+              },
+            ];
+          })
+        )),
+      ];
+
+      const opts = {
+        reply_markup: {
+          inline_keyboard: keyboardButtons,
+        },
+      };
+
+      bot.sendMessage(
+        chatId,
+        "Please select who needs approval for absence:",
+        opts
+      );
+    } catch (err) {
+      bot.sendMessage(chatId, "Error saving approval requirement.");
+      console.error(err);
+    }
+  }
+
+  if (data.startsWith("approve_start_")) {
+    const startTime = data.split("_")[2];
+    try {
+      const startMoment = moment(startTime, "HH:mm");
+      await ApprovalRequirement.findOneAndUpdate(
+        { team_leader_id: chatId.toString(), start_time: null },
+        { start_time: startMoment.toDate() }
+      );
+
+      // Generate dynamic time slots for end time
+      const timeSlots = generateTimeSlots(
+        startMoment.toDate(),
+        true,
+        "approve_end"
+      );
+
+      const opts = {
+        reply_markup: {
+          inline_keyboard: timeSlots,
+        },
+      };
+
+      bot.sendMessage(
+        chatId,
+        "Please select when approval requirement ends:",
+        opts
+      );
+    } catch (err) {
+      bot.sendMessage(chatId, "Error saving start time.");
+      console.error(err);
+    }
+  }
+
+  if (data.startsWith("approve_end_")) {
+    const endTime = data.split("_")[2];
+    try {
+      const requirement = await ApprovalRequirement.findOneAndUpdate(
+        { team_leader_id: chatId.toString(), end_time: null },
+        { end_time: moment(endTime, "HH:mm").toDate() },
+        { new: true }
+      );
+
+      if (requirement) {
+        const formattedStart = moment(requirement.start_time).format("HH:mm");
+        const formattedEnd = moment(requirement.end_time).format("HH:mm");
+
+        let targetDisplay = "Whole Team";
+        if (requirement.user_id) {
+          try {
+            const chatMember = await bot.getChatMember(
+              requirement.user_id,
+              requirement.user_id
+            );
+            const username = chatMember.user.username
+              ? `@${chatMember.user.username}`
+              : requirement.user_id;
+            targetDisplay = chatMember.user.first_name
+              ? `${chatMember.user.first_name} (${username})`
+              : username;
+          } catch (err) {
+            targetDisplay = requirement.user_id;
+          }
+        }
+
+        bot.sendMessage(
+          chatId,
+          `Approval requirement set:\nFor: ${targetDisplay}\nFrom: ${formattedStart}\nTo: ${formattedEnd}`
+        );
+
+        // Notify affected team members
+        const usersToNotify = requirement.user_id
+          ? [requirement.user_id]
+          : (await User.find({ team_leader_id: chatId.toString() })).map(
+              (user) => user.telegram_id
+            );
+
+        for (const userId of usersToNotify) {
+          bot.sendMessage(
+            userId,
+            `Your team leader has set approval requirement for absences:\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nDuring this time, you must get approval before leaving the building.`
+          );
+        }
+      }
+    } catch (err) {
+      bot.sendMessage(chatId, "Error saving end time.");
+      console.error(err);
+    }
+  }
+
+  if (data.startsWith("approve_absence_")) {
+    const absenceId = data.split("_")[2];
+    try {
+      const absence = await Absence.findByIdAndUpdate(
+        absenceId,
+        { status: "approved" },
+        { new: true }
+      );
+
+      if (absence) {
+        // Notify team leader
+        bot.editMessageText(
+          `Absence request APPROVED ✅\nUser: ${await getUserDisplayName(absence.user_id)}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`,
+          {
+            chat_id: chatId,
+            message_id: msg.message_id,
+          }
+        );
+
+        // Notify user
+        bot.sendMessage(
+          absence.user_id,
+          `Your absence request has been APPROVED ✅\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      bot.sendMessage(chatId, "Error processing approval.");
+    }
+  }
+
+  if (data.startsWith("deny_absence_")) {
+    const absenceId = data.split("_")[2];
+    try {
+      const absence = await Absence.findByIdAndUpdate(
+        absenceId,
+        { status: "denied" },
+        { new: true }
+      );
+
+      if (absence) {
+        // Notify team leader
+        bot.editMessageText(
+          `Absence request DENIED ❌\nUser: ${await getUserDisplayName(absence.user_id)}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`,
+          {
+            chat_id: chatId,
+            message_id: msg.message_id,
+          }
+        );
+
+        // Notify user
+        bot.sendMessage(
+          absence.user_id,
+          `Your absence request has been DENIED ❌\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      bot.sendMessage(chatId, "Error processing denial.");
+    }
   }
 });
 
@@ -217,7 +609,44 @@ bot.on("callback_query", async (callbackQuery) => {
   }
 });
 
-// Function to request absence times
+// Update the generateTimeSlots function to handle both start and end times
+function generateTimeSlots(startTime, isEndTime = false, prefix = "") {
+  const slots = [];
+  const currentTime = moment(startTime);
+
+  // Round up to the nearest hour
+  if (currentTime.minutes() > 0) {
+    currentTime.add(1, "hour").startOf("hour");
+  }
+
+  // Use the provided prefix or default to start/end time
+  const callbackPrefix = prefix || (isEndTime ? "end_time_" : "start_time_");
+
+  for (let i = 0; i < 5; i++) {
+    const time = currentTime.clone().add(i, "hours");
+    const timeStr = time.format("HH:mm");
+    slots.push({
+      text: timeStr,
+      callback_data: `${callbackPrefix}_${timeStr}`,
+    });
+  }
+
+  // Add manual time selection option if not approval times
+  if (!prefix) {
+    const manualCallback = isEndTime ? "end_time_manual" : "start_time_manual";
+    slots.push({ text: "Set manually", callback_data: manualCallback });
+  }
+
+  // Group buttons in rows of 3
+  const rows = [];
+  for (let i = 0; i < slots.length; i += 3) {
+    rows.push(slots.slice(i, i + 3));
+  }
+
+  return rows;
+}
+
+// Update the requestAbsenceTimes function
 async function requestAbsenceTimes(chatId, reason) {
   try {
     const absence = new Absence({
@@ -226,22 +655,12 @@ async function requestAbsenceTimes(chatId, reason) {
       status: "pending",
     });
     await absence.save();
-    console.log(absence);
+
+    const timeSlots = generateTimeSlots(new Date());
 
     const opts = {
       reply_markup: {
-        inline_keyboard: [
-          [
-            { text: "09:00", callback_data: "start_time_09:00" },
-            { text: "10:00", callback_data: "start_time_10:00" },
-            { text: "11:00", callback_data: "start_time_11:00" },
-          ],
-          [
-            { text: "12:00", callback_data: "start_time_12:00" },
-            { text: "13:00", callback_data: "start_time_13:00" },
-            { text: "14:00", callback_data: "start_time_14:00" },
-          ],
-        ],
+        inline_keyboard: timeSlots,
       },
     };
 
@@ -252,92 +671,80 @@ async function requestAbsenceTimes(chatId, reason) {
   }
 }
 
-// Add this new function to handle end time selection
-async function requestEndTime(chatId) {
+// Update the requestEndTime function
+async function requestEndTime(chatId, startTime) {
+  // Generate time slots starting from the selected start time, with isEndTime = true
+  const timeSlots = generateTimeSlots(startTime, true);
+
   const opts = {
     reply_markup: {
-      inline_keyboard: [
-        [
-          { text: "10:00", callback_data: "end_time_10:00" },
-          { text: "11:00", callback_data: "end_time_11:00" },
-          { text: "12:00", callback_data: "end_time_12:00" },
-        ],
-        [
-          { text: "13:00", callback_data: "end_time_13:00" },
-          { text: "14:00", callback_data: "end_time_14:00" },
-          { text: "15:00", callback_data: "end_time_15:00" },
-        ],
-        [
-          { text: "16:00", callback_data: "end_time_16:00" },
-          { text: "17:00", callback_data: "end_time_17:00" },
-          { text: "18:00", callback_data: "end_time_18:00" },
-        ],
-      ],
+      inline_keyboard: timeSlots,
     },
   };
 
   bot.sendMessage(chatId, "Please select your absence end time:", opts);
 }
 
-// Modify the callback query handler to handle both start and end times
-bot.on("callback_query", async (callbackQuery) => {
-  const msg = callbackQuery.message;
-  const chatId = msg.chat.id;
-  const data = callbackQuery.data;
+// Update the handleAbsenceConfirmation function to check status
+async function handleAbsenceConfirmation(chatId, absence) {
+  const formattedStart = moment(absence.start_time).format("HH:mm");
+  const formattedEnd = moment(absence.end_time).format("HH:mm");
 
-  // ... existing callback handling code ...
+  // Only send the registration message if it's a new request
+  if (absence.status === "pending") {
+    bot.sendMessage(
+      chatId,
+      `Your absence has been registered:\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${absence.reason}\nStatus: Pending approval`
+    );
 
-  if (data.startsWith("start_time_")) {
-    const startTime = data.split("_")[2];
-    try {
-      await Absence.findOneAndUpdate(
-        { user_id: chatId.toString(), status: "pending" },
-        { start_time: moment(startTime, "HH:mm").toDate() }
-      );
-      requestEndTime(chatId);
-    } catch (err) {
-      bot.sendMessage(chatId, "Error saving start time.");
-      console.error(err);
-    }
-  }
+    // Notify team leader with username if exists
+    const user = await User.findOne({ telegram_id: absence.user_id });
+    if (user && user.team_leader_id) {
+      try {
+        const chatMember = await bot.getChatMember(
+          absence.user_id,
+          absence.user_id
+        );
+        const username = chatMember.user.username
+          ? `@${chatMember.user.username}`
+          : absence.user_id;
+        const displayName = chatMember.user.first_name
+          ? `${chatMember.user.first_name} (${username})`
+          : username;
 
-  if (data.startsWith("end_time_")) {
-    const endTime = data.split("_")[2];
-    try {
-      const absence = await Absence.findOneAndUpdate(
-        { user_id: chatId.toString(), status: "pending" },
-        { end_time: moment(endTime, "HH:mm").toDate() },
-        { new: true }
-      );
-
-      if (absence) {
-        const formattedStart = moment(absence.start_time).format("HH:mm");
-        const formattedEnd = moment(absence.end_time).format("HH:mm");
+        // Add approve/deny buttons
+        const opts = {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "✅ Approve",
+                  callback_data: `approve_absence_${absence._id}`,
+                },
+                {
+                  text: "❌ Deny",
+                  callback_data: `deny_absence_${absence._id}`,
+                },
+              ],
+            ],
+          },
+        };
 
         bot.sendMessage(
-          chatId,
-          `Your absence has been registered:\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${absence.reason}\nStatus: Pending approval`
+          user.team_leader_id,
+          `New absence request:\nUser: ${displayName}\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${absence.reason}`,
+          opts
         );
-
-        // Notify team leader
-        if (absence.user_id) {
-          const user = await User.findOne({ telegram_id: absence.user_id });
-          if (user && user.team_leader_id) {
-            bot.sendMessage(
-              user.team_leader_id,
-              `New absence request:\nUser: ${absence.user_id}\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${absence.reason}`
-            );
-          }
-        }
+      } catch (err) {
+        // Fallback to just user_id if can't get username
+        bot.sendMessage(
+          user.team_leader_id,
+          `New absence request:\nUser: ${absence.user_id}\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${absence.reason}`
+        );
       }
-    } catch (err) {
-      bot.sendMessage(chatId, "Error saving end time.");
-      console.error(err);
     }
   }
-
-  // ... rest of the callback handling code ...
-});
+}
 
 // Handle late for meeting command
 bot.onText(/\/late_for_meeting/, async (msg) => {
@@ -493,74 +900,31 @@ bot.onText(/\/selecttime/, (msg) => {
   bot.sendMessage(chatId, "Please choose how to set the time:", opts);
 });
 
-// Modify the callback query handler for time selection
-bot.on("callback_query", async (callbackQuery) => {
-  const msg = callbackQuery.message;
-  const chatId = msg.chat.id;
-  const data = callbackQuery.data;
+// Start the bot
+console.log("Bot is running...");
 
-  if (data === "time_now") {
-    const now = moment();
-    const formattedTime = now.format("HH:mm");
-    try {
-      await Absence.findOneAndUpdate(
-        { user_id: chatId.toString(), status: "pending" },
-        { start_time: now.toDate() }
-      );
-      requestEndTime(chatId);
-    } catch (err) {
-      bot.sendMessage(chatId, "Error saving start time.");
-      console.error(err);
-    }
-  } else if (data === "time_write") {
-    bot.sendMessage(chatId, "Please input the time you want (format: HH:mm):");
-    // Set up a one-time message listener for the written time
-    bot.once("message", async (timeMsg) => {
-      const inputTime = timeMsg.text;
-      const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
-
-      if (timeRegex.test(inputTime)) {
-        try {
-          await Absence.findOneAndUpdate(
-            { user_id: chatId.toString(), status: "pending" },
-            { start_time: moment(inputTime, "HH:mm").toDate() }
-          );
-          requestEndTime(chatId);
-        } catch (err) {
-          bot.sendMessage(chatId, "Error saving start time.");
-          console.error(err);
-        }
-      } else {
-        bot.sendMessage(
-          chatId,
-          "Invalid time format. Please use the /notify command again and provide time in HH:mm format."
-        );
-      }
-    });
+// Helper function to get user display name
+async function getUserDisplayName(userId) {
+  try {
+    const chatMember = await bot.getChatMember(userId, userId);
+    const username = chatMember.user.username
+      ? `@${chatMember.user.username}`
+      : userId;
+    return chatMember.user.first_name
+      ? `${chatMember.user.first_name} (${username})`
+      : username;
+  } catch (err) {
+    return userId;
   }
+}
 
-  // Keep existing handlers for start_time_ and end_time_
-  if (data.startsWith("start_time_")) {
-    // ... existing start_time_ handler code ...
-  }
-
-  if (data.startsWith("end_time_")) {
-    // ... existing end_time_ handler code ...
-  }
-});
-
-// Handle approve_required command
-bot.onText(/\/approve_required/, async (msg) => {
+// Add a command to view pending requests for team leaders
+bot.onText(/\/pending_requests/, async (msg) => {
   const chatId = msg.chat.id;
   try {
     const user = await User.findOne({ telegram_id: chatId.toString() });
 
-    if (!user) {
-      bot.sendMessage(chatId, "You need to register first using /register");
-      return;
-    }
-
-    if (user.role !== "teamleader") {
+    if (!user || user.role !== "teamleader") {
       bot.sendMessage(
         chatId,
         "This command is only available for team leaders."
@@ -568,167 +932,48 @@ bot.onText(/\/approve_required/, async (msg) => {
       return;
     }
 
-    // First, ask who this requirement applies to
-    const teamMembers = await User.find({ team_leader_id: chatId.toString() });
-
-    const keyboardButtons = [
-      [{ text: "Whole Team", callback_data: "approve_req_team_all" }],
-      ...teamMembers.map((member) => [
-        {
-          text: `User ${member.telegram_id}`,
-          callback_data: `approve_req_user_${member.telegram_id}`,
-        },
-      ]),
-    ];
-
-    const opts = {
-      reply_markup: {
-        inline_keyboard: keyboardButtons,
+    const pendingRequests = await Absence.find({
+      status: "pending",
+      user_id: {
+        $in: (await User.find({ team_leader_id: chatId.toString() })).map(
+          (u) => u.telegram_id
+        ),
       },
-    };
+    });
 
-    bot.sendMessage(
-      chatId,
-      "Please select who needs approval for absence:",
-      opts
-    );
+    if (pendingRequests.length === 0) {
+      bot.sendMessage(chatId, "No pending requests.");
+      return;
+    }
+
+    // Send each pending request with approve/deny buttons
+    for (const absence of pendingRequests) {
+      const displayName = await getUserDisplayName(absence.user_id);
+      const opts = {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "✅ Approve",
+                callback_data: `approve_absence_${absence._id}`,
+              },
+              {
+                text: "❌ Deny",
+                callback_data: `deny_absence_${absence._id}`,
+              },
+            ],
+          ],
+        },
+      };
+
+      bot.sendMessage(
+        chatId,
+        `Pending absence request:\nUser: ${displayName}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`,
+        opts
+      );
+    }
   } catch (err) {
-    bot.sendMessage(chatId, "Error processing your request.");
     console.error(err);
+    bot.sendMessage(chatId, "Error fetching pending requests.");
   }
 });
-
-// Add to your existing callback query handler
-bot.on("callback_query", async (callbackQuery) => {
-  const msg = callbackQuery.message;
-  const chatId = msg.chat.id;
-  const data = callbackQuery.data;
-
-  // ... existing callback handling code ...
-
-  if (data.startsWith("approve_req_")) {
-    const [, type, id] = data.split("_");
-
-    try {
-      // Store temporary data
-      const requirement = new ApprovalRequirement({
-        team_leader_id: chatId.toString(),
-        user_id: type === "team" ? null : id,
-      });
-      await requirement.save();
-
-      // Ask for start time
-      const opts = {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { text: "09:00", callback_data: "approve_start_09:00" },
-              { text: "10:00", callback_data: "approve_start_10:00" },
-              { text: "11:00", callback_data: "approve_start_11:00" },
-            ],
-            [
-              { text: "12:00", callback_data: "approve_start_12:00" },
-              { text: "13:00", callback_data: "approve_start_13:00" },
-              { text: "14:00", callback_data: "approve_start_14:00" },
-            ],
-          ],
-        },
-      };
-
-      bot.sendMessage(
-        chatId,
-        "Please select when approval requirement starts:",
-        opts
-      );
-    } catch (err) {
-      bot.sendMessage(chatId, "Error saving approval requirement.");
-      console.error(err);
-    }
-  }
-
-  if (data.startsWith("approve_start_")) {
-    const startTime = data.split("_")[2];
-    try {
-      await ApprovalRequirement.findOneAndUpdate(
-        { team_leader_id: chatId.toString(), start_time: null },
-        { start_time: moment(startTime, "HH:mm").toDate() }
-      );
-
-      // Ask for end time
-      const opts = {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { text: "12:00", callback_data: "approve_end_12:00" },
-              { text: "13:00", callback_data: "approve_end_13:00" },
-              { text: "14:00", callback_data: "approve_end_14:00" },
-            ],
-            [
-              { text: "15:00", callback_data: "approve_end_15:00" },
-              { text: "16:00", callback_data: "approve_end_16:00" },
-              { text: "17:00", callback_data: "approve_end_17:00" },
-            ],
-            [
-              { text: "18:00", callback_data: "approve_end_18:00" },
-              { text: "19:00", callback_data: "approve_end_19:00" },
-              { text: "20:00", callback_data: "approve_end_20:00" },
-            ],
-          ],
-        },
-      };
-
-      bot.sendMessage(
-        chatId,
-        "Please select when approval requirement ends:",
-        opts
-      );
-    } catch (err) {
-      bot.sendMessage(chatId, "Error saving start time.");
-      console.error(err);
-    }
-  }
-
-  if (data.startsWith("approve_end_")) {
-    const endTime = data.split("_")[2];
-    try {
-      const requirement = await ApprovalRequirement.findOneAndUpdate(
-        { team_leader_id: chatId.toString(), end_time: null },
-        { end_time: moment(endTime, "HH:mm").toDate() },
-        { new: true }
-      );
-
-      if (requirement) {
-        const formattedStart = moment(requirement.start_time).format("HH:mm");
-        const formattedEnd = moment(requirement.end_time).format("HH:mm");
-        const target = requirement.user_id
-          ? `User ${requirement.user_id}`
-          : "Whole Team";
-
-        bot.sendMessage(
-          chatId,
-          `Approval requirement set:\nFor: ${target}\nFrom: ${formattedStart}\nTo: ${formattedEnd}`
-        );
-
-        // Notify affected team members
-        const usersToNotify = requirement.user_id
-          ? [requirement.user_id]
-          : (await User.find({ team_leader_id: chatId.toString() })).map(
-              (user) => user.telegram_id
-            );
-
-        for (const userId of usersToNotify) {
-          bot.sendMessage(
-            userId,
-            `Your team leader has set approval requirement for absences:\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nDuring this time, you must get approval before leaving the building.`
-          );
-        }
-      }
-    } catch (err) {
-      bot.sendMessage(chatId, "Error saving end time.");
-      console.error(err);
-    }
-  }
-});
-
-// Start the bot
-console.log("Bot is running...");
