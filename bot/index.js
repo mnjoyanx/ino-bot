@@ -5,6 +5,7 @@ const moment = require("moment");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
+const axios = require("axios");
 
 // Initialize bot with your token
 const token = "7729835414:AAHnTWxKBzQvtlEjsuiY6Pau-b-vDZ6j1vQ";
@@ -33,6 +34,7 @@ const UserSchema = new mongoose.Schema({
   team_leader_id: String,
   team_id: Number,
   created_at: { type: Date, default: Date.now },
+  clickup_id: { type: String },
 });
 
 const AbsenceSchema = new mongoose.Schema({
@@ -1585,7 +1587,67 @@ async function getSubordinates(userId) {
   }
 }
 
-// Update the generateReport function
+// Add ClickUp API integration
+const CLICKUP_API_TOKEN = process.env.CLICKUP_API_TOKEN; // Add this to your env variables
+
+// Add helper function to get ClickUp task hours
+async function getClickUpTaskHours(userId, startDate, endDate) {
+  try {
+    const user = await User.findOne({ telegram_id: userId.toString() });
+    if (!user || !user.clickup_id) {
+      return null;
+    }
+
+    // Convert dates to ClickUp format (Unix timestamp in milliseconds)
+    const startTimestamp = moment(startDate).valueOf();
+    const endTimestamp = moment(endDate).valueOf();
+
+    // Get tasks from ClickUp API
+    const response = await axios.get(
+      `https://api.clickup.com/api/v2/team/${process.env.CLICKUP_TEAM_ID}/time_entries`,
+      {
+        headers: {
+          Authorization: CLICKUP_API_TOKEN,
+        },
+        params: {
+          start_date: startTimestamp,
+          end_date: endTimestamp,
+          assignee: user.clickup_id,
+        },
+      }
+    );
+
+    if (!response.data || !response.data.data) {
+      return null;
+    }
+
+    // Calculate total hours and organize by task
+    const taskHours = {
+      total: 0,
+      tasks: [],
+    };
+
+    response.data.data.forEach((entry) => {
+      const duration = entry.duration / (1000 * 60 * 60); // Convert milliseconds to hours
+      taskHours.total += duration;
+
+      // Add task details
+      taskHours.tasks.push({
+        taskName: entry.task ? entry.task.name : "No task name",
+        duration: duration,
+        date: moment(entry.start).format("YYYY-MM-DD"),
+        status: entry.task ? entry.task.status.status : "Unknown",
+      });
+    });
+
+    return taskHours;
+  } catch (err) {
+    console.error("Error fetching ClickUp data:", err);
+    return null;
+  }
+}
+
+// Update generateReport function to include ClickUp data
 async function generateReport(userId, startDate, endDate) {
   try {
     // Create a new PDF document
@@ -1708,6 +1770,64 @@ async function generateReport(userId, startDate, endDate) {
         .moveDown()
         .text("Averages:")
         .text(`Average Duration per Absence: ${avgDuration.toFixed(1)} hours`);
+    }
+
+    // Get ClickUp task hours
+    const taskHours = await getClickUpTaskHours(userId, startDate, endDate);
+
+    // Add ClickUp statistics section if available
+    if (taskHours) {
+      doc
+        .moveDown()
+        .fontSize(14)
+        .text("ClickUp Task Statistics:", { underline: true })
+        .moveDown()
+        .fontSize(12)
+        .text(`Total Task Hours: ${taskHours.total.toFixed(1)} hours`);
+
+      // Add task breakdown
+      if (taskHours.tasks.length > 0) {
+        doc.moveDown().text("Task Breakdown:");
+
+        // Group tasks by date
+        const tasksByDate = {};
+        taskHours.tasks.forEach((task) => {
+          if (!tasksByDate[task.date]) {
+            tasksByDate[task.date] = [];
+          }
+          tasksByDate[task.date].push(task);
+        });
+
+        // Add tasks organized by date
+        Object.keys(tasksByDate)
+          .sort()
+          .forEach((date) => {
+            doc.moveDown().text(date, { underline: true });
+
+            tasksByDate[date].forEach((task) => {
+              doc
+                .text(`• ${task.taskName}`)
+                .text(`  Duration: ${task.duration.toFixed(1)} hours`)
+                .text(`  Status: ${task.status}`);
+            });
+          });
+      }
+
+      // Add combined statistics
+      doc
+        .moveDown()
+        .fontSize(14)
+        .text("Combined Statistics:", { underline: true })
+        .moveDown()
+        .fontSize(12)
+        .text(
+          `Total Work Hours: ${(totalHours + taskHours.total).toFixed(1)} hours`
+        )
+        .text(`• Absence Hours: ${totalHours.toFixed(1)} hours`)
+        .text(`• Task Hours: ${taskHours.total.toFixed(1)} hours`)
+        .text(
+          `Productivity Ratio: ${((taskHours.total / (totalHours + taskHours.total)) * 100).toFixed(1)}%`
+        );
     }
 
     // Add footer with generation date
@@ -2719,3 +2839,28 @@ async function sendApprovalConfirmation(chatId, requirement) {
     bot.sendMessage(chatId, "Error sending confirmation messages.");
   }
 }
+
+// Add command to link ClickUp ID
+bot.onText(/\/set_clickup_id (.+)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const clickupId = match[1];
+
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "Please register first using /register");
+      return;
+    }
+
+    // Update user with ClickUp ID
+    await User.findOneAndUpdate(
+      { telegram_id: chatId.toString() },
+      { clickup_id: clickupId }
+    );
+
+    bot.sendMessage(chatId, "Your ClickUp ID has been successfully linked!");
+  } catch (err) {
+    console.error("Error setting ClickUp ID:", err);
+    bot.sendMessage(chatId, "Error linking your ClickUp ID.");
+  }
+});
