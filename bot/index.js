@@ -28,6 +28,7 @@ const UserSchema = new mongoose.Schema({
   telegram_id: { type: String, unique: true },
   role: String,
   team_leader_id: String,
+  team_id: Number,
   created_at: { type: Date, default: Date.now },
 });
 
@@ -59,6 +60,14 @@ const ApprovalRequirement = mongoose.model(
   "ApprovalRequirement",
   ApprovalRequirementSchema
 );
+
+// Add these roles to the top of the file with other constants
+const ROLES = {
+  CEO: "ceo",
+  CTO: "cto",
+  TEAM_LEADER: "teamleader",
+  USER: "user",
+};
 
 // Command handlers
 bot.onText(/\/start/, (msg) => {
@@ -487,7 +496,7 @@ bot.on("callback_query", async (callbackQuery) => {
       );
 
       if (absence) {
-        // Notify team leader
+        // Notify approver
         bot.editMessageText(
           `Absence request APPROVED ✅\nUser: ${await getUserDisplayName(absence.user_id)}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`,
           {
@@ -496,10 +505,19 @@ bot.on("callback_query", async (callbackQuery) => {
           }
         );
 
+        // Get approver's role and name
+        const approver = await User.findOne({ telegram_id: chatId.toString() });
+        const approverMember = await bot.getChatMember(chatId, chatId);
+        const approverName =
+          approverMember.user.first_name ||
+          approverMember.user.username ||
+          chatId;
+        const approverRole = approver ? approver.role : "Unknown";
+
         // Notify user
         bot.sendMessage(
           absence.user_id,
-          `Your absence request has been APPROVED ✅\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`
+          `Your absence request has been APPROVED ✅ by ${approverRole} ${approverName}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`
         );
       }
     } catch (err) {
@@ -518,7 +536,14 @@ bot.on("callback_query", async (callbackQuery) => {
       );
 
       if (absence) {
-        // Notify team leader
+        // Get denier's role and name
+        const denier = await User.findOne({ telegram_id: chatId.toString() });
+        const denierMember = await bot.getChatMember(chatId, chatId);
+        const denierName =
+          denierMember.user.first_name || denierMember.user.username || chatId;
+        const denierRole = denier ? denier.role : "Unknown";
+
+        // Notify denier
         bot.editMessageText(
           `Absence request DENIED ❌\nUser: ${await getUserDisplayName(absence.user_id)}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`,
           {
@@ -530,7 +555,7 @@ bot.on("callback_query", async (callbackQuery) => {
         // Notify user
         bot.sendMessage(
           absence.user_id,
-          `Your absence request has been DENIED ❌\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`
+          `Your absence request has been DENIED ❌ by ${denierRole} ${denierName}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`
         );
       }
     } catch (err) {
@@ -685,7 +710,33 @@ async function requestEndTime(chatId, startTime) {
   bot.sendMessage(chatId, "Please select your absence end time:", opts);
 }
 
-// Update the handleAbsenceConfirmation function to check status
+// Add helper function to get supervisor's ID
+async function getSupervisorId(userId) {
+  try {
+    const user = await User.findOne({ telegram_id: userId.toString() });
+    if (!user) return null;
+
+    switch (user.role) {
+      case ROLES.USER:
+        return user.team_leader_id;
+      case ROLES.TEAM_LEADER:
+        const ceo = await User.findOne({ role: ROLES.CEO });
+        return ceo ? ceo.telegram_id : null;
+      case ROLES.CEO:
+        const cto = await User.findOne({ role: ROLES.CTO });
+        return cto ? cto.telegram_id : null;
+      case ROLES.CTO:
+        return null; // CTO has no supervisor
+      default:
+        return null;
+    }
+  } catch (err) {
+    console.error("Error getting supervisor:", err);
+    return null;
+  }
+}
+
+// Update handleAbsenceConfirmation function
 async function handleAbsenceConfirmation(chatId, absence) {
   const formattedStart = moment(absence.start_time).format("HH:mm");
   const formattedEnd = moment(absence.end_time).format("HH:mm");
@@ -697,10 +748,12 @@ async function handleAbsenceConfirmation(chatId, absence) {
       `Your absence has been registered:\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${absence.reason}\nStatus: Pending approval`
     );
 
-    // Notify team leader with username if exists
-    const user = await User.findOne({ telegram_id: absence.user_id });
-    if (user && user.team_leader_id) {
+    // Get supervisor's ID based on user's role
+    const supervisorId = await getSupervisorId(absence.user_id);
+
+    if (supervisorId) {
       try {
+        // Get requester's display name
         const chatMember = await bot.getChatMember(
           absence.user_id,
           absence.user_id
@@ -711,6 +764,10 @@ async function handleAbsenceConfirmation(chatId, absence) {
         const displayName = chatMember.user.first_name
           ? `${chatMember.user.first_name} (${username})`
           : username;
+
+        // Get requester's role
+        const requester = await User.findOne({ telegram_id: absence.user_id });
+        const requesterRole = requester ? requester.role : "Unknown";
 
         // Add approve/deny buttons
         const opts = {
@@ -730,18 +787,21 @@ async function handleAbsenceConfirmation(chatId, absence) {
           },
         };
 
+        // Send notification to supervisor with role context
         bot.sendMessage(
-          user.team_leader_id,
-          `New absence request:\nUser: ${displayName}\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${absence.reason}`,
+          supervisorId,
+          `New absence request from ${requesterRole}:\nUser: ${displayName}\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${absence.reason}`,
           opts
         );
       } catch (err) {
-        // Fallback to just user_id if can't get username
-        bot.sendMessage(
-          user.team_leader_id,
-          `New absence request:\nUser: ${absence.user_id}\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${absence.reason}`
-        );
+        console.error("Error sending supervisor notification:", err);
       }
+    } else if (absence.user_id !== chatId) {
+      // If no supervisor but not self-notification
+      bot.sendMessage(
+        chatId,
+        "Note: You have no supervisor assigned in the system."
+      );
     }
   }
 }
@@ -810,21 +870,51 @@ const users = [];
 bot.onText(/\/register/, async (msg) => {
   const chatId = msg.chat.id;
 
-  const opts = {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          {
-            text: "Register as Team Lead",
-            callback_data: "register_team_lead",
-          },
-          { text: "Register as User", callback_data: "register_user" },
-        ],
-      ],
-    },
-  };
+  try {
+    // Check if user is already registered
+    const existingUser = await User.findOne({ telegram_id: chatId.toString() });
+    if (existingUser) {
+      bot.sendMessage(
+        chatId,
+        `You are already registered as a ${existingUser.role}. Use /remove_account if you want to register with a different role.`
+      );
+      return;
+    }
 
-  bot.sendMessage(chatId, "Please select your registration type:", opts);
+    // Check if CEO and CTO positions are already taken
+    const ceoExists = await User.findOne({ role: ROLES.CEO });
+    const ctoExists = await User.findOne({ role: ROLES.CTO });
+
+    const keyboard = [
+      [{ text: "Register as Team Lead", callback_data: "register_team_lead" }],
+      [{ text: "Register as User", callback_data: "register_user" }],
+    ];
+
+    // Only add CEO option if position is not taken
+    if (!ceoExists) {
+      keyboard.unshift([
+        { text: "Register as CEO", callback_data: "register_ceo" },
+      ]);
+    }
+
+    // Only add CTO option if position is not taken
+    if (!ctoExists) {
+      keyboard.unshift([
+        { text: "Register as CTO", callback_data: "register_cto" },
+      ]);
+    }
+
+    const opts = {
+      reply_markup: {
+        inline_keyboard: keyboard,
+      },
+    };
+
+    bot.sendMessage(chatId, "Please select your registration type:", opts);
+  } catch (err) {
+    console.error("Error during registration:", err);
+    bot.sendMessage(chatId, "Error processing registration request.");
+  }
 });
 
 // Handle registration type
@@ -844,19 +934,38 @@ bot.on("callback_query", async (callbackQuery) => {
     };
     bot.sendMessage(chatId, "Please select your team:", opts);
   } else if (data.startsWith("team_lead_select_")) {
-    // Assign team to team lead
     const teamId = parseInt(data.split("_").pop());
     const team = teams.find((t) => t.id === teamId);
 
-    if (team.lead) {
-      bot.sendMessage(chatId, `The team ${team.name} already has a team lead.`);
-    } else {
-      team.lead = chatId;
-      users.push({ id: chatId, role: "team_lead", team: teamId });
-      bot.sendMessage(
-        chatId,
-        `You have been registered as the team lead for ${team.name}. Please set your username by typing /setusername <your_username>.`
-      );
+    try {
+      const existingTeamLead = await User.findOne({
+        role: "teamleader",
+        team_id: teamId,
+      });
+
+      if (existingTeamLead) {
+        bot.sendMessage(
+          chatId,
+          `The team ${team.name} already has a team lead.`
+        );
+      } else {
+        await User.findOneAndUpdate(
+          { telegram_id: chatId.toString() },
+          {
+            telegram_id: chatId.toString(),
+            role: "teamleader",
+            team_id: teamId,
+          },
+          { upsert: true }
+        );
+        bot.sendMessage(
+          chatId,
+          `You have been registered as the team lead for ${team.name}.`
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      bot.sendMessage(chatId, "Error registering as team leader.");
     }
   } else if (data === "register_user") {
     // Register as a regular user
@@ -976,4 +1085,177 @@ bot.onText(/\/pending_requests/, async (msg) => {
     console.error(err);
     bot.sendMessage(chatId, "Error fetching pending requests.");
   }
+});
+
+// Add this after other bot.onText handlers
+bot.onText(/\/teams/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    // Get all team leaders
+    const teamLeaders = await User.find({ role: "teamleader" });
+
+    // Create a message showing all teams
+    let message = "🏢 *Company Teams*:\n\n";
+
+    for (const team of teams) {
+      // Find team leader for this team
+      const teamLeader = teamLeaders.find((leader) => {
+        // You might need to adjust this logic based on how team leaders are associated with teams
+        const leaderTeamId = leader.team_id; // You'll need to add this field to your User schema
+        return leaderTeamId === team.id;
+      });
+
+      // Add team info to message
+      message += `*${team.name}*\n`;
+      if (teamLeader) {
+        try {
+          const chatMember = await bot.getChatMember(
+            teamLeader.telegram_id,
+            teamLeader.telegram_id
+          );
+          const username = chatMember.user.username
+            ? `@${chatMember.user.username}`
+            : teamLeader.telegram_id;
+          const displayName = chatMember.user.first_name
+            ? `${chatMember.user.first_name} (${username})`
+            : username;
+          message += `👤 Team Leader: ${displayName}\n`;
+        } catch (err) {
+          message += `👤 Team Leader: Not available\n`;
+        }
+      } else {
+        message += `👤 Team Leader: Not assigned\n`;
+      }
+      message += `\n`;
+    }
+
+    // Send message with markdown formatting
+    bot.sendMessage(chatId, message, { parse_mode: "Markdown" });
+  } catch (err) {
+    console.error("Error fetching teams:", err);
+    bot.sendMessage(chatId, "Error fetching teams information.");
+  }
+});
+
+// Add command to remove account
+bot.onText(/\/remove_account/, async (msg) => {
+  const chatId = msg.chat.id;
+
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "You don't have a registered account.");
+      return;
+    }
+
+    const opts = {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "Yes, remove my account",
+              callback_data: "confirm_remove_account",
+            },
+            {
+              text: "No, keep my account",
+              callback_data: "cancel_remove_account",
+            },
+          ],
+        ],
+      },
+    };
+
+    bot.sendMessage(
+      chatId,
+      "Are you sure you want to remove your account? This action cannot be undone.",
+      opts
+    );
+  } catch (err) {
+    console.error("Error processing remove account request:", err);
+    bot.sendMessage(chatId, "Error processing your request.");
+  }
+});
+
+// Update the callback query handler to include new registration types and account removal
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  // Handle CEO registration
+  if (data === "register_ceo") {
+    try {
+      const ceoExists = await User.findOne({ role: ROLES.CEO });
+      if (ceoExists) {
+        bot.sendMessage(chatId, "CEO position is already taken.");
+        return;
+      }
+
+      await User.findOneAndUpdate(
+        { telegram_id: chatId.toString() },
+        {
+          telegram_id: chatId.toString(),
+          role: ROLES.CEO,
+        },
+        { upsert: true }
+      );
+      bot.sendMessage(chatId, "You have been registered as CEO.");
+    } catch (err) {
+      console.error(err);
+      bot.sendMessage(chatId, "Error registering as CEO.");
+    }
+  }
+
+  // Handle CTO registration
+  if (data === "register_cto") {
+    try {
+      const ctoExists = await User.findOne({ role: ROLES.CTO });
+      if (ctoExists) {
+        bot.sendMessage(chatId, "CTO position is already taken.");
+        return;
+      }
+
+      await User.findOneAndUpdate(
+        { telegram_id: chatId.toString() },
+        {
+          telegram_id: chatId.toString(),
+          role: ROLES.CTO,
+        },
+        { upsert: true }
+      );
+      bot.sendMessage(chatId, "You have been registered as CTO.");
+    } catch (err) {
+      console.error(err);
+      bot.sendMessage(chatId, "Error registering as CTO.");
+    }
+  }
+
+  // Handle account removal confirmation
+  if (data === "confirm_remove_account") {
+    try {
+      await User.findOneAndDelete({ telegram_id: chatId.toString() });
+      bot.editMessageText(
+        "Your account has been successfully removed. You can register again using /register",
+        {
+          chat_id: chatId,
+          message_id: msg.message_id,
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      bot.sendMessage(chatId, "Error removing your account.");
+    }
+  }
+
+  if (data === "cancel_remove_account") {
+    bot.editMessageText(
+      "Account removal cancelled. Your account remains active.",
+      {
+        chat_id: chatId,
+        message_id: msg.message_id,
+      }
+    );
+  }
+
+  // ... rest of your existing callback query handlers ...
 });
