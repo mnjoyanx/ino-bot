@@ -1585,7 +1585,7 @@ async function getSubordinates(userId) {
   }
 }
 
-// Add function to generate PDF report
+// Update the generateReport function
 async function generateReport(userId, startDate, endDate) {
   try {
     // Create a new PDF document
@@ -1610,6 +1610,9 @@ async function generateReport(userId, startDate, endDate) {
     doc.moveDown();
     doc.fontSize(14).text(`User: ${userDisplayName}`);
     doc.fontSize(12).text(`Role: ${user.role}`);
+    doc.text(
+      `Period: ${moment(startDate).format("YYYY-MM-DD")} to ${moment(endDate).format("YYYY-MM-DD")}`
+    );
     doc.moveDown();
 
     // Get absences for date range
@@ -1621,6 +1624,12 @@ async function generateReport(userId, startDate, endDate) {
       },
     }).sort({ created_at: 1 });
 
+    // Calculate total hours and organize absences by status
+    let totalHours = 0;
+    let approvedHours = 0;
+    let deniedHours = 0;
+    let pendingHours = 0;
+
     // Add absences to report
     doc.fontSize(14).text("Absence Records:", { underline: true });
     doc.moveDown();
@@ -1629,15 +1638,38 @@ async function generateReport(userId, startDate, endDate) {
       doc.fontSize(12).text("No absences recorded for this period.");
     } else {
       absences.forEach((absence) => {
+        const startTime = moment(absence.start_time);
+        const endTime = moment(absence.end_time);
+        const durationHours = endTime.diff(startTime, "hours", true);
+
+        // Add to total hours based on status
+        switch (absence.status) {
+          case "approved":
+            approvedHours += durationHours;
+            break;
+          case "denied":
+            deniedHours += durationHours;
+            break;
+          case "pending":
+            pendingHours += durationHours;
+            break;
+        }
+        totalHours += durationHours;
+
+        // Format duration for display
+        const durationFormatted = durationHours.toFixed(1);
+
         doc
           .fontSize(12)
-          .text(`Date: ${moment(absence.created_at).format("YYYY-MM-DD")}`);
-        doc.text(
-          `Time: ${moment(absence.start_time).format("HH:mm")} - ${moment(absence.end_time).format("HH:mm")}`
-        );
-        doc.text(`Reason: ${absence.reason}`);
-        doc.text(`Status: ${absence.status}`);
-        doc.moveDown();
+          .text(`Date: ${moment(absence.created_at).format("YYYY-MM-DD")}`)
+          .text(
+            `Time: ${startTime.format("HH:mm")} - ${endTime.format("HH:mm")} (${durationFormatted} hours)`
+          )
+          .text(`Reason: ${absence.reason}`)
+          .text(
+            `Status: ${absence.status.charAt(0).toUpperCase() + absence.status.slice(1)}`
+          )
+          .moveDown();
       });
     }
 
@@ -1651,13 +1683,41 @@ async function generateReport(userId, startDate, endDate) {
       (a) => a.status === "pending"
     ).length;
 
-    doc.moveDown();
-    doc.fontSize(14).text("Statistics:", { underline: true });
-    doc.moveDown();
-    doc.fontSize(12).text(`Total Absences: ${totalAbsences}`);
-    doc.text(`Approved: ${approvedAbsences}`);
-    doc.text(`Denied: ${deniedAbsences}`);
-    doc.text(`Pending: ${pendingAbsences}`);
+    doc
+      .moveDown()
+      .fontSize(14)
+      .text("Statistics:", { underline: true })
+      .moveDown()
+      .fontSize(12)
+      .text("Count Statistics:")
+      .text(`Total Absences: ${totalAbsences}`)
+      .text(`Approved: ${approvedAbsences}`)
+      .text(`Denied: ${deniedAbsences}`)
+      .text(`Pending: ${pendingAbsences}`)
+      .moveDown()
+      .text("Hours Statistics:")
+      .text(`Total Hours: ${totalHours.toFixed(1)} hours`)
+      .text(`Approved Hours: ${approvedHours.toFixed(1)} hours`)
+      .text(`Denied Hours: ${deniedHours.toFixed(1)} hours`)
+      .text(`Pending Hours: ${pendingHours.toFixed(1)} hours`);
+
+    // Add average statistics if there are absences
+    if (totalAbsences > 0) {
+      const avgDuration = totalHours / totalAbsences;
+      doc
+        .moveDown()
+        .text("Averages:")
+        .text(`Average Duration per Absence: ${avgDuration.toFixed(1)} hours`);
+    }
+
+    // Add footer with generation date
+    doc
+      .moveDown(2)
+      .fontSize(10)
+      .text(`Report generated on: ${moment().format("YYYY-MM-DD HH:mm:ss")}`, {
+        align: "center",
+        color: "grey",
+      });
 
     // Finalize PDF
     doc.end();
