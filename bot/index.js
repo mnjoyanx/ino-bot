@@ -34,7 +34,6 @@ const UserSchema = new mongoose.Schema({
   team_leader_id: String,
   team_id: Number,
   created_at: { type: Date, default: Date.now },
-  clickup_id: { type: String },
 });
 
 const AbsenceSchema = new mongoose.Schema({
@@ -99,8 +98,6 @@ bot.on("callback_query", async (callbackQuery) => {
         // Get list of team leaders
         const teamLeaders = await User.find({ role: "teamleader" });
 
-        console.log(teamLeaders, "tt----");
-
         const teamLeaderButtons = await Promise.all(
           teamLeaders.map(async (leader) => {
             const chatMember = await bot.getChatMember(
@@ -120,8 +117,6 @@ bot.on("callback_query", async (callbackQuery) => {
             };
           })
         );
-
-        console.log(teamLeaderButtons, "-----");
 
         const opts = {
           reply_markup: {
@@ -482,7 +477,9 @@ bot.on("callback_query", async (callbackQuery) => {
 
             bot.sendMessage(
               chatId,
-              `Start time set to ${startTime.format("HH:mm")}\nPlease select when approval requirement ends:`,
+              `Start time set to ${startTime.format(
+                "HH:mm"
+              )}\nPlease select when approval requirement ends:`,
               opts
             );
           } catch (err) {
@@ -528,7 +525,9 @@ bot.on("callback_query", async (callbackQuery) => {
 
         bot.sendMessage(
           chatId,
-          `Start time set to ${startMoment.format("HH:mm")}\nPlease select when approval requirement ends:`,
+          `Start time set to ${startMoment.format(
+            "HH:mm"
+          )}\nPlease select when approval requirement ends:`,
           opts
         );
       } catch (err) {
@@ -633,7 +632,11 @@ bot.on("callback_query", async (callbackQuery) => {
       if (absence) {
         // Notify approver
         bot.editMessageText(
-          `Absence request APPROVED ✅\nUser: ${await getUserDisplayName(absence.user_id)}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`,
+          `Absence request APPROVED ✅\nUser: ${await getUserDisplayName(
+            absence.user_id
+          )}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(
+            absence.end_time
+          ).format("HH:mm")}\nReason: ${absence.reason}`,
           {
             chat_id: chatId,
             message_id: msg.message_id,
@@ -652,7 +655,11 @@ bot.on("callback_query", async (callbackQuery) => {
         // Notify user
         bot.sendMessage(
           absence.user_id,
-          `Your absence request has been APPROVED ✅ by ${approverRole} ${approverName}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`
+          `Your absence request has been APPROVED ✅ by ${approverRole} ${approverName}\nFrom: ${moment(
+            absence.start_time
+          ).format("HH:mm")}\nTo: ${moment(absence.end_time).format(
+            "HH:mm"
+          )}\nReason: ${absence.reason}`
         );
       }
     } catch (err) {
@@ -680,7 +687,11 @@ bot.on("callback_query", async (callbackQuery) => {
 
         // Notify denier
         bot.editMessageText(
-          `Absence request DENIED ❌\nUser: ${await getUserDisplayName(absence.user_id)}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`,
+          `Absence request DENIED ❌\nUser: ${await getUserDisplayName(
+            absence.user_id
+          )}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(
+            absence.end_time
+          ).format("HH:mm")}\nReason: ${absence.reason}`,
           {
             chat_id: chatId,
             message_id: msg.message_id,
@@ -690,7 +701,11 @@ bot.on("callback_query", async (callbackQuery) => {
         // Notify user
         bot.sendMessage(
           absence.user_id,
-          `Your absence request has been DENIED ❌ by ${denierRole} ${denierName}\nFrom: ${moment(absence.start_time).format("HH:mm")}\nTo: ${moment(absence.end_time).format("HH:mm")}\nReason: ${absence.reason}`
+          `Your absence request has been DENIED ❌ by ${denierRole} ${denierName}\nFrom: ${moment(
+            absence.start_time
+          ).format("HH:mm")}\nTo: ${moment(absence.end_time).format(
+            "HH:mm"
+          )}\nReason: ${absence.reason}`
         );
       }
     } catch (err) {
@@ -938,7 +953,9 @@ async function handleAbsenceConfirmation(chatId, absence) {
   if (absence.status === "pending") {
     bot.sendMessage(
       chatId,
-      `Your absence has been registered:\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${absence.reason || "Not specified"}\nStatus: Pending approval`
+      `Your absence has been registered:\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${
+        absence.reason || "Not specified"
+      }\nStatus: Pending approval`
     );
 
     // Get supervisor's ID based on user's role
@@ -973,7 +990,9 @@ async function handleAbsenceConfirmation(chatId, absence) {
         const requester = await User.findOne({ telegram_id: absence.user_id });
         const requesterRole = requester ? requester.role : "Unknown";
 
-        let messageText = `New absence request from ${requesterRole}:\nUser: ${displayName}\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${absence.reason || "Not specified"}`;
+        let messageText = `New absence request from ${requesterRole}:\nUser: ${displayName}\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${
+          absence.reason || "Not specified"
+        }`;
 
         // Only add approve/deny buttons if approval is required
         if (requiresApproval) {
@@ -1009,7 +1028,9 @@ async function handleAbsenceConfirmation(chatId, absence) {
           // Notify user of auto-approval
           bot.sendMessage(
             absence.user_id,
-            `Your absence request has been automatically approved (no approval required):\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${absence.reason || "Not specified"}`
+            `Your absence request has been automatically approved (no approval required):\nFrom: ${formattedStart}\nTo: ${formattedEnd}\nReason: ${
+              absence.reason || "Not specified"
+            }`
           );
         }
       } catch (err) {
@@ -1295,9 +1316,9 @@ bot.onText(/\/pending_requests/, async (msg) => {
         // And from all team leaders
         const teamLeaderRequests = await Absence.find({
           user_id: {
-            $in: (await User.find({ role: ROLES.TEAM_LEADER })).map(
-              (u) => u.telegram_id
-            ),
+            $in: (
+              await User.find({ role: ROLES.TEAM_LEADER })
+            ).map((u) => u.telegram_id),
           },
           status: "pending",
         });
@@ -1308,9 +1329,9 @@ bot.onText(/\/pending_requests/, async (msg) => {
         // CTO can see requests from all team leaders
         pendingRequests = await Absence.find({
           user_id: {
-            $in: (await User.find({ role: ROLES.TEAM_LEADER })).map(
-              (u) => u.telegram_id
-            ),
+            $in: (
+              await User.find({ role: ROLES.TEAM_LEADER })
+            ).map((u) => u.telegram_id),
           },
           status: "pending",
         });
@@ -1321,9 +1342,9 @@ bot.onText(/\/pending_requests/, async (msg) => {
         pendingRequests = await Absence.find({
           status: "pending",
           user_id: {
-            $in: (await User.find({ team_leader_id: chatId.toString() })).map(
-              (u) => u.telegram_id
-            ),
+            $in: (
+              await User.find({ team_leader_id: chatId.toString() })
+            ).map((u) => u.telegram_id),
           },
         });
         break;
@@ -1587,72 +1608,13 @@ async function getSubordinates(userId) {
   }
 }
 
-// Add ClickUp API integration
-const CLICKUP_API_TOKEN = process.env.CLICKUP_API_TOKEN; // Add this to your env variables
-
-// Add helper function to get ClickUp task hours
-async function getClickUpTaskHours(userId, startDate, endDate) {
-  try {
-    const user = await User.findOne({ telegram_id: userId.toString() });
-    if (!user || !user.clickup_id) {
-      return null;
-    }
-
-    // Convert dates to ClickUp format (Unix timestamp in milliseconds)
-    const startTimestamp = moment(startDate).valueOf();
-    const endTimestamp = moment(endDate).valueOf();
-
-    // Get tasks from ClickUp API
-    const response = await axios.get(
-      `https://api.clickup.com/api/v2/team/${process.env.CLICKUP_TEAM_ID}/time_entries`,
-      {
-        headers: {
-          Authorization: CLICKUP_API_TOKEN,
-        },
-        params: {
-          start_date: startTimestamp,
-          end_date: endTimestamp,
-          assignee: user.clickup_id,
-        },
-      }
-    );
-
-    if (!response.data || !response.data.data) {
-      return null;
-    }
-
-    // Calculate total hours and organize by task
-    const taskHours = {
-      total: 0,
-      tasks: [],
-    };
-
-    response.data.data.forEach((entry) => {
-      const duration = entry.duration / (1000 * 60 * 60); // Convert milliseconds to hours
-      taskHours.total += duration;
-
-      // Add task details
-      taskHours.tasks.push({
-        taskName: entry.task ? entry.task.name : "No task name",
-        duration: duration,
-        date: moment(entry.start).format("YYYY-MM-DD"),
-        status: entry.task ? entry.task.status.status : "Unknown",
-      });
-    });
-
-    return taskHours;
-  } catch (err) {
-    console.error("Error fetching ClickUp data:", err);
-    return null;
-  }
-}
-
-// Update generateReport function to include ClickUp data
 async function generateReport(userId, startDate, endDate) {
   try {
     // Create a new PDF document
     const doc = new PDFDocument();
-    const filename = `report_${userId}_${moment().format("YYYYMMDD_HHmmss")}.pdf`;
+    const filename = `report_${userId}_${moment().format(
+      "YYYYMMDD_HHmmss"
+    )}.pdf`;
     const filePath = path.join(__dirname, "temp", filename);
 
     // Ensure temp directory exists
@@ -1673,7 +1635,9 @@ async function generateReport(userId, startDate, endDate) {
     doc.fontSize(14).text(`User: ${userDisplayName}`);
     doc.fontSize(12).text(`Role: ${user.role}`);
     doc.text(
-      `Period: ${moment(startDate).format("YYYY-MM-DD")} to ${moment(endDate).format("YYYY-MM-DD")}`
+      `Period: ${moment(startDate).format("YYYY-MM-DD")} to ${moment(
+        endDate
+      ).format("YYYY-MM-DD")}`
     );
     doc.moveDown();
 
@@ -1725,11 +1689,15 @@ async function generateReport(userId, startDate, endDate) {
           .fontSize(12)
           .text(`Date: ${moment(absence.created_at).format("YYYY-MM-DD")}`)
           .text(
-            `Time: ${startTime.format("HH:mm")} - ${endTime.format("HH:mm")} (${durationFormatted} hours)`
+            `Time: ${startTime.format("HH:mm")} - ${endTime.format(
+              "HH:mm"
+            )} (${durationFormatted} hours)`
           )
           .text(`Reason: ${absence.reason}`)
           .text(
-            `Status: ${absence.status.charAt(0).toUpperCase() + absence.status.slice(1)}`
+            `Status: ${
+              absence.status.charAt(0).toUpperCase() + absence.status.slice(1)
+            }`
           )
           .moveDown();
       });
@@ -1772,64 +1740,6 @@ async function generateReport(userId, startDate, endDate) {
         .text(`Average Duration per Absence: ${avgDuration.toFixed(1)} hours`);
     }
 
-    // Get ClickUp task hours
-    const taskHours = await getClickUpTaskHours(userId, startDate, endDate);
-
-    // Add ClickUp statistics section if available
-    if (taskHours) {
-      doc
-        .moveDown()
-        .fontSize(14)
-        .text("ClickUp Task Statistics:", { underline: true })
-        .moveDown()
-        .fontSize(12)
-        .text(`Total Task Hours: ${taskHours.total.toFixed(1)} hours`);
-
-      // Add task breakdown
-      if (taskHours.tasks.length > 0) {
-        doc.moveDown().text("Task Breakdown:");
-
-        // Group tasks by date
-        const tasksByDate = {};
-        taskHours.tasks.forEach((task) => {
-          if (!tasksByDate[task.date]) {
-            tasksByDate[task.date] = [];
-          }
-          tasksByDate[task.date].push(task);
-        });
-
-        // Add tasks organized by date
-        Object.keys(tasksByDate)
-          .sort()
-          .forEach((date) => {
-            doc.moveDown().text(date, { underline: true });
-
-            tasksByDate[date].forEach((task) => {
-              doc
-                .text(`• ${task.taskName}`)
-                .text(`  Duration: ${task.duration.toFixed(1)} hours`)
-                .text(`  Status: ${task.status}`);
-            });
-          });
-      }
-
-      // Add combined statistics
-      doc
-        .moveDown()
-        .fontSize(14)
-        .text("Combined Statistics:", { underline: true })
-        .moveDown()
-        .fontSize(12)
-        .text(
-          `Total Work Hours: ${(totalHours + taskHours.total).toFixed(1)} hours`
-        )
-        .text(`• Absence Hours: ${totalHours.toFixed(1)} hours`)
-        .text(`• Task Hours: ${taskHours.total.toFixed(1)} hours`)
-        .text(
-          `Productivity Ratio: ${((taskHours.total / (totalHours + taskHours.total)) * 100).toFixed(1)}%`
-        );
-    }
-
     // Add footer with generation date
     doc
       .moveDown(2)
@@ -1868,7 +1778,9 @@ bot.onText(/\/reports/, async (msg) => {
     if (subordinates.cto) {
       keyboard.push([
         {
-          text: `CTO: ${await getUserDisplayName(subordinates.cto.telegram_id)}`,
+          text: `CTO: ${await getUserDisplayName(
+            subordinates.cto.telegram_id
+          )}`,
           callback_data: `report_user_${subordinates.cto.telegram_id}`,
         },
       ]);
@@ -1878,7 +1790,9 @@ bot.onText(/\/reports/, async (msg) => {
       for (const leader of subordinates.teamLeaders) {
         keyboard.push([
           {
-            text: `Team Leader: ${await getUserDisplayName(leader.telegram_id)}`,
+            text: `Team Leader: ${await getUserDisplayName(
+              leader.telegram_id
+            )}`,
             callback_data: `report_user_${leader.telegram_id}`,
           },
         ]);
@@ -2058,7 +1972,9 @@ bot.onText(/\/whoami/, async (msg) => {
     }
 
     // Add registration date
-    message += `\nRegistered: ${moment(user.created_at).format("YYYY-MM-DD HH:mm")}\n`;
+    message += `\nRegistered: ${moment(user.created_at).format(
+      "YYYY-MM-DD HH:mm"
+    )}\n`;
 
     // Add absence statistics
     const totalAbsences = await Absence.countDocuments({
@@ -2572,7 +2488,9 @@ bot.on("callback_query", async (callbackQuery) => {
               : "Whole Team";
 
             message += `👤 *${target}*\n`;
-            message += `⏰ ${moment(req.start_time).format("HH:mm")}-${moment(req.end_time).format("HH:mm")}\n\n`;
+            message += `⏰ ${moment(req.start_time).format("HH:mm")}-${moment(
+              req.end_time
+            ).format("HH:mm")}\n\n`;
           }
 
           bot.sendMessage(chatId, message, { parse_mode: "Markdown" });
@@ -2831,7 +2749,9 @@ async function sendApprovalConfirmation(chatId, requirement) {
     for (const userId of usersToNotify) {
       bot.sendMessage(
         userId,
-        `⚠️ Important Notice ⚠️\n\n${setter.role.toUpperCase()} ${setterName} requires you to stay in the office during:\n\nFrom: ${formattedStart}\nTo: ${formattedEnd}\n\nReason: ${requirement.reason}\n\nDuring this time period, you must get approval before leaving the building.`
+        `⚠️ Important Notice ⚠️\n\n${setter.role.toUpperCase()} ${setterName} requires you to stay in the office during:\n\nFrom: ${formattedStart}\nTo: ${formattedEnd}\n\nReason: ${
+          requirement.reason
+        }\n\nDuring this time period, you must get approval before leaving the building.`
       );
     }
   } catch (err) {
@@ -2840,27 +2760,112 @@ async function sendApprovalConfirmation(chatId, requirement) {
   }
 }
 
-// Add command to link ClickUp ID
-bot.onText(/\/set_clickup_id (.+)/, async (msg, match) => {
+// Add cancel_request command
+bot.onText(/\/cancel_request/, async (msg) => {
   const chatId = msg.chat.id;
-  const clickupId = match[1];
 
   try {
-    const user = await User.findOne({ telegram_id: chatId.toString() });
-    if (!user) {
-      bot.sendMessage(chatId, "Please register first using /register");
+    // Find pending absences for the user
+    const pendingAbsences = await Absence.find({
+      user_id: chatId.toString(),
+      status: "pending",
+    }).sort({ created_at: -1 });
+
+    if (pendingAbsences.length === 0) {
+      bot.sendMessage(
+        chatId,
+        "You have no pending absence requests to cancel."
+      );
       return;
     }
 
-    // Update user with ClickUp ID
-    await User.findOneAndUpdate(
-      { telegram_id: chatId.toString() },
-      { clickup_id: clickupId }
-    );
+    // Create keyboard with pending requests
+    const keyboard = pendingAbsences.map((absence) => {
+      const startTime = moment(absence.start_time).format("HH:mm");
+      const endTime = moment(absence.end_time).format("HH:mm");
+      const date = moment(absence.created_at).format("DD/MM/YYYY");
 
-    bot.sendMessage(chatId, "Your ClickUp ID has been successfully linked!");
+      return [
+        {
+          text: `${date} ${startTime}-${endTime} (${absence.reason})`,
+          callback_data: `cancel_absence_${absence._id}`,
+        },
+      ];
+    });
+
+    const opts = {
+      reply_markup: {
+        inline_keyboard: keyboard,
+      },
+    };
+
+    bot.sendMessage(
+      chatId,
+      "Select the absence request you want to cancel:",
+      opts
+    );
   } catch (err) {
-    console.error("Error setting ClickUp ID:", err);
-    bot.sendMessage(chatId, "Error linking your ClickUp ID.");
+    console.error("Error fetching pending requests:", err);
+    bot.sendMessage(chatId, "Error processing your request.");
   }
+});
+
+// Add to your existing callback query handler
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  // Handle cancel absence request
+  if (data.startsWith("cancel_absence_")) {
+    const absenceId = data.split("_")[2];
+
+    try {
+      const absence = await Absence.findById(absenceId);
+
+      if (!absence) {
+        bot.editMessageText("Request not found or already cancelled.", {
+          chat_id: chatId,
+          message_id: msg.message_id,
+        });
+        return;
+      }
+
+      if (absence.status !== "pending") {
+        bot.editMessageText("Only pending requests can be cancelled.", {
+          chat_id: chatId,
+          message_id: msg.message_id,
+        });
+        return;
+      }
+
+      // Delete the absence request
+      await Absence.findByIdAndDelete(absenceId);
+
+      // Update message to show cancellation
+      bot.editMessageText("✅ Absence request cancelled successfully.", {
+        chat_id: chatId,
+        message_id: msg.message_id,
+      });
+
+      // Notify supervisor about cancellation
+      const supervisorId = await getSupervisorId(chatId);
+      if (supervisorId) {
+        const userDisplayName = await getUserDisplayName(chatId);
+        const startTime = moment(absence.start_time).format("HH:mm");
+        const endTime = moment(absence.end_time).format("HH:mm");
+
+        bot.sendMessage(
+          supervisorId,
+          `*Absence Request Cancelled*\n${userDisplayName} has cancelled their absence request:\nFrom: ${startTime}\nTo: ${endTime}\nReason: ${absence.reason}`,
+          { parse_mode: "Markdown" }
+        );
+      }
+    } catch (err) {
+      console.error("Error cancelling absence:", err);
+      bot.sendMessage(chatId, "Error cancelling your request.");
+    }
+  }
+
+  // ... rest of your existing callback handlers ...
 });
