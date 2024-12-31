@@ -1089,42 +1089,106 @@ bot.onText(/\/late_for_meeting/, async (msg) => {
     }
 
     if (user.team_leader_id) {
+      // Generate time slots for the next few hours
+      const timeSlots = generateTimeSlots(new Date(), false, "late_time");
       const opts = {
         reply_markup: {
           inline_keyboard: [
-            [
-              { text: "09:30", callback_data: "time_select_09:30" },
-              { text: "10:30", callback_data: "time_select_10:30" },
-              { text: "11:30", callback_data: "time_select_11:30" },
-            ],
-            [
-              { text: "12:30", callback_data: "time_select_12:30" },
-              { text: "13:30", callback_data: "time_select_13:30" },
-              { text: "14:30", callback_data: "time_select_14:30" },
-              { text: "15:30", callback_data: "time_select_15:30" },
-            ],
-            [
-              { text: "16:30", callback_data: "time_select_16:30" },
-              { text: "17:30", callback_data: "time_select_17:30" },
-              { text: "18:30", callback_data: "time_select_18:30" },
-            ],
+            ...timeSlots,
+            [{ text: "Set Manually", callback_data: "late_time_manual" }],
           ],
         },
       };
 
-      bot.sendMessage(
-        chatId,
-        "Please select the time you will be late for the meeting:",
-        opts
-      );
+      bot.sendMessage(chatId, "Please select when you will arrive:", opts);
     } else {
       bot.sendMessage(chatId, "You are not assigned to any team leader.");
     }
   } catch (err) {
+    console.error("Error processing late for meeting:", err);
     bot.sendMessage(chatId, "Error processing your request.");
-    console.error(err);
   }
 });
+
+// Add to your existing callback query handler
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  // Handle late time selection
+  if (data.startsWith("late_time_")) {
+    if (data === "late_time_manual") {
+      bot.sendMessage(
+        chatId,
+        "Please enter the time you will arrive (format: HH:mm):"
+      );
+
+      bot.once("message", async (timeMsg) => {
+        const inputTime = timeMsg.text;
+        const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+
+        if (timeRegex.test(inputTime)) {
+          await handleLateNotification(chatId, inputTime);
+        } else {
+          bot.sendMessage(
+            chatId,
+            "Invalid time format. Please use HH:mm format (e.g., 09:30)."
+          );
+        }
+      });
+    } else {
+      const selectedTime = data.split("_")[2];
+      await handleLateNotification(chatId, selectedTime);
+    }
+  }
+
+  // ... rest of your existing callback handlers ...
+});
+
+// Add this helper function to handle late notifications
+async function handleLateNotification(chatId, arrivalTime) {
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user || !user.team_leader_id) {
+      bot.sendMessage(chatId, "Error: User or team leader not found.");
+      return;
+    }
+
+    // Get user's display name
+    const userName = await getUserDisplayName(chatId);
+
+    // Format the notification message
+    const message =
+      `🕒 *Late Arrival Notification*\n` +
+      `Team member: ${userName}\n` +
+      `Expected arrival time: ${arrivalTime}`;
+
+    // Send notification to team leader
+    await bot.sendMessage(user.team_leader_id, message, {
+      parse_mode: "Markdown",
+    });
+
+    // Send confirmation to user
+    await bot.sendMessage(
+      chatId,
+      `✅ Your team leader has been notified that you will arrive at ${arrivalTime}.`
+    );
+
+    // If user is part of a team, create an absence record
+    const absence = new Absence({
+      user_id: chatId.toString(),
+      reason: "Late Arrival",
+      start_time: moment().toDate(),
+      end_time: moment(arrivalTime, "HH:mm").toDate(),
+      status: "approved", // Auto-approve late notifications
+    });
+    await absence.save();
+  } catch (err) {
+    console.error("Error handling late notification:", err);
+    bot.sendMessage(chatId, "Error sending late notification.");
+  }
+}
 
 // Teams list
 const teams = [
@@ -2865,6 +2929,274 @@ bot.on("callback_query", async (callbackQuery) => {
       console.error("Error cancelling absence:", err);
       bot.sendMessage(chatId, "Error cancelling your request.");
     }
+  }
+
+  // ... rest of your existing callback handlers ...
+});
+
+// Command handler for my absences
+bot.onText(/\/my_absences/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const absences = await Absence.find({
+      user_id: chatId.toString(),
+    })
+      .sort({ created_at: -1 })
+      .limit(10);
+
+    if (absences.length === 0) {
+      await bot.sendMessage(chatId, "You have no absence records.");
+      return;
+    }
+
+    let message = "🕒 Your recent absences:\n\n";
+    for (const absence of absences) {
+      const date = moment(absence.created_at).format("DD/MM/YYYY");
+      const startTime = moment(absence.start_time).format("HH:mm");
+      const endTime = moment(absence.end_time).format("HH:mm");
+      const status = absence.status.toUpperCase();
+
+      message += `📅 ${date}\n`;
+      message += `⏰ ${startTime} - ${endTime}\n`;
+      message += `📝 Reason: ${absence.reason}\n`;
+      message += `📌 Status: ${status}\n\n`;
+    }
+
+    await bot.sendMessage(chatId, message);
+  } catch (err) {
+    console.error("Error fetching absences:", err);
+    await bot.sendMessage(chatId, "Error fetching your absences.");
+  }
+});
+
+// Command handler for team absences
+bot.onText(/\/team_absences/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user || user.role === ROLES.USER) {
+      await bot.sendMessage(
+        chatId,
+        "You don't have permission to view team absences."
+      );
+      return;
+    }
+
+    let teamMembers = [];
+    switch (user.role) {
+      case ROLES.TEAM_LEADER:
+        teamMembers = await User.find({ team_leader_id: chatId.toString() });
+        break;
+      case ROLES.CTO:
+        teamMembers = await User.find({ role: ROLES.TEAM_LEADER });
+        break;
+      case ROLES.CEO:
+        teamMembers = await User.find({
+          role: { $in: [ROLES.CTO, ROLES.TEAM_LEADER] },
+        });
+        break;
+    }
+
+    if (teamMembers.length === 0) {
+      await bot.sendMessage(chatId, "No team members found.");
+      return;
+    }
+
+    const today = moment().startOf("day");
+    const absences = await Absence.find({
+      user_id: { $in: teamMembers.map((m) => m.telegram_id) },
+      created_at: { $gte: today.toDate() },
+    }).sort({ created_at: -1 });
+
+    if (absences.length === 0) {
+      await bot.sendMessage(
+        chatId,
+        "No absences recorded for your team today."
+      );
+      return;
+    }
+
+    let message = "👥 Team Absences Today:\n\n";
+    for (const absence of absences) {
+      const memberName = await getUserDisplayName(absence.user_id);
+      const startTime = moment(absence.start_time).format("HH:mm");
+      const endTime = moment(absence.end_time).format("HH:mm");
+
+      message += `👤 ${memberName}\n`;
+      message += `⏰ ${startTime} - ${endTime}\n`;
+      message += `📝 Reason: ${absence.reason}\n`;
+      message += `📌 Status: ${absence.status.toUpperCase()}\n\n`;
+    }
+
+    await bot.sendMessage(chatId, message);
+  } catch (err) {
+    console.error("Error fetching team absences:", err);
+    await bot.sendMessage(chatId, "Error fetching team absences.");
+  }
+});
+
+// Command handler for broadcast messages
+bot.onText(/\/broadcast/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+
+    if (!user || user.role === ROLES.USER) {
+      bot.sendMessage(
+        chatId,
+        "You don't have permission to broadcast messages."
+      );
+      return;
+    }
+
+    // Store the broadcaster's ID in a temporary state
+    global.broadcastState = {
+      senderId: chatId,
+      role: user.role,
+    };
+
+    // Create keyboard based on user's role
+    const keyboard = [];
+
+    switch (user.role) {
+      case ROLES.CEO:
+        keyboard.push(
+          [{ text: "All Employees 👥", callback_data: "broadcast_all" }],
+          [
+            {
+              text: "Management Only 👔",
+              callback_data: "broadcast_management",
+            },
+          ],
+          [{ text: "Team Leaders 👥", callback_data: "broadcast_teamleaders" }]
+        );
+        break;
+      case ROLES.CTO:
+        keyboard.push(
+          [
+            {
+              text: "All Team Leaders 👥",
+              callback_data: "broadcast_teamleaders",
+            },
+          ],
+          [{ text: "All Employees 👥", callback_data: "broadcast_all" }]
+        );
+        break;
+      case ROLES.TEAM_LEADER:
+        keyboard.push([
+          { text: "My Team 👥", callback_data: "broadcast_myteam" },
+        ]);
+        break;
+    }
+
+    const opts = {
+      reply_markup: {
+        inline_keyboard: keyboard,
+      },
+    };
+
+    bot.sendMessage(chatId, "Select broadcast audience:", opts);
+  } catch (err) {
+    console.error("Error in broadcast command:", err);
+    bot.sendMessage(chatId, "Error processing broadcast request.");
+  }
+});
+
+// Add to your existing callback query handler
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  if (data.startsWith("broadcast_")) {
+    const audience = data.split("_")[1];
+
+    // Store the selected audience
+    if (global.broadcastState) {
+      global.broadcastState.audience = audience;
+    }
+
+    // Ask for the message
+    bot.sendMessage(
+      chatId,
+      "Please enter your broadcast message:\n\n" +
+        "You can use basic markdown:\n" +
+        "*bold text*\n" +
+        "_italic text_\n" +
+        "`code`\n" +
+        "```preformatted text```"
+    );
+
+    // Set up one-time listener for the broadcast message
+    bot.once("message", async (messageMsg) => {
+      if (messageMsg.chat.id === chatId) {
+        try {
+          const broadcastMessage = messageMsg.text;
+          const sender = await User.findOne({ telegram_id: chatId.toString() });
+          const senderName = await getUserDisplayName(chatId);
+
+          let recipients = [];
+
+          // Determine recipients based on audience and sender's role
+          switch (audience) {
+            case "all":
+              recipients = await User.find({});
+              break;
+            case "management":
+              recipients = await User.find({
+                role: { $in: [ROLES.CTO, ROLES.TEAM_LEADER] },
+              });
+              break;
+            case "teamleaders":
+              recipients = await User.find({ role: ROLES.TEAM_LEADER });
+              break;
+            case "myteam":
+              recipients = await User.find({
+                team_leader_id: chatId.toString(),
+              });
+              break;
+          }
+
+          // Format the broadcast message
+          const formattedMessage =
+            `📢 *Broadcast Message*\n` +
+            `From: ${sender.role.toUpperCase()} ${senderName}\n` +
+            `\n${broadcastMessage}`;
+
+          // Send to all recipients
+          let successCount = 0;
+          let failCount = 0;
+
+          for (const recipient of recipients) {
+            try {
+              await bot.sendMessage(recipient.telegram_id, formattedMessage, {
+                parse_mode: "Markdown",
+              });
+              successCount++;
+            } catch (err) {
+              console.error(`Failed to send to ${recipient.telegram_id}:`, err);
+              failCount++;
+            }
+            // Add a small delay to avoid hitting rate limits
+            await new Promise((resolve) => setTimeout(resolve, 100));
+          }
+
+          // Send summary to sender
+          bot.sendMessage(
+            chatId,
+            `✅ Broadcast complete\n` +
+              `Successfully sent to: ${successCount} recipients\n` +
+              `Failed deliveries: ${failCount}`
+          );
+        } catch (err) {
+          console.error("Error sending broadcast:", err);
+          bot.sendMessage(chatId, "Error sending broadcast message.");
+        }
+
+        // Clear the broadcast state
+        delete global.broadcastState;
+      }
+    });
   }
 
   // ... rest of your existing callback handlers ...
