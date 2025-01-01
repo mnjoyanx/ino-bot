@@ -5,7 +5,11 @@ const moment = require("moment");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
-const axios = require("axios");
+const Meeting = require("./meeting");
+const Vacation = require("./vacation");
+const DayOff = require("./dayoff");
+const Salary = require("./salary");
+const ICal = require("ical-generator").default; // Changed this line
 
 // Initialize bot with your token
 const token = "7729835414:AAHnTWxKBzQvtlEjsuiY6Pau-b-vDZ6j1vQ";
@@ -16,8 +20,8 @@ mongoose
   .connect(
     "mongodb+srv://mnjoyan:QBEPOCpGD0FmQPx3@cluster0.t6zkh.mongodb.net",
     {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      // useNewUrlParser: true,
+      // useUnifiedTopology: true,
     }
   )
   .then(() => {
@@ -3200,4 +3204,1573 @@ bot.on("callback_query", async (callbackQuery) => {
   }
 
   // ... rest of your existing callback handlers ...
+});
+
+// Command handler for scheduling meetings
+bot.onText(/\/schedule_meeting/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "Please register first using /register");
+      return;
+    }
+
+    // Only allow team leaders and above to schedule meetings
+    if (user.role === ROLES.USER) {
+      bot.sendMessage(
+        chatId,
+        "Only team leaders and above can schedule meetings."
+      );
+      return;
+    }
+
+    // Store meeting creator info in global state
+    global.meetingState = {
+      creatorId: chatId,
+      role: user.role,
+    };
+
+    // Generate time slots for today and tomorrow
+    const timeSlots = [];
+    const now = moment();
+    const tomorrow = moment().add(1, "day");
+
+    // Today's slots (if not too late)
+    if (now.hour() < 17) {
+      // Only show today if before 5 PM
+      const todaySlots = generateTimeSlots(
+        now.toDate(),
+        false,
+        "meeting_today"
+      );
+      timeSlots.push([{ text: "📅 Today", callback_data: "header_today" }]);
+      timeSlots.push(...todaySlots);
+    }
+
+    // Tomorrow's slots
+    const tomorrowSlots = generateTimeSlots(
+      tomorrow.startOf("day").add(9, "hours").toDate(),
+      false,
+      "meeting_tomorrow"
+    );
+    timeSlots.push([{ text: "📅 Tomorrow", callback_data: "header_tomorrow" }]);
+    timeSlots.push(...tomorrowSlots);
+
+    // Manual option
+    timeSlots.push([
+      { text: "📝 Set Custom Time", callback_data: "meeting_time_manual" },
+    ]);
+
+    const opts = {
+      reply_markup: {
+        inline_keyboard: timeSlots,
+      },
+    };
+
+    bot.sendMessage(chatId, "Select meeting time:", opts);
+  } catch (err) {
+    console.error("Error in schedule meeting command:", err);
+    bot.sendMessage(chatId, "Error processing meeting scheduling request.");
+  }
+});
+
+// Add to your existing callback query handler
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  if (
+    data.startsWith("meeting_today_") ||
+    data.startsWith("meeting_tomorrow_") ||
+    data === "meeting_time_manual"
+  ) {
+    if (data === "meeting_time_manual") {
+      bot.sendMessage(chatId, "Please enter the meeting time (format: HH:mm):");
+
+      bot.once("message", async (timeMsg) => {
+        const inputTime = timeMsg.text;
+        const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+
+        if (timeRegex.test(inputTime)) {
+          await promptMeetingLocation(chatId, inputTime);
+        } else {
+          bot.sendMessage(
+            chatId,
+            "Invalid time format. Please use HH:mm format (e.g., 14:30)"
+          );
+        }
+      });
+    } else {
+      const [type, day, time] = data.split("_");
+      await promptMeetingLocation(chatId, time);
+    }
+  }
+
+  // ... rest of your existing callback handlers ...
+});
+
+async function promptMeetingLocation(chatId, meetingTime) {
+  try {
+    if (!global.meetingState) {
+      bot.sendMessage(
+        chatId,
+        "Error: Meeting session expired. Please start over."
+      );
+      return;
+    }
+
+    global.meetingState.time = meetingTime;
+
+    const locationKeyboard = {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "Large Meeting Room", callback_data: "location_room1" }],
+          [{ text: "Small Meeting Room", callback_data: "location_room2" }],
+        ],
+      },
+    };
+
+    bot.sendMessage(chatId, "Select meeting location:", locationKeyboard);
+  } catch (err) {
+    console.error("Error prompting meeting location:", err);
+    bot.sendMessage(chatId, "Error processing meeting location.");
+  }
+}
+
+// Add to your callback query handler
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  if (data.startsWith("location_")) {
+    const location = data.split("_")[1];
+    try {
+      const user = await User.findOne({ telegram_id: chatId.toString() });
+      const creator = await getUserDisplayName(chatId);
+      let recipients = [];
+
+      // Get team members based on role
+      if (user.role === ROLES.TEAM_LEADER) {
+        recipients = await User.find({ team_leader_id: chatId.toString() });
+      } else if (user.role === ROLES.CTO) {
+        recipients = await User.find({ role: ROLES.TEAM_LEADER });
+      } else if (user.role === ROLES.CEO) {
+        recipients = await User.find({});
+      }
+
+      const locationNames = {
+        room1: "Large Meeting Room",
+        room2: "Small Meeting Room",
+      };
+
+      // Create the meeting time based on whether it's today or tomorrow
+      let meetingDateTime = moment();
+      const [hours, minutes] = global.meetingState.time.split(":");
+
+      // If the meeting time is earlier than current time, set it for tomorrow
+      if (
+        meetingDateTime.hours() > parseInt(hours) ||
+        (meetingDateTime.hours() === parseInt(hours) &&
+          meetingDateTime.minutes() >= parseInt(minutes))
+      ) {
+        meetingDateTime = meetingDateTime.add(1, "day");
+      }
+
+      meetingDateTime
+        .hours(parseInt(hours))
+        .minutes(parseInt(minutes))
+        .seconds(0);
+
+      // Save the meeting
+      const meeting = new Meeting({
+        creator_id: chatId.toString(),
+        time: meetingDateTime.toDate(),
+        location: location,
+      });
+      await meeting.save();
+
+      const message =
+        `📅 *Meeting Scheduled*\n\n` +
+        `⏰ Time: ${meetingDateTime.format("DD/MM/YYYY HH:mm")}\n` +
+        `📍 Location: ${locationNames[location]}\n` +
+        `👤 Organized by: ${creator}`;
+
+      // Send to all recipients
+      let successCount = 0;
+      let failCount = 0;
+
+      // Always include the creator in the recipients
+      const allRecipients = [...recipients, user];
+
+      for (const recipient of allRecipients) {
+        try {
+          await bot.sendMessage(recipient.telegram_id, message, {
+            parse_mode: "Markdown",
+          });
+          successCount++;
+        } catch (err) {
+          console.error(`Failed to send to ${recipient.telegram_id}:`, err);
+          failCount++;
+        }
+        // Add a small delay between messages
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+
+      // Update the original message to show completion
+      await bot.editMessageText(
+        `✅ Meeting scheduled successfully!\n\n${message}`,
+        {
+          chat_id: chatId,
+          message_id: msg.message_id,
+          parse_mode: "Markdown",
+        }
+      );
+
+      // Clear meeting state
+      delete global.meetingState;
+    } catch (err) {
+      console.error("Error scheduling meeting:", err);
+      bot.sendMessage(chatId, "Error scheduling the meeting.");
+    }
+  }
+
+  // ... rest of your existing callback handlers ...
+});
+
+// Command handler for viewing planned meetings
+bot.onText(/\/my_meetings/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "Please register first using /register");
+      return;
+    }
+
+    // Get current time
+    const now = moment();
+
+    // Find all meetings where this user is a recipient
+    let meetings = [];
+
+    // If user is a team member, get meetings from their team leader
+    if (user.role === ROLES.USER && user.team_leader_id) {
+      const teamLeaderMeetings = await Meeting.find({
+        creator_id: user.team_leader_id,
+        time: { $gte: now.toDate() },
+      }).sort({ time: 1 });
+      meetings = meetings.concat(teamLeaderMeetings);
+    }
+
+    // If user is a team leader, get meetings from CTO and their own meetings
+    if (user.role === ROLES.TEAM_LEADER) {
+      const cto = await User.findOne({ role: ROLES.CTO });
+      if (cto) {
+        const ctoMeetings = await Meeting.find({
+          creator_id: cto.telegram_id,
+          time: { $gte: now.toDate() },
+        });
+        meetings = meetings.concat(ctoMeetings);
+      }
+    }
+
+    // If user is CTO or team leader, get meetings from CEO
+    if (user.role === ROLES.CTO || user.role === ROLES.TEAM_LEADER) {
+      const ceo = await User.findOne({ role: ROLES.CEO });
+      if (ceo) {
+        const ceoMeetings = await Meeting.find({
+          creator_id: ceo.telegram_id,
+          time: { $gte: now.toDate() },
+        });
+        meetings = meetings.concat(ceoMeetings);
+      }
+    }
+
+    // Get meetings created by the user themselves
+    const ownMeetings = await Meeting.find({
+      creator_id: chatId.toString(),
+      time: { $gte: now.toDate() },
+    });
+    meetings = meetings.concat(ownMeetings);
+
+    // Sort all meetings by time
+    meetings.sort(
+      (a, b) => moment(a.time).valueOf() - moment(b.time).valueOf()
+    );
+
+    if (meetings.length === 0) {
+      bot.sendMessage(chatId, "You have no upcoming meetings.");
+      return;
+    }
+
+    // Group meetings by date
+    const meetingsByDate = {};
+    for (const meeting of meetings) {
+      const date = moment(meeting.time).format("YYYY-MM-DD");
+      if (!meetingsByDate[date]) {
+        meetingsByDate[date] = [];
+      }
+      meetingsByDate[date].push(meeting);
+    }
+
+    // Format message
+    let message = "📅 *Your Upcoming Meetings*\n\n";
+
+    for (const date in meetingsByDate) {
+      const formattedDate = moment(date).format("dddd, MMMM D");
+      message += `*${formattedDate}*\n`;
+
+      for (const meeting of meetingsByDate[date]) {
+        const time = moment(meeting.time).format("HH:mm");
+        const creator = await getUserDisplayName(meeting.creator_id);
+        const locationNames = {
+          room1: "Large Meeting Room",
+          room2: "Small Meeting Room",
+        };
+
+        message += `⏰ ${time}\n`;
+        message += `📍 ${locationNames[meeting.location]}\n`;
+        message += `👤 Organized by: ${creator}\n\n`;
+      }
+    }
+
+    bot.sendMessage(chatId, message, { parse_mode: "Markdown" });
+  } catch (err) {
+    console.error("Error fetching meetings:", err);
+    bot.sendMessage(chatId, "Error retrieving your meetings.");
+  }
+});
+
+// Add these functions for automated messages
+
+// Function to send daily schedule
+async function sendDailySchedule() {
+  try {
+    // Get all users
+    const users = await User.find({});
+    const today = moment().startOf("day");
+    const tomorrow = moment().add(1, "day").startOf("day");
+
+    for (const user of users) {
+      try {
+        // Get today's meetings for the user
+        let meetings = new Set();
+
+        // Get meetings from team leaders
+        if (
+          user.role === ROLES.USER &&
+          user.team_leaders &&
+          user.team_leaders.length > 0
+        ) {
+          const teamLeaderMeetings = await Meeting.find({
+            creator_id: { $in: user.team_leaders },
+            time: {
+              $gte: today.toDate(),
+              $lt: tomorrow.toDate(),
+            },
+          }).sort({ time: 1 });
+          teamLeaderMeetings.forEach((meeting) => meetings.add(meeting));
+        }
+
+        // Get own meetings
+        const ownMeetings = await Meeting.find({
+          creator_id: user.telegram_id,
+          time: {
+            $gte: today.toDate(),
+            $lt: tomorrow.toDate(),
+          },
+        });
+        ownMeetings.forEach((meeting) => meetings.add(meeting));
+
+        // If there are meetings, send schedule
+        if (meetings.size > 0) {
+          let message =
+            "🌅 *Good morning! Here's your schedule for today:*\n\n";
+
+          const sortedMeetings = Array.from(meetings).sort(
+            (a, b) => moment(a.time).valueOf() - moment(b.time).valueOf()
+          );
+
+          for (const meeting of sortedMeetings) {
+            const time = moment(meeting.time).format("HH:mm");
+            const creator = await getUserDisplayName(meeting.creator_id);
+            const locationNames = {
+              room1: "Meeting Room 1",
+              room2: "Meeting Room 2",
+              conference: "Conference Room",
+              online: "Online Meeting",
+            };
+
+            message += `⏰ ${time}\n`;
+            message += `📍 ${locationNames[meeting.location]}\n`;
+            message += `👤 Organized by: ${creator}\n\n`;
+          }
+
+          await bot.sendMessage(user.telegram_id, message, {
+            parse_mode: "Markdown",
+          });
+        }
+      } catch (err) {
+        console.error(
+          `Error sending daily schedule to ${user.telegram_id}:`,
+          err
+        );
+      }
+      // Add delay between messages
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  } catch (err) {
+    console.error("Error in daily schedule:", err);
+  }
+}
+
+// Function to send meeting reminders
+async function sendMeetingReminders() {
+  try {
+    // Get meetings starting in the next 15 minutes
+    const now = moment();
+    const fifteenMinutesLater = moment().add(15, "minutes");
+
+    const upcomingMeetings = await Meeting.find({
+      time: {
+        $gte: now.toDate(),
+        $lt: fifteenMinutesLater.toDate(),
+      },
+    });
+
+    for (const meeting of upcomingMeetings) {
+      try {
+        // Get all recipients for this meeting
+        const creator = await User.findOne({ telegram_id: meeting.creator_id });
+        let recipients = new Set();
+
+        if (creator.role === ROLES.TEAM_LEADER) {
+          const teamMembers = await User.find({
+            team_leaders: { $in: [creator.telegram_id] },
+          });
+          teamMembers.forEach((member) => recipients.add(member));
+        } else if (creator.role === ROLES.CTO) {
+          const teamLeaders = await User.find({ role: ROLES.TEAM_LEADER });
+          teamLeaders.forEach((tl) => recipients.add(tl));
+        } else if (creator.role === ROLES.CEO) {
+          const allUsers = await User.find({});
+          allUsers.forEach((u) => recipients.add(u));
+        }
+
+        // Add creator to recipients
+        recipients.add(creator);
+
+        const locationNames = {
+          room1: "Meeting Room 1",
+          room2: "Meeting Room 2",
+          conference: "Conference Room",
+          online: "Online Meeting",
+        };
+
+        const creatorName = await getUserDisplayName(meeting.creator_id);
+        const meetingTime = moment(meeting.time).format("HH:mm");
+
+        const message =
+          `⚠️ *Meeting Reminder*\n\n` +
+          `Meeting starts in 15 minutes!\n\n` +
+          `⏰ Time: ${meetingTime}\n` +
+          `📍 Location: ${locationNames[meeting.location]}\n` +
+          `👤 Organized by: ${creatorName}`;
+
+        // Send reminder to all recipients
+        for (const recipient of recipients) {
+          try {
+            await bot.sendMessage(recipient.telegram_id, message, {
+              parse_mode: "Markdown",
+            });
+          } catch (err) {
+            console.error(
+              `Failed to send reminder to ${recipient.telegram_id}:`,
+              err
+            );
+          }
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+      } catch (err) {
+        console.error(`Error processing meeting ${meeting._id}:`, err);
+      }
+    }
+  } catch (err) {
+    console.error("Error in meeting reminders:", err);
+  }
+}
+
+// Set up scheduled tasks (add this at the bottom of your file)
+const schedule = require("node-schedule");
+
+// Send daily schedule at 9:00 AM every day
+schedule.scheduleJob("0 9 * * *", sendDailySchedule);
+
+// Check for upcoming meetings every 5 minutes
+schedule.scheduleJob("*/5 * * * *", sendMeetingReminders);
+
+// Command to request vacation
+bot.onText(/\/request_vacation/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "Please register first using /register");
+      return;
+    }
+
+    // Initialize vacation request state
+    global.vacationState = {
+      user_id: chatId.toString(),
+      step: "start_date",
+    };
+
+    bot.sendMessage(
+      chatId,
+      "Please enter the start date of your vacation (format: DD/MM/YYYY):"
+    );
+  } catch (err) {
+    console.error("Error starting vacation request:", err);
+    bot.sendMessage(chatId, "Error processing vacation request.");
+  }
+});
+
+// Command to view my vacations
+bot.onText(/\/my_vacations/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "Please register first using /register");
+      return;
+    }
+
+    const currentYear = moment().year();
+    const startOfYear = moment().startOf("year");
+    const endOfYear = moment().endOf("year");
+
+    const vacations = await Vacation.find({
+      user_id: chatId.toString(),
+      start_date: {
+        $gte: startOfYear.toDate(),
+        $lte: endOfYear.toDate(),
+      },
+    }).sort({ start_date: 1 });
+
+    if (vacations.length === 0) {
+      bot.sendMessage(chatId, "You have no vacations recorded for this year.");
+      return;
+    }
+
+    let message = `🌴 *Your Vacations in ${currentYear}*\n\n`;
+    let totalDays = 0;
+
+    for (const vacation of vacations) {
+      const startDate = moment(vacation.start_date);
+      const endDate = moment(vacation.end_date);
+      const days = endDate.diff(startDate, "days") + 1;
+      totalDays += days;
+
+      message += `📅 ${startDate.format("DD/MM/YYYY")} - ${endDate.format(
+        "DD/MM/YYYY"
+      )}\n`;
+      message += `📝 Reason: ${vacation.reason}\n`;
+      message += `✨ Status: ${vacation.status.toUpperCase()}\n`;
+      message += `📊 Duration: ${days} days\n\n`;
+    }
+
+    message += `Total vacation days this year: ${totalDays} days`;
+    bot.sendMessage(chatId, message, { parse_mode: "Markdown" });
+  } catch (err) {
+    console.error("Error fetching vacations:", err);
+    bot.sendMessage(chatId, "Error retrieving your vacations.");
+  }
+});
+
+// Add to your message handler for vacation request flow
+bot.on("message", async (msg) => {
+  const chatId = msg.chat.id;
+
+  if (
+    !global.vacationState ||
+    global.vacationState.user_id !== chatId.toString()
+  ) {
+    return;
+  }
+
+  try {
+    switch (global.vacationState.step) {
+      case "start_date":
+        const startDate = moment(msg.text, "DD/MM/YYYY", true);
+        if (!startDate.isValid()) {
+          bot.sendMessage(chatId, "Invalid date format. Please use DD/MM/YYYY");
+          return;
+        }
+
+        if (startDate.isBefore(moment(), "day")) {
+          bot.sendMessage(
+            chatId,
+            "Start date cannot be in the past. Please enter a future date."
+          );
+          return;
+        }
+
+        global.vacationState.start_date = startDate.toDate();
+        global.vacationState.step = "end_date";
+        bot.sendMessage(
+          chatId,
+          "Please enter the end date of your vacation (format: DD/MM/YYYY):"
+        );
+        break;
+
+      case "end_date":
+        const endDate = moment(msg.text, "DD/MM/YYYY", true);
+        if (!endDate.isValid()) {
+          bot.sendMessage(chatId, "Invalid date format. Please use DD/MM/YYYY");
+          return;
+        }
+
+        if (endDate.isBefore(moment(global.vacationState.start_date))) {
+          bot.sendMessage(chatId, "End date cannot be before start date.");
+          return;
+        }
+
+        global.vacationState.end_date = endDate.toDate();
+        global.vacationState.step = "reason";
+        bot.sendMessage(chatId, "Please enter the reason for your vacation:");
+        break;
+
+      case "reason":
+        const reason = msg.text;
+        if (reason.length < 3) {
+          bot.sendMessage(chatId, "Please provide a more detailed reason.");
+          return;
+        }
+
+        // Create vacation request
+        const vacation = new Vacation({
+          user_id: chatId.toString(),
+          start_date: global.vacationState.start_date,
+          end_date: global.vacationState.end_date,
+          reason: reason,
+        });
+        await vacation.save();
+
+        // Notify team leaders
+        const user = await User.findOne({ telegram_id: chatId.toString() });
+        if (user.team_leaders && user.team_leaders.length > 0) {
+          const userName = await getUserDisplayName(chatId);
+          const startDate = moment(global.vacationState.start_date).format(
+            "DD/MM/YYYY"
+          );
+          const endDate = moment(global.vacationState.end_date).format(
+            "DD/MM/YYYY"
+          );
+          const days =
+            moment(global.vacationState.end_date).diff(
+              moment(global.vacationState.start_date),
+              "days"
+            ) + 1;
+
+          const notificationMessage =
+            `🏖 *Vacation Request*\n\n` +
+            `From: ${userName}\n` +
+            `📅 Period: ${startDate} - ${endDate}\n` +
+            `📊 Duration: ${days} days\n` +
+            `📝 Reason: ${reason}\n\n` +
+            `Please approve or reject this request:`;
+
+          for (const leaderId of user.team_leaders) {
+            try {
+              await bot.sendMessage(leaderId, notificationMessage, {
+                parse_mode: "Markdown",
+                reply_markup: {
+                  inline_keyboard: [
+                    [
+                      {
+                        text: "✅ Approve",
+                        callback_data: `vacation_approve_${vacation._id}`,
+                      },
+                      {
+                        text: "❌ Reject",
+                        callback_data: `vacation_reject_${vacation._id}`,
+                      },
+                    ],
+                  ],
+                },
+              });
+            } catch (err) {
+              console.error(`Failed to notify team leader ${leaderId}:`, err);
+            }
+          }
+        }
+
+        bot.sendMessage(
+          chatId,
+          "✅ Your vacation request has been submitted and your team leaders have been notified. You'll receive an update once it's reviewed."
+        );
+
+        // Clear vacation state
+        delete global.vacationState;
+        break;
+    }
+  } catch (err) {
+    console.error("Error processing vacation request:", err);
+    bot.sendMessage(chatId, "Error processing your request. Please try again.");
+    delete global.vacationState;
+  }
+});
+
+// Add to your callback query handler for vacation approvals/rejections
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  if (data.startsWith("vacation_")) {
+    const [action, status, vacationId] = data.split("_");
+    console.log("----");
+    try {
+      const vacation = await Vacation.findById(vacationId);
+      if (!vacation) {
+        bot.answerCallbackQuery(
+          callbackQuery.id,
+          "Vacation request not found."
+        );
+        return;
+      }
+
+      // Handle approval or rejection
+      if (action === "approve") {
+        vacation.status = "approved";
+        await vacation.save();
+        bot.answerCallbackQuery(callbackQuery.id, "Vacation request approved!");
+      } else if (action === "reject") {
+        vacation.status = "rejected";
+        await vacation.save();
+        bot.answerCallbackQuery(callbackQuery.id, "Vacation request rejected.");
+      } else {
+        bot.answerCallbackQuery(callbackQuery.id, "Invalid action.");
+      }
+    } catch (err) {
+      console.error(`Error handling vacation callback:`, err);
+      bot.answerCallbackQuery(
+        callbackQuery.id,
+        "Error processing vacation request."
+      );
+    }
+  }
+});
+
+// Command to cancel vacation request
+bot.onText(/\/cancel_vacation/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const pendingVacations = await Vacation.find({
+      user_id: chatId.toString(),
+      status: "pending",
+    });
+
+    if (pendingVacations.length === 0) {
+      bot.sendMessage(
+        chatId,
+        "You have no pending vacation requests to cancel."
+      );
+      return;
+    }
+
+    const keyboard = {
+      inline_keyboard: pendingVacations.map((vacation) => [
+        {
+          text: `${moment(vacation.start_date).format("DD/MM/YYYY")} - ${moment(
+            vacation.end_date
+          ).format("DD/MM/YYYY")}`,
+          callback_data: `cancel_vacation_${vacation._id}`,
+        },
+      ]),
+    };
+
+    bot.sendMessage(chatId, "Select the vacation request you want to cancel:", {
+      reply_markup: keyboard,
+    });
+  } catch (err) {
+    console.error("Error listing vacations to cancel:", err);
+    bot.sendMessage(chatId, "Error processing your request.");
+  }
+});
+
+// Add to your existing callback query handler
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  // Handle vacation cancellation
+  if (data.startsWith("cancel_vacation_")) {
+    try {
+      const vacationId = data.split("_")[2];
+      const vacation = await Vacation.findOne({ _id: vacationId });
+
+      if (!vacation) {
+        await bot.answerCallbackQuery(
+          callbackQuery.id,
+          "Vacation request not found."
+        );
+        return;
+      }
+
+      if (vacation.status !== "pending") {
+        await bot.answerCallbackQuery(
+          callbackQuery.id,
+          "Only pending vacation requests can be cancelled."
+        );
+        return;
+      }
+
+      // Delete the vacation request
+      await Vacation.deleteOne({ _id: vacationId });
+
+      // Get user info for notifications
+      const user = await User.findOne({ telegram_id: chatId.toString() });
+      const userName = await getUserDisplayName(chatId);
+
+      // Notify team leaders
+      if (user.team_leaders && user.team_leaders.length > 0) {
+        const notificationMessage =
+          `❌ *Vacation Request Cancelled*\n\n` +
+          `${userName} has cancelled their vacation request:\n` +
+          `📅 ${moment(vacation.start_date).format("DD/MM/YYYY")} - ${moment(
+            vacation.end_date
+          ).format("DD/MM/YYYY")}`;
+
+        for (const leaderId of user.team_leaders) {
+          try {
+            await bot.sendMessage(leaderId, notificationMessage, {
+              parse_mode: "Markdown",
+            });
+          } catch (err) {
+            console.error(`Failed to notify team leader ${leaderId}:`, err);
+          }
+        }
+      }
+
+      // Update the message to show cancellation
+      await bot.editMessageText("✅ Vacation request cancelled successfully.", {
+        chat_id: chatId,
+        message_id: msg.message_id,
+      });
+
+      await bot.answerCallbackQuery(
+        callbackQuery.id,
+        "Vacation request cancelled successfully"
+      );
+    } catch (err) {
+      console.error("Error cancelling vacation:", err);
+      await bot.answerCallbackQuery(
+        callbackQuery.id,
+        "Error cancelling vacation request."
+      );
+    }
+  }
+});
+
+// Command to request a day off
+bot.onText(/\/request_dayoff/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "Please register first using /register");
+      return;
+    }
+
+    // Initialize day off request state
+    global.dayOffState = {
+      user_id: chatId.toString(),
+      step: "date",
+    };
+
+    // Generate keyboard with next 7 days
+    const keyboard = {
+      inline_keyboard: [],
+    };
+
+    // Add today if it's before work hours (e.g., before 9 AM)
+    const now = moment();
+    if (now.hour() < 9) {
+      keyboard.inline_keyboard.push([
+        {
+          text: `Today (${now.format("DD/MM")})`,
+          callback_data: `dayoff_date_${now.format("YYYY-MM-DD")}`,
+        },
+      ]);
+    }
+
+    // Add next 7 days
+    for (let i = 1; i <= 7; i++) {
+      const date = moment().add(i, "days");
+      keyboard.inline_keyboard.push([
+        {
+          text: `${date.format("dddd")} (${date.format("DD/MM")})`,
+          callback_data: `dayoff_date_${date.format("YYYY-MM-DD")}`,
+        },
+      ]);
+    }
+
+    bot.sendMessage(chatId, "📅 Select the date for your day off:", {
+      reply_markup: keyboard,
+    });
+  } catch (err) {
+    console.error("Error starting day off request:", err);
+    bot.sendMessage(chatId, "Error processing day off request.");
+  }
+});
+
+// Add to your callback query handler
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  // Handle day off date selection
+  if (data.startsWith("dayoff_date_")) {
+    try {
+      const selectedDate = data.split("_")[2];
+
+      // Store the selected date in global state
+      if (!global.dayOffState) {
+        global.dayOffState = {};
+      }
+
+      global.dayOffState = {
+        user_id: chatId.toString(),
+        date: selectedDate,
+        step: "reason",
+      };
+
+      await bot.editMessageText(
+        "📝 Please reply with the reason for your day off:",
+        {
+          chat_id: chatId,
+          message_id: msg.message_id,
+        }
+      );
+
+      await bot.answerCallbackQuery(callbackQuery.id);
+    } catch (err) {
+      console.error("Error processing day off date:", err);
+      bot.answerCallbackQuery(
+        callbackQuery.id,
+        "Error processing your selection."
+      );
+    }
+  }
+
+  // ... rest of your callback handlers ...
+});
+
+// Add to your message handler
+bot.on("message", async (msg) => {
+  const chatId = msg.chat.id;
+
+  if (!global.dayOffState || global.dayOffState.user_id !== chatId.toString()) {
+    return;
+  }
+
+  if (global.dayOffState.step === "reason") {
+    try {
+      const reason = msg.text;
+      if (!reason || reason.length < 3) {
+        bot.sendMessage(
+          chatId,
+          "Please provide a more detailed reason (at least 3 characters)."
+        );
+        return;
+      }
+
+      // Create day off request
+      const dayOff = new DayOff({
+        user_id: chatId.toString(),
+        date: moment(global.dayOffState.date).toDate(),
+        reason: reason,
+      });
+      await dayOff.save();
+
+      // Notify team leaders
+      const user = await User.findOne({ telegram_id: chatId.toString() });
+      if (user.team_leaders && user.team_leaders.length > 0) {
+        const userName = await getUserDisplayName(chatId);
+        const notificationMessage =
+          `🌟 *Day Off Request*\n\n` +
+          `From: ${userName}\n` +
+          `📅 Date: ${moment(global.dayOffState.date).format(
+            "DD/MM/YYYY"
+          )} (${moment(global.dayOffState.date).format("dddd")})\n` +
+          `📝 Reason: ${reason}\n\n` +
+          `Please approve or reject this request:`;
+
+        for (const leaderId of user.team_leaders) {
+          try {
+            await bot.sendMessage(leaderId, notificationMessage, {
+              parse_mode: "Markdown",
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: "✅ Approve",
+                      callback_data: `dayoff_approve_${dayOff._id}`,
+                    },
+                    {
+                      text: "❌ Reject",
+                      callback_data: `dayoff_reject_${dayOff._id}`,
+                    },
+                  ],
+                ],
+              },
+            });
+          } catch (err) {
+            console.error(`Failed to notify team leader ${leaderId}:`, err);
+          }
+        }
+      }
+
+      bot.sendMessage(
+        chatId,
+        "✅ Your day off request has been submitted and your team leaders have been notified. You'll receive an update once it's reviewed."
+      );
+
+      // Clear day off state
+      delete global.dayOffState;
+    } catch (err) {
+      console.error("Error processing day off request:", err);
+      bot.sendMessage(
+        chatId,
+        "Error processing your request. Please try again."
+      );
+      delete global.dayOffState;
+    }
+  }
+});
+
+// Update the callback query handler to properly handle day off cancellation
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  // Handle day off cancellation
+  if (data.startsWith("cancel_dayoff_")) {
+    try {
+      const dayOffId = data.split("_")[2];
+      const dayOff = await DayOff.findOne({ _id: dayOffId });
+
+      if (!dayOff) {
+        await bot.answerCallbackQuery(
+          callbackQuery.id,
+          "Day off request not found."
+        );
+        return;
+      }
+
+      // Check if the day off is in the past
+      if (moment(dayOff.date).isBefore(moment(), "day")) {
+        await bot.answerCallbackQuery(
+          callbackQuery.id,
+          "Cannot cancel past day offs."
+        );
+        return;
+      }
+
+      // Check if the status is either pending or approved
+      if (!["pending", "approved"].includes(dayOff.status)) {
+        await bot.answerCallbackQuery(
+          callbackQuery.id,
+          "This day off request cannot be cancelled."
+        );
+        return;
+      }
+
+      // Delete the day off request
+      await DayOff.deleteOne({ _id: dayOffId });
+
+      // Get user info for notifications
+      const user = await User.findOne({ telegram_id: chatId.toString() });
+      const userName = await getUserDisplayName(chatId);
+
+      // Create notification message based on status
+      const statusText =
+        dayOff.status === "approved" ? "approved day off" : "day off request";
+
+      // Notify team leaders
+      if (user.team_leaders && user.team_leaders.length > 0) {
+        const notificationMessage =
+          `❌ *Day Off Cancellation*\n\n` +
+          `${userName} has cancelled their ${statusText} for:\n` +
+          `📅 ${moment(dayOff.date).format("DD/MM/YYYY")} (${moment(
+            dayOff.date
+          ).format("dddd")})\n` +
+          `📝 Original reason: ${dayOff.reason}`;
+
+        for (const leaderId of user.team_leaders) {
+          try {
+            await bot.sendMessage(leaderId, notificationMessage, {
+              parse_mode: "Markdown",
+            });
+          } catch (err) {
+            console.error(`Failed to notify team leader ${leaderId}:`, err);
+          }
+        }
+      }
+
+      // Update the message to show cancellation
+      await bot.editMessageText(
+        `✅ ${
+          dayOff.status === "approved" ? "Approved day off" : "Day off request"
+        } cancelled successfully.`,
+        {
+          chat_id: chatId,
+          message_id: msg.message_id,
+        }
+      );
+
+      await bot.answerCallbackQuery(
+        callbackQuery.id,
+        "Day off cancelled successfully"
+      );
+    } catch (err) {
+      console.error("Error cancelling day off:", err);
+      await bot.answerCallbackQuery(
+        callbackQuery.id,
+        "Error cancelling day off."
+      );
+    }
+  }
+
+  // Handle day off approval/rejection
+  if (data.startsWith("dayoff_approve_") || data.startsWith("dayoff_reject_")) {
+    try {
+      const [action, status, dayOffId] = data.split("_");
+      const dayOff = await DayOff.findById(dayOffId);
+
+      if (!dayOff) {
+        await bot.answerCallbackQuery(
+          callbackQuery.id,
+          "Day off request not found."
+        );
+        return;
+      }
+
+      dayOff.status = status;
+      await dayOff.save();
+
+      // Notify the employee
+      const statusText = status === "approve" ? "approved" : "rejected";
+      const emoji = status === "approve" ? "✅" : "❌";
+      const teamLeader = await getUserDisplayName(chatId);
+
+      const notificationMessage =
+        `${emoji} Your day off request has been ${statusText}\n\n` +
+        `📅 Date: ${moment(dayOff.date).format("DD/MM/YYYY")} (${moment(
+          dayOff.date
+        ).format("dddd")})\n` +
+        `👤 Reviewed by: ${teamLeader}`;
+
+      await bot.sendMessage(dayOff.user_id, notificationMessage);
+
+      // Update the original message
+      await bot.editMessageText(
+        `${msg.text}\n\n${emoji} ${statusText.toUpperCase()} by ${teamLeader}`,
+        {
+          chat_id: chatId,
+          message_id: msg.message_id,
+          parse_mode: "Markdown",
+        }
+      );
+
+      await bot.answerCallbackQuery(
+        callbackQuery.id,
+        `Day off request ${statusText}`
+      );
+    } catch (err) {
+      console.error("Error processing day off response:", err);
+      await bot.answerCallbackQuery(
+        callbackQuery.id,
+        "Error processing your response."
+      );
+    }
+  }
+
+  // ... rest of your existing callback handlers ...
+});
+// Command to view my day offs
+bot.onText(/\/my_dayoffs/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "Please register first using /register");
+      return;
+    }
+
+    const currentYear = moment().year();
+    const startOfYear = moment().startOf("year");
+    const endOfYear = moment().endOf("year");
+
+    const dayOffs = await DayOff.find({
+      user_id: chatId.toString(),
+      date: {
+        $gte: startOfYear.toDate(),
+        $lte: endOfYear.toDate(),
+      },
+    }).sort({ date: 1 });
+
+    if (dayOffs.length === 0) {
+      bot.sendMessage(chatId, "You have no day offs recorded for this year.");
+      return;
+    }
+
+    let message = `🌟 *Your Day Offs in ${currentYear}*\n\n`;
+
+    for (const dayOff of dayOffs) {
+      const date = moment(dayOff.date);
+      message += `📅 ${date.format("DD/MM/YYYY")} (${date.format("dddd")})\n`;
+      message += `📝 Reason: ${dayOff.reason}\n`;
+      message += `✨ Status: ${dayOff.status.toUpperCase()}\n\n`;
+    }
+
+    bot.sendMessage(chatId, message, { parse_mode: "Markdown" });
+  } catch (err) {
+    console.error("Error fetching day offs:", err);
+    bot.sendMessage(chatId, "Error retrieving your day offs.");
+  }
+});
+
+// Command to cancel day off
+bot.onText(/\/cancel_dayoff/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    // Find day offs that are either pending or approved and not in the past
+    const cancelableDayOffs = await DayOff.find({
+      user_id: chatId.toString(),
+      status: { $in: ["pending", "approved"] },
+      date: { $gte: moment().startOf("day").toDate() },
+    });
+
+    if (cancelableDayOffs.length === 0) {
+      bot.sendMessage(
+        chatId,
+        "You have no day off requests that can be cancelled. Note: Past day offs cannot be cancelled."
+      );
+      return;
+    }
+
+    const keyboard = {
+      inline_keyboard: cancelableDayOffs.map((dayOff) => [
+        {
+          text: `${moment(dayOff.date).format("DD/MM/YYYY")} (${moment(
+            dayOff.date
+          ).format("dddd")}) - ${dayOff.status.toUpperCase()}`,
+          callback_data: `cancel_dayoff_${dayOff._id}`,
+        },
+      ]),
+    };
+
+    bot.sendMessage(
+      chatId,
+      "Select the day off request you want to cancel:\n(You can cancel both pending and approved requests)",
+      { reply_markup: keyboard }
+    );
+  } catch (err) {
+    console.error("Error listing day offs to cancel:", err);
+    bot.sendMessage(chatId, "Error processing your request.");
+  }
+});
+
+// Command to view my salary
+bot.onText(/\/my_salary/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "Please register first using /register");
+      return;
+    }
+
+    // Get current month's salary
+    const currentMonth = moment().month() + 1;
+    const currentYear = moment().year();
+
+    const salary = await Salary.findOne({
+      user_id: chatId.toString(),
+      month: currentMonth,
+      year: currentYear,
+    });
+
+    if (!salary) {
+      bot.sendMessage(
+        chatId,
+        "No salary information available for current month."
+      );
+      return;
+    }
+
+    // Calculate total with bonuses and deductions
+    const totalBonuses = salary.bonuses.reduce(
+      (sum, bonus) => sum + bonus.amount,
+      0
+    );
+    const totalDeductions = salary.deductions.reduce(
+      (sum, deduction) => sum + deduction.amount,
+      0
+    );
+    const netSalary = salary.base_salary + totalBonuses - totalDeductions;
+
+    let message = `💰 *Salary Information - ${moment().format(
+      "MMMM YYYY"
+    )}*\n\n`;
+    message += `Base Salary: $${salary.base_salary}\n\n`;
+
+    if (salary.bonuses.length > 0) {
+      message += `*Bonuses:*\n`;
+      salary.bonuses.forEach((bonus) => {
+        message += `➕ $${bonus.amount} - ${bonus.reason}\n`;
+      });
+      message += `\n`;
+    }
+
+    if (salary.deductions.length > 0) {
+      message += `*Deductions:*\n`;
+      salary.deductions.forEach((deduction) => {
+        message += `➖ $${deduction.amount} - ${deduction.reason}\n`;
+      });
+      message += `\n`;
+    }
+
+    message += `*Net Salary: $${netSalary}*\n`;
+    message += `Status: ${salary.status.toUpperCase()}`;
+
+    if (salary.payment_date) {
+      message += `\nPayment Date: ${moment(salary.payment_date).format(
+        "DD/MM/YYYY"
+      )}`;
+    }
+
+    bot.sendMessage(chatId, message, { parse_mode: "Markdown" });
+  } catch (err) {
+    console.error("Error fetching salary:", err);
+    bot.sendMessage(chatId, "Error retrieving salary information.");
+  }
+});
+
+// Command to view salary history
+bot.onText(/\/salary_history/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "Please register first using /register");
+      return;
+    }
+
+    // Get last 6 months of salary history
+    const sixMonthsAgo = moment().subtract(6, "months");
+
+    const salaryHistory = await Salary.find({
+      user_id: chatId.toString(),
+      created_at: { $gte: sixMonthsAgo.toDate() },
+    }).sort({ year: -1, month: -1 });
+
+    if (salaryHistory.length === 0) {
+      bot.sendMessage(chatId, "No salary history available.");
+      return;
+    }
+
+    let message = `📊 *Salary History (Last 6 months)*\n\n`;
+
+    for (const salary of salaryHistory) {
+      const totalBonuses = salary.bonuses.reduce(
+        (sum, bonus) => sum + bonus.amount,
+        0
+      );
+      const totalDeductions = salary.deductions.reduce(
+        (sum, deduction) => sum + deduction.amount,
+        0
+      );
+      const netSalary = salary.base_salary + totalBonuses - totalDeductions;
+
+      message += `*${moment()
+        .month(salary.month - 1)
+        .format("MMMM")} ${salary.year}*\n`;
+      message += `Net Salary: $${netSalary}\n`;
+      message += `Status: ${salary.status.toUpperCase()}\n\n`;
+    }
+
+    bot.sendMessage(chatId, message, { parse_mode: "Markdown" });
+  } catch (err) {
+    console.error("Error fetching salary history:", err);
+    bot.sendMessage(chatId, "Error retrieving salary history.");
+  }
+});
+
+// Command to view detailed salary for a specific month (for managers)
+bot.onText(/\/team_salaries/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user || user.role === ROLES.USER) {
+      bot.sendMessage(
+        chatId,
+        "Only team leaders and above can view team salaries."
+      );
+      return;
+    }
+
+    // Get team members based on role
+    let teamMembers = [];
+    if (user.role === ROLES.TEAM_LEADER) {
+      teamMembers = await User.find({ team_leaders: chatId.toString() });
+    } else if (user.role === ROLES.CTO) {
+      const teamLeaders = await User.find({ role: ROLES.TEAM_LEADER });
+      teamMembers = await User.find({
+        team_leaders: { $in: teamLeaders.map((tl) => tl.telegram_id) },
+      });
+    }
+
+    const currentMonth = moment().month() + 1;
+    const currentYear = moment().year();
+
+    let message = `👥 *Team Salaries - ${moment().format("MMMM YYYY")}*\n\n`;
+
+    for (const member of teamMembers) {
+      const salary = await Salary.findOne({
+        user_id: member.telegram_id,
+        month: currentMonth,
+        year: currentYear,
+      });
+
+      if (salary) {
+        const totalBonuses = salary.bonuses.reduce(
+          (sum, bonus) => sum + bonus.amount,
+          0
+        );
+        const totalDeductions = salary.deductions.reduce(
+          (sum, deduction) => sum + deduction.amount,
+          0
+        );
+        const netSalary = salary.base_salary + totalBonuses - totalDeductions;
+
+        const memberName = await getUserDisplayName(member.telegram_id);
+        message += `*${memberName}*\n`;
+        message += `Base: $${salary.base_salary}\n`;
+        message += `Net: $${netSalary}\n`;
+        message += `Status: ${salary.status.toUpperCase()}\n\n`;
+      }
+    }
+
+    bot.sendMessage(chatId, message, { parse_mode: "Markdown" });
+  } catch (err) {
+    console.error("Error fetching team salaries:", err);
+    bot.sendMessage(chatId, "Error retrieving team salaries.");
+  }
+});
+
+// Command to export calendar
+bot.onText(/\/export_calendar/, async (msg) => {
+    const chatId = msg.chat.id;
+    try {
+        const user = await User.findOne({ telegram_id: chatId.toString() });
+        if (!user) {
+            bot.sendMessage(chatId, "Please register first using /register");
+            return;
+        }
+
+        // Create new calendar
+        const calendar = new ICal({
+            name: 'Office Calendar',
+            timezone: 'Asia/Bangkok'
+        });
+
+        // Add all events (same as before)
+        const meetings = await Meeting.find({
+            $or: [
+                { creator_id: chatId.toString() },
+                { participants: chatId.toString() }
+            ]
+        });
+
+        meetings.forEach(meeting => {
+            calendar.createEvent({
+                start: moment(meeting.time).toDate(),
+                end: moment(meeting.time).add(1, 'hour').toDate(),
+                summary: `Meeting: ${meeting.location}`,
+                description: meeting.description || 'Team meeting',
+                location: meeting.location
+            });
+        });
+
+        const vacations = await Vacation.find({
+            user_id: chatId.toString(),
+            status: 'approved'
+        });
+
+        vacations.forEach(vacation => {
+            calendar.createEvent({
+                start: moment(vacation.start_date).toDate(),
+                end: moment(vacation.end_date).add(1, 'day').toDate(),
+                summary: 'Vacation',
+                description: vacation.reason,
+                allDay: true
+            });
+        });
+
+        const dayOffs = await DayOff.find({
+            user_id: chatId.toString(),
+            status: 'approved'
+        });
+
+        dayOffs.forEach(dayOff => {
+            calendar.createEvent({
+                start: moment(dayOff.date).toDate(),
+                end: moment(dayOff.date).add(1, 'day').toDate(),
+                summary: 'Day Off',
+                description: dayOff.reason,
+                allDay: true
+            });
+        });
+
+        // Generate calendar file
+        const calendarData = calendar.toString();
+        const fileName = `calendar_${moment().format('YYYY-MM-DD')}.ics`;
+        const filePath = path.join(__dirname, fileName);
+
+        // Write to temporary file
+        fs.writeFileSync(filePath, calendarData);
+
+        // Send file
+        await bot.sendDocument(chatId, 
+            filePath,
+            { 
+                caption: '📅 Your calendar export is ready. Import this file into your preferred calendar app.'
+            }
+        );
+
+        // Delete temporary file
+        fs.unlinkSync(filePath);
+
+        bot.sendMessage(
+            chatId,
+            `✅ Calendar export includes:\n` +
+            `- ${meetings.length} meetings\n` +
+            `- ${vacations.length} vacations\n` +
+            `- ${dayOffs.length} day offs\n\n` +
+            `Import the .ics file into your calendar app to view all events.`
+        );
+
+    } catch (err) {
+        console.error("Error exporting calendar:", err);
+        bot.sendMessage(chatId, "❌ Error generating calendar export. Please try again later.");
+    }
 });
