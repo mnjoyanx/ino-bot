@@ -87,7 +87,6 @@ bot.onText(/\/start/, (msg) => {
   );
 });
 
-// Handle role selection
 bot.on("callback_query", async (callbackQuery) => {
   const msg = callbackQuery.message;
   const chatId = msg.chat.id;
@@ -173,10 +172,8 @@ bot.on("callback_query", async (callbackQuery) => {
 
   // Time selection handling
   if (data === "time_now") {
-    const now = moment();
     try {
-      // Set both date and time components
-      const startDateTime = now.toDate();
+      const startDateTime = moment().toDate();
       await Absence.findOneAndUpdate(
         { user_id: chatId.toString(), status: "pending" },
         { start_time: startDateTime }
@@ -196,8 +193,13 @@ bot.on("callback_query", async (callbackQuery) => {
 
       if (timeRegex.test(inputTime)) {
         try {
-          // Create a moment object with today's date and input time
-          const startDateTime = moment(inputTime, "HH:mm").toDate();
+          const [hours, minutes] = inputTime.split(":");
+          const startDateTime = moment()
+            .hours(hours)
+            .minutes(minutes)
+            .seconds(0)
+            .toDate();
+
           await Absence.findOneAndUpdate(
             { user_id: chatId.toString(), status: "pending" },
             { start_time: startDateTime }
@@ -319,7 +321,7 @@ bot.on("callback_query", async (callbackQuery) => {
         }
       });
     } else {
-      const endTime = data.split("_")[2];
+      const endTime = data.split("_")[3];
       try {
         // Get the existing absence record
         const absence = await Absence.findOne({
@@ -336,10 +338,12 @@ bot.on("callback_query", async (callbackQuery) => {
         }
 
         // Create end time using the same date as start_time
-        const endDateTime = moment(absence.start_time)
-          .hours(parseInt(endTime.split(":")[0]))
-          .minutes(parseInt(endTime.split(":")[1]))
-          .toDate();
+        // const endDateTime = moment(absence.start_time)
+        //   .hours(parseInt(endTime.split(":")[0]))
+        //   .minutes(parseInt(endTime.split(":")[1]))
+        //   .toDate();
+
+        const endDateTime = moment(endTime, "HH:mm").format();
 
         const updatedAbsence = await Absence.findOneAndUpdate(
           { user_id: chatId.toString(), status: "pending" },
@@ -503,8 +507,6 @@ bot.on("callback_query", async (callbackQuery) => {
         // Create a proper date object for today with the given time
         const [hours, minutes] = startTime.split(":");
         const startMoment = moment().hours(hours).minutes(minutes).seconds(0);
-
-        console.log(startMoment, "start moment");
 
         await ApprovalRequirement.findOneAndUpdate(
           { team_leader_id: chatId.toString(), start_time: null },
@@ -849,26 +851,24 @@ bot.on("callback_query", async (callbackQuery) => {
   // Add handler for quick time selection
   if (data.startsWith("time_quick_")) {
     const selectedTime = data.split("_")[2];
-    const startTime = moment(selectedTime, "HH:mm").toDate();
-
     try {
-      const absence = await Absence.findOne({
-        user_id: chatId.toString(),
-        status: "pending",
-      }).sort({ created_at: -1 });
+      const [hours, minutes] = selectedTime.split(":");
+      const startDateTime = moment()
+        .hours(hours)
+        .minutes(minutes)
+        .seconds(0)
+        .toDate();
 
-      if (absence) {
-        absence.start_time = startTime;
-        await absence.save();
-        await requestEndTime(chatId, startTime);
-      }
+      await Absence.findOneAndUpdate(
+        { user_id: chatId.toString(), status: "pending" },
+        { start_time: startDateTime }
+      );
+      requestEndTime(chatId, startDateTime);
     } catch (err) {
       console.error("Error processing quick time selection:", err);
       bot.sendMessage(chatId, "Error processing your request.");
     }
   }
-
-  // ... rest of your existing callback handlers ...
 });
 
 // Update the generateTimeSlots function to handle both start and end times
@@ -965,8 +965,6 @@ async function handleAbsenceConfirmation(chatId, absence) {
     // Get supervisor's ID based on user's role
     const supervisorId = await getSupervisorId(absence.user_id);
 
-    console.log(supervisorId);
-
     if (supervisorId) {
       try {
         // Check if approval is required for this time period
@@ -975,8 +973,6 @@ async function handleAbsenceConfirmation(chatId, absence) {
           absence.start_time,
           absence.end_time
         );
-
-        console.log(requiresApproval, "-----");
 
         // Get requester's display name
         const chatMember = await bot.getChatMember(
@@ -1057,7 +1053,6 @@ async function checkApprovalRequired(userId, startTime, endTime) {
     const user = await User.findOne({ telegram_id: userId.toString() });
     if (!user || !user.team_leader_id) return false; // Require approval if no team leader found
 
-    console.log(user, "---user");
     // Check for specific approval requirements
     const requirements = await ApprovalRequirement.find({
       team_leader_id: user.team_leader_id,
@@ -1068,8 +1063,6 @@ async function checkApprovalRequired(userId, startTime, endTime) {
       start_time: { $lte: endTime },
       end_time: { $gte: startTime },
     });
-
-    console.log(requirements, "requirements");
 
     // If no requirements found, approval is required by default
     if (requirements.length === 0) return false;
@@ -1321,24 +1314,6 @@ bot.onText(/\/setusername (.+)/, (msg, match) => {
   } else {
     bot.sendMessage(chatId, "You need to register first by typing /register.");
   }
-});
-
-// Enhanced time selection
-bot.onText(/\/selecttime/, (msg) => {
-  const chatId = msg.chat.id;
-
-  const opts = {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          { text: "Now", callback_data: "time_now" },
-          { text: "Set Time", callback_data: "time_write" },
-        ],
-      ],
-    },
-  };
-
-  bot.sendMessage(chatId, "Please choose how to set the time:", opts);
 });
 
 // Helper function to get user display name
@@ -3932,7 +3907,6 @@ bot.on("callback_query", async (callbackQuery) => {
 
   if (data.startsWith("vacation_")) {
     const [action, status, vacationId] = data.split("_");
-    console.log("----");
     try {
       const vacation = await Vacation.findById(vacationId);
       if (!vacation) {
@@ -4679,98 +4653,98 @@ bot.onText(/\/team_salaries/, async (msg) => {
 
 // Command to export calendar
 bot.onText(/\/export_calendar/, async (msg) => {
-    const chatId = msg.chat.id;
-    try {
-        const user = await User.findOne({ telegram_id: chatId.toString() });
-        if (!user) {
-            bot.sendMessage(chatId, "Please register first using /register");
-            return;
-        }
-
-        // Create new calendar
-        const calendar = new ICal({
-            name: 'Office Calendar',
-            timezone: 'Asia/Bangkok'
-        });
-
-        // Add all events (same as before)
-        const meetings = await Meeting.find({
-            $or: [
-                { creator_id: chatId.toString() },
-                { participants: chatId.toString() }
-            ]
-        });
-
-        meetings.forEach(meeting => {
-            calendar.createEvent({
-                start: moment(meeting.time).toDate(),
-                end: moment(meeting.time).add(1, 'hour').toDate(),
-                summary: `Meeting: ${meeting.location}`,
-                description: meeting.description || 'Team meeting',
-                location: meeting.location
-            });
-        });
-
-        const vacations = await Vacation.find({
-            user_id: chatId.toString(),
-            status: 'approved'
-        });
-
-        vacations.forEach(vacation => {
-            calendar.createEvent({
-                start: moment(vacation.start_date).toDate(),
-                end: moment(vacation.end_date).add(1, 'day').toDate(),
-                summary: 'Vacation',
-                description: vacation.reason,
-                allDay: true
-            });
-        });
-
-        const dayOffs = await DayOff.find({
-            user_id: chatId.toString(),
-            status: 'approved'
-        });
-
-        dayOffs.forEach(dayOff => {
-            calendar.createEvent({
-                start: moment(dayOff.date).toDate(),
-                end: moment(dayOff.date).add(1, 'day').toDate(),
-                summary: 'Day Off',
-                description: dayOff.reason,
-                allDay: true
-            });
-        });
-
-        // Generate calendar file
-        const calendarData = calendar.toString();
-        const fileName = `calendar_${moment().format('YYYY-MM-DD')}.ics`;
-        const filePath = path.join(__dirname, fileName);
-
-        // Write to temporary file
-        fs.writeFileSync(filePath, calendarData);
-
-        // Send file
-        await bot.sendDocument(chatId, 
-            filePath,
-            { 
-                caption: '📅 Your calendar export is ready. Import this file into your preferred calendar app.'
-            }
-        );
-
-        // Delete temporary file
-        fs.unlinkSync(filePath);
-
-        bot.sendMessage(
-            chatId,
-            `✅ Calendar export includes:\n` +
-            `- ${meetings.length} meetings\n` +
-            `- ${vacations.length} vacations\n` +
-            `- ${dayOffs.length} day offs\n\n` +
-            `Import the .ics file into your calendar app to view all events.`
-        );
-
-    } catch (err) {
-        console.error("Error exporting calendar:", err);
-        bot.sendMessage(chatId, "❌ Error generating calendar export. Please try again later.");
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "Please register first using /register");
+      return;
     }
+
+    // Create new calendar
+    const calendar = new ICal({
+      name: "Office Calendar",
+      timezone: "Asia/Bangkok",
+    });
+
+    // Add all events (same as before)
+    const meetings = await Meeting.find({
+      $or: [
+        { creator_id: chatId.toString() },
+        { participants: chatId.toString() },
+      ],
+    });
+
+    meetings.forEach((meeting) => {
+      calendar.createEvent({
+        start: moment(meeting.time).toDate(),
+        end: moment(meeting.time).add(1, "hour").toDate(),
+        summary: `Meeting: ${meeting.location}`,
+        description: meeting.description || "Team meeting",
+        location: meeting.location,
+      });
+    });
+
+    const vacations = await Vacation.find({
+      user_id: chatId.toString(),
+      status: "approved",
+    });
+
+    vacations.forEach((vacation) => {
+      calendar.createEvent({
+        start: moment(vacation.start_date).toDate(),
+        end: moment(vacation.end_date).add(1, "day").toDate(),
+        summary: "Vacation",
+        description: vacation.reason,
+        allDay: true,
+      });
+    });
+
+    const dayOffs = await DayOff.find({
+      user_id: chatId.toString(),
+      status: "approved",
+    });
+
+    dayOffs.forEach((dayOff) => {
+      calendar.createEvent({
+        start: moment(dayOff.date).toDate(),
+        end: moment(dayOff.date).add(1, "day").toDate(),
+        summary: "Day Off",
+        description: dayOff.reason,
+        allDay: true,
+      });
+    });
+
+    // Generate calendar file
+    const calendarData = calendar.toString();
+    const fileName = `calendar_${moment().format("YYYY-MM-DD")}.ics`;
+    const filePath = path.join(__dirname, fileName);
+
+    // Write to temporary file
+    fs.writeFileSync(filePath, calendarData);
+
+    // Send file
+    await bot.sendDocument(chatId, filePath, {
+      caption:
+        "📅 Your calendar export is ready. Import this file into your preferred calendar app.",
+    });
+
+    // Delete temporary file
+    fs.unlinkSync(filePath);
+
+    bot.sendMessage(
+      chatId,
+      `✅ Calendar export includes:\n` +
+        `- ${meetings.length} meetings\n` +
+        `- ${vacations.length} vacations\n` +
+        `- ${dayOffs.length} day offs\n\n` +
+        `Import the .ics file into your calendar app to view all events.`
+    );
+  } catch (err) {
+    console.error("Error exporting calendar:", err);
+    bot.sendMessage(
+      chatId,
+      "❌ Error generating calendar export. Please try again later."
+    );
+  }
 });
