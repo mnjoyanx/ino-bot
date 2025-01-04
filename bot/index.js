@@ -10,6 +10,7 @@ const Vacation = require("./vacation");
 const DayOff = require("./dayoff");
 const Salary = require("./salary");
 const ICal = require("ical-generator").default; // Changed this line
+const PerformanceReview = require("./performanceReview"); // Added this line
 
 // Initialize bot with your token
 const token = "7729835414:AAHnTWxKBzQvtlEjsuiY6Pau-b-vDZ6j1vQ";
@@ -1347,9 +1348,9 @@ bot.onText(/\/pending_requests/, async (msg) => {
         // And from all team leaders
         const teamLeaderRequests = await Absence.find({
           user_id: {
-            $in: (
-              await User.find({ role: ROLES.TEAM_LEADER })
-            ).map((u) => u.telegram_id),
+            $in: (await User.find({ role: ROLES.TEAM_LEADER })).map(
+              (u) => u.telegram_id
+            ),
           },
           status: "pending",
         });
@@ -1360,9 +1361,9 @@ bot.onText(/\/pending_requests/, async (msg) => {
         // CTO can see requests from all team leaders
         pendingRequests = await Absence.find({
           user_id: {
-            $in: (
-              await User.find({ role: ROLES.TEAM_LEADER })
-            ).map((u) => u.telegram_id),
+            $in: (await User.find({ role: ROLES.TEAM_LEADER })).map(
+              (u) => u.telegram_id
+            ),
           },
           status: "pending",
         });
@@ -1373,9 +1374,9 @@ bot.onText(/\/pending_requests/, async (msg) => {
         pendingRequests = await Absence.find({
           status: "pending",
           user_id: {
-            $in: (
-              await User.find({ team_leader_id: chatId.toString() })
-            ).map((u) => u.telegram_id),
+            $in: (await User.find({ team_leader_id: chatId.toString() })).map(
+              (u) => u.telegram_id
+            ),
           },
         });
         break;
@@ -4912,5 +4913,393 @@ bot.on("callback_query", async (callbackQuery) => {
       message_id: msg.message_id,
       ...opts,
     });
+  }
+});
+
+// Add inline query handler
+bot.on("inline_query", async (query) => {
+  const inlineQueryId = query.id;
+  const searchText = query.query.toLowerCase();
+  const userId = query.from.id.toString();
+
+  try {
+    // Check if user is registered
+    const user = await User.findOne({ telegram_id: userId });
+    if (!user) {
+      return bot.answerInlineQuery(inlineQueryId, [
+        {
+          type: "article",
+          id: "not_registered",
+          title: "⚠️ Not Registered",
+          description: "You need to register first using /register",
+          input_message_content: {
+            message_text:
+              "Please register with the bot first using /register command",
+          },
+        },
+      ]);
+    }
+
+    // If no search text, show default options
+    if (!searchText) {
+      return bot.answerInlineQuery(inlineQueryId, [
+        {
+          type: "article",
+          id: "absence",
+          title: "🚶 Request Absence",
+          description: "Create a new absence request",
+          input_message_content: {
+            message_text: "Use /absence command to request an absence",
+          },
+        },
+        {
+          type: "article",
+          id: "dayoff",
+          title: "📅 Request Day Off",
+          description: "Request a day off",
+          input_message_content: {
+            message_text: "Use /request_dayoff command to request a day off",
+          },
+        },
+        {
+          type: "article",
+          id: "vacation",
+          title: "🏖 Request Vacation",
+          description: "Request a vacation",
+          input_message_content: {
+            message_text: "Use /request_vacation command to request a vacation",
+          },
+        },
+      ]);
+    }
+
+    const results = [];
+
+    // Search meetings
+    if ("meeting".includes(searchText)) {
+      const meetings = await Meeting.find({
+        $or: [{ creator_id: userId }, { participants: userId }],
+        time: { $gte: new Date() },
+      }).limit(5);
+
+      meetings.forEach((meeting) => {
+        results.push({
+          type: "article",
+          id: `meeting_${meeting._id}`,
+          title: `📅 Meeting: ${moment(meeting.time).format("DD/MM HH:mm")}`,
+          description: `Location: ${meeting.location}`,
+          input_message_content: {
+            message_text: `*Meeting Details*\n📅 ${moment(meeting.time).format("DD/MM/YYYY HH:mm")}\n📍 ${meeting.location}`,
+            parse_mode: "Markdown",
+          },
+        });
+      });
+    }
+
+    // Search absences
+    if ("absence".includes(searchText)) {
+      const absences = await Absence.find({
+        user_id: userId,
+        status: "approved",
+        end_time: { $gte: new Date() },
+      }).limit(5);
+
+      absences.forEach((absence) => {
+        results.push({
+          type: "article",
+          id: `absence_${absence._id}`,
+          title: `🚶 Absence: ${moment(absence.start_time).format("DD/MM HH:mm")}`,
+          description: absence.reason,
+          input_message_content: {
+            message_text: `*Absence*\n⏰ ${moment(absence.start_time).format("DD/MM HH:mm")} - ${moment(absence.end_time).format("HH:mm")}\n📝 ${absence.reason}`,
+            parse_mode: "Markdown",
+          },
+        });
+      });
+    }
+
+    // Search team members (for team leaders only)
+    if (user.role !== ROLES.USER && "team".includes(searchText)) {
+      let teamMembers = [];
+      if (user.role === ROLES.TEAM_LEADER) {
+        teamMembers = await User.find({ team_leader_id: userId });
+      } else if (user.role === ROLES.CTO) {
+        teamMembers = await User.find({ role: ROLES.TEAM_LEADER });
+      } else if (user.role === ROLES.CEO) {
+        teamMembers = await User.find({
+          role: { $in: [ROLES.CTO, ROLES.TEAM_LEADER] },
+        });
+      }
+
+      for (const member of teamMembers) {
+        const displayName = await getUserDisplayName(member.telegram_id);
+        results.push({
+          type: "article",
+          id: `member_${member.telegram_id}`,
+          title: `👤 ${displayName}`,
+          description: `Role: ${member.role}`,
+          input_message_content: {
+            message_text: `*Team Member*\n👤 ${displayName}\n📋 Role: ${member.role}`,
+            parse_mode: "Markdown",
+          },
+        });
+      }
+    }
+
+    // If no results found
+    if (results.length === 0) {
+      results.push({
+        type: "article",
+        id: "no_results",
+        title: "❌ No Results Found",
+        description: "Try different search terms",
+        input_message_content: {
+          message_text: "No results found for your search",
+        },
+      });
+    }
+
+    return bot.answerInlineQuery(inlineQueryId, results);
+  } catch (err) {
+    console.error("Error handling inline query:", err);
+    return bot.answerInlineQuery(inlineQueryId, [
+      {
+        type: "article",
+        id: "error",
+        title: "❌ Error",
+        description: "An error occurred while processing your request",
+        input_message_content: {
+          message_text: "An error occurred. Please try again later.",
+        },
+      },
+    ]);
+  }
+});
+
+// Add inline keyboard handler for shared messages
+bot.on("callback_query", async (callbackQuery) => {
+  const data = callbackQuery.data;
+  const chatId = callbackQuery.message.chat.id;
+
+  // Handle inline message actions
+  if (data.startsWith("view_")) {
+    const [action, type, id] = data.split("_");
+
+    try {
+      switch (type) {
+        case "meeting":
+          const meeting = await Meeting.findById(id);
+          if (meeting) {
+            const creatorName = await getUserDisplayName(meeting.creator_id);
+            const message =
+              `*Meeting Details*\n` +
+              `📅 ${moment(meeting.time).format("DD/MM/YYYY HH:mm")}\n` +
+              `📍 ${meeting.location}\n` +
+              `👤 Created by: ${creatorName}`;
+
+            await bot.editMessageText(message, {
+              chat_id: chatId,
+              message_id: msg.message_id,
+              parse_mode: "Markdown",
+            });
+          }
+          break;
+
+        case "absence":
+          const absence = await Absence.findById(id);
+          if (absence) {
+            const userName = await getUserDisplayName(absence.user_id);
+            const message =
+              `*Absence Details*\n` +
+              `👤 ${userName}\n` +
+              `⏰ ${moment(absence.start_time).format("DD/MM HH:mm")} - ${moment(absence.end_time).format("HH:mm")}\n` +
+              `📝 ${absence.reason}\n` +
+              `✨ Status: ${absence.status.toUpperCase()}`;
+
+            await bot.editMessageText(message, {
+              chat_id: chatId,
+              message_id: msg.message_id,
+              parse_mode: "Markdown",
+            });
+          }
+          break;
+      }
+    } catch (err) {
+      console.error("Error handling inline action:", err);
+      await bot.answerCallbackQuery(
+        callbackQuery.id,
+        "Error processing request"
+      );
+    }
+  }
+});
+
+// Main performance review command
+bot.onText(/\/performance_review/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user || !["teamleader", "cto", "ceo"].includes(user.role)) {
+      bot.sendMessage(
+        chatId,
+        "Access denied. Only Team leaders, CTO, and CEO can access performance reviews."
+      );
+      return;
+    }
+
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: "➕ New Review", callback_data: "review_new" },
+          { text: "📋 View Reviews", callback_data: "review_view" },
+        ],
+        [
+          { text: "📊 Analytics", callback_data: "review_analytics" },
+          { text: "📅 Schedule Reviews", callback_data: "review_schedule" },
+        ],
+        [
+          { text: "🎯 Goals Tracking", callback_data: "review_goals" },
+          { text: "📝 Templates", callback_data: "review_templates" },
+        ],
+      ],
+    };
+
+    bot.sendMessage(
+      chatId,
+      "*Performance Review Management*\n\n" +
+        "Select an action to manage employee performance reviews:",
+      {
+        parse_mode: "Markdown",
+        reply_markup: keyboard,
+      }
+    );
+  } catch (err) {
+    console.error("Error in performance review:", err);
+    bot.sendMessage(chatId, "Error accessing performance review system.");
+  }
+});
+
+// Handle new review creation
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  if (data === "review_new") {
+    try {
+      // Initialize review state
+      global.reviewState = {
+        step: "select_employee",
+        chatId: chatId,
+      };
+
+      // Get list of employees under the reviewer
+      const user = await User.findOne({ telegram_id: chatId.toString() });
+      let employees = [];
+
+      if (user.role === "HR") {
+        employees = await User.find({ role: { $ne: "HR" } });
+      } else {
+        employees = await User.find({ team_leader_id: chatId.toString() });
+      }
+
+      // Create keyboard with proper array of arrays structure
+      const keyboard = {
+        inline_keyboard: await Promise.all(
+          employees.map(async (emp) => {
+            const displayName = await getUserDisplayName(emp.telegram_id);
+            return [
+              {
+                // Note the array wrapper here
+                text: displayName,
+                callback_data: `review_employee_${emp.telegram_id}`,
+              },
+            ];
+          })
+        ),
+      };
+
+      await bot.editMessageText(
+        "*New Performance Review*\n\n" + "Select an employee to review:",
+        {
+          chat_id: chatId,
+          message_id: msg.message_id,
+          parse_mode: "Markdown",
+          reply_markup: keyboard,
+        }
+      );
+
+      await bot.answerCallbackQuery(callbackQuery.id);
+    } catch (err) {
+      console.error("Error creating new review:", err);
+      bot.answerCallbackQuery(callbackQuery.id, "Error creating new review");
+    }
+  }
+});
+
+// Handle review analytics
+bot.on("callback_query", async (callbackQuery) => {
+  if (callbackQuery.data === "review_analytics") {
+    const chatId = callbackQuery.message.chat.id;
+    try {
+      const reviews = await PerformanceReview.find({
+        review_date: {
+          $gte: moment().subtract(6, "months").toDate(),
+        },
+      });
+
+      // Calculate average ratings
+      const avgRatings = {
+        performance: 0,
+        attendance: 0,
+        teamwork: 0,
+        communication: 0,
+        initiative: 0,
+      };
+
+      reviews.forEach((review) => {
+        Object.keys(avgRatings).forEach((key) => {
+          avgRatings[key] += review.ratings[key];
+        });
+      });
+
+      Object.keys(avgRatings).forEach((key) => {
+        avgRatings[key] = (avgRatings[key] / reviews.length).toFixed(1);
+      });
+
+      const message =
+        "*Performance Analytics (Last 6 Months)*\n\n" +
+        `Total Reviews: ${reviews.length}\n` +
+        `Average Ratings:\n` +
+        `- Performance: ${avgRatings.performance}⭐️\n` +
+        `- Attendance: ${avgRatings.attendance}⭐️\n` +
+        `- Teamwork: ${avgRatings.teamwork}⭐️\n` +
+        `- Communication: ${avgRatings.communication}⭐️\n` +
+        `- Initiative: ${avgRatings.initiative}⭐️\n\n` +
+        "Select an option for detailed analysis:";
+
+      const keyboard = {
+        inline_keyboard: [
+          [
+            { text: "📊 Detailed Stats", callback_data: "analytics_detailed" },
+            { text: "📈 Trends", callback_data: "analytics_trends" },
+          ],
+          [
+            { text: "🎯 Goals Progress", callback_data: "analytics_goals" },
+            { text: "📑 Export Report", callback_data: "analytics_export" },
+          ],
+        ],
+      };
+
+      await bot.editMessageText(message, {
+        chat_id: chatId,
+        message_id: callbackQuery.message.message_id,
+        parse_mode: "Markdown",
+        reply_markup: keyboard,
+      });
+    } catch (err) {
+      console.error("Error generating analytics:", err);
+      bot.answerCallbackQuery(callbackQuery.id, "Error generating analytics");
+    }
   }
 });
