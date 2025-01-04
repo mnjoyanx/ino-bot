@@ -121,6 +121,8 @@ bot.on("callback_query", async (callbackQuery) => {
           })
         );
 
+        console.trace(teamLeaderButtons);
+
         const opts = {
           reply_markup: {
             inline_keyboard: teamLeaderButtons.map((button) => [button]),
@@ -1299,20 +1301,6 @@ bot.on("callback_query", async (callbackQuery) => {
   } else if (data === "register_user") {
     // Register as a regular user
     users.push({ id: chatId, role: "user", team: null });
-  }
-});
-
-// Command to set username
-bot.onText(/\/setusername (.+)/, (msg, match) => {
-  const chatId = msg.chat.id;
-  const username = match[1];
-  const user = users.find((u) => u.id === chatId);
-
-  if (user) {
-    user.username = username;
-    bot.sendMessage(chatId, `Your username has been set to ${username}.`);
-  } else {
-    bot.sendMessage(chatId, "You need to register first by typing /register.");
   }
 });
 
@@ -4746,5 +4734,183 @@ bot.onText(/\/export_calendar/, async (msg) => {
       chatId,
       "❌ Error generating calendar export. Please try again later."
     );
+  }
+});
+
+// Command to view absences
+bot.onText(/\/absences/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "Please register first using /register");
+      return;
+    }
+
+    // Different views based on role
+    if (user.role === "teamleader") {
+      // Team leaders see their team's absences
+      const teamAbsences = await Absence.find({
+        user_id: { $ne: chatId.toString() }, // Exclude team leader's own absences
+        status: { $in: ["pending", "approved"] },
+      })
+        .sort({ start_time: -1 })
+        .limit(10); // Get last 10 absences
+
+      if (teamAbsences.length === 0) {
+        bot.sendMessage(chatId, "No absences found for your team.");
+        return;
+      }
+
+      let message = "🗓 *Recent Team Absences:*\n\n";
+      for (const absence of teamAbsences) {
+        const userName = await getUserDisplayName(absence.user_id);
+        const startTime = moment(absence.start_time).format("DD/MM HH:mm");
+        const endTime = moment(absence.end_time).format("DD/MM HH:mm");
+        const status = absence.status === "pending" ? "⏳" : "✅";
+
+        message += `*${userName}*\n`;
+        message += `${startTime} - ${endTime}\n`;
+        message += `Reason: ${absence.reason}\n`;
+        message += `Status: ${status} ${absence.status}\n\n`;
+      }
+
+      bot.sendMessage(chatId, message, { parse_mode: "Markdown" });
+    } else {
+      // Regular users see their own absences
+      const userAbsences = await Absence.find({
+        user_id: chatId.toString(),
+      })
+        .sort({ start_time: -1 })
+        .limit(5); // Get last 5 absences
+
+      if (userAbsences.length === 0) {
+        bot.sendMessage(chatId, "You have no recorded absences.");
+        return;
+      }
+
+      let message = "🗓 *Your Recent Absences:*\n\n";
+      for (const absence of userAbsences) {
+        const startTime = moment(absence.start_time).format("DD/MM HH:mm");
+        const endTime = moment(absence.end_time).format("DD/MM HH:mm");
+        const statusEmoji = {
+          pending: "⏳",
+          approved: "✅",
+          denied: "❌",
+        }[absence.status];
+
+        message += `*${startTime} - ${endTime}*\n`;
+        message += `Reason: ${absence.reason}\n`;
+        message += `Status: ${statusEmoji} ${absence.status}\n\n`;
+      }
+
+      // Add pagination or filter options
+      const opts = {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: "View More", callback_data: "absences_more" },
+              { text: "Filter", callback_data: "absences_filter" },
+            ],
+          ],
+        },
+        parse_mode: "Markdown",
+      };
+
+      bot.sendMessage(chatId, message, opts);
+    }
+  } catch (err) {
+    console.error("Error fetching absences:", err);
+    bot.sendMessage(chatId, "Error fetching absences. Please try again.");
+  }
+});
+
+// Handle "View More" callback
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  if (data === "absences_more") {
+    try {
+      const skip = parseInt(data.split("_")[2] || 0);
+      const userAbsences = await Absence.find({
+        user_id: chatId.toString(),
+      })
+        .sort({ start_time: -1 })
+        .skip(skip)
+        .limit(5);
+
+      if (userAbsences.length === 0) {
+        bot.answerCallbackQuery(callbackQuery.id, "No more absences to show");
+        return;
+      }
+
+      let message = "🗓 *More Absences:*\n\n";
+      for (const absence of userAbsences) {
+        const startTime = moment(absence.start_time).format("DD/MM HH:mm");
+        const endTime = moment(absence.end_time).format("DD/MM HH:mm");
+        const statusEmoji = {
+          pending: "⏳",
+          approved: "✅",
+          denied: "❌",
+        }[absence.status];
+
+        message += `*${startTime} - ${endTime}*\n`;
+        message += `Reason: ${absence.reason}\n`;
+        message += `Status: ${statusEmoji} ${absence.status}\n\n`;
+      }
+
+      const opts = {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "View More",
+                callback_data: `absences_more_${skip + 5}`,
+              },
+              {
+                text: "Filter",
+                callback_data: "absences_filter",
+              },
+            ],
+          ],
+        },
+        parse_mode: "Markdown",
+      };
+
+      bot.editMessageText(message, {
+        chat_id: chatId,
+        message_id: msg.message_id,
+        ...opts,
+      });
+    } catch (err) {
+      console.error("Error fetching more absences:", err);
+      bot.answerCallbackQuery(callbackQuery.id, "Error fetching more absences");
+    }
+  }
+
+  if (data === "absences_filter") {
+    const opts = {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "All", callback_data: "filter_all" },
+            { text: "Pending", callback_data: "filter_pending" },
+            { text: "Approved", callback_data: "filter_approved" },
+          ],
+          [
+            { text: "This Week", callback_data: "filter_week" },
+            { text: "This Month", callback_data: "filter_month" },
+          ],
+        ],
+      },
+    };
+
+    bot.editMessageText("Choose filter:", {
+      chat_id: chatId,
+      message_id: msg.message_id,
+      ...opts,
+    });
   }
 });
