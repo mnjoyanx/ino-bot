@@ -15,6 +15,7 @@ const PerformanceReview = require("./models/performanceReview");
 const User = require("./models/user");
 const Absence = require("./models/absence");
 const ApprovalRequirement = require("./models/approvalRquirement");
+const Organization = require("./models/organization");
 
 // Initialize bot with your token
 const token = "7729835414:AAHnTWxKBzQvtlEjsuiY6Pau-b-vDZ6j1vQ";
@@ -5542,5 +5543,143 @@ bot.on("message", async (msg) => {
       bot.sendMessage(chatId, "Error saving your feedback. Please try again.");
       delete global.userStates[chatId];
     }
+  }
+});
+
+// Command to create organization
+bot.onText(/\/create_organization/, async (msg) => {
+  const chatId = msg.chat.id;
+  try {
+    // Check if organization already exists
+    const existingOrg = await Organization.findOne({});
+    // if (existingOrg) {
+    //   bot.sendMessage(
+    //     chatId,
+    //     "An organization already exists. Only one organization is allowed per bot instance."
+    //   );
+    //   return;
+    // }
+
+    // Initialize organization creation state
+    global.orgCreationState = {
+      creatorId: chatId,
+      step: "name",
+    };
+
+    bot.sendMessage(
+      chatId,
+      "Let's create your organization!\n\nPlease enter the organization name:"
+    );
+  } catch (err) {
+    console.error("Error starting organization creation:", err);
+    bot.sendMessage(chatId, "Error starting organization creation process.");
+  }
+});
+
+// Add to your message handler
+bot.on("message", async (msg) => {
+  const chatId = msg.chat.id;
+
+  if (
+    !global.orgCreationState ||
+    global.orgCreationState.creatorId !== chatId
+  ) {
+    return;
+  }
+
+  try {
+    switch (global.orgCreationState.step) {
+      case "name":
+        const name = msg.text;
+        if (name.length < 2) {
+          bot.sendMessage(
+            chatId,
+            "Organization name must be at least 2 characters long."
+          );
+          return;
+        }
+
+        global.orgCreationState.name = name;
+        global.orgCreationState.step = "description";
+
+        bot.sendMessage(
+          chatId,
+          "Great! Now please provide a brief description of your organization:"
+        );
+        break;
+
+      case "description":
+        const description = msg.text.replace(/[_*[\]()~`>#+\-=|{}.!]/g, "\\$&");
+        if (description.length < 10) {
+          bot.sendMessage(
+            chatId,
+            "Please provide a more detailed description (at least 10 characters)."
+          );
+          return;
+        }
+
+        // Create the organization
+        const organization = new Organization({
+          name: global.orgCreationState.name,
+          description: description,
+          creator_id: chatId.toString(),
+          created_at: new Date(),
+          departments: [],
+          settings: {
+            working_hours: {
+              start: "09:00",
+              end: "18:00",
+            },
+            vacation_policy: {
+              annual_days: 20,
+              carry_over: false,
+            },
+            approval_chain: ["team_leader", "department_head"],
+          },
+        });
+
+        await organization.save();
+
+        // Create CEO role for creator
+        const creator = await User.findOneAndUpdate(
+          { telegram_id: chatId.toString() },
+          {
+            role: ROLES.CEO,
+            organization_id: organization._id,
+          },
+          { new: true, upsert: true }
+        );
+
+        // Escape special characters in the organization name and description
+        const escapedName = organization.name.replace(
+          /[_*[\]()~`>#+\-=|{}.!]/g,
+          "\\$&"
+        );
+        const escapedDesc = organization.description.replace(
+          /[_*[\]()~`>#+\-=|{}.!]/g,
+          "\\$&"
+        );
+
+        // Send confirmation with escaped text
+        const message =
+          `🏢 *Organization Created Successfully*\n\n` +
+          `Name: ${escapedName}\n` +
+          `Description: ${escapedDesc}\n\n` +
+          `You have been assigned as CEO\\.\n\n` +
+          `Next steps:\n` +
+          `1\\. Use /create\\_department to create departments\n` +
+          `2\\. Use /invite\\_user to add team members\n` +
+          `3\\. Use /org\\_settings to customize organization settings`;
+
+        bot.sendMessage(chatId, message, { parse_mode: "Markdown" });
+
+        // Clear creation state
+        delete global.orgCreationState;
+        break;
+    }
+  } catch (err) {
+    console.error("Error in organization creation:", err);
+    bot.sendMessage(chatId, "Error creating organization. Please try again.");
+    delete global.orgCreationState;
   }
 });
