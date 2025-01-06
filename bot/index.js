@@ -5,12 +5,16 @@ const moment = require("moment");
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
-const Meeting = require("./meeting");
-const Vacation = require("./vacation");
-const DayOff = require("./dayoff");
-const Salary = require("./salary");
-const ICal = require("ical-generator").default; // Changed this line
-const PerformanceReview = require("./performanceReview"); // Added this line
+const Meeting = require("./models/meeting");
+const Vacation = require("./models/vacation");
+const DayOff = require("./models/dayoff");
+const Salary = require("./models/salary");
+const ICal = require("ical-generator").default;
+const Feedback = require("./models/Feedback");
+const PerformanceReview = require("./models/performanceReview");
+const User = require("./models/user");
+const Absence = require("./models/absence");
+const ApprovalRequirement = require("./models/approvalRquirement");
 
 // Initialize bot with your token
 const token = "7729835414:AAHnTWxKBzQvtlEjsuiY6Pau-b-vDZ6j1vQ";
@@ -31,45 +35,6 @@ mongoose
   .catch((err) => {
     console.log("Error connecting to MongoDB", err);
   });
-
-// MongoDB Schemas
-const UserSchema = new mongoose.Schema({
-  telegram_id: { type: String, unique: true },
-  role: String,
-  team_leader_id: String,
-  team_id: Number,
-  created_at: { type: Date, default: Date.now },
-});
-
-const AbsenceSchema = new mongoose.Schema({
-  user_id: String,
-  reason: String,
-  detailed_reason: String,
-  start_time: Date,
-  end_time: Date,
-  actual_start_time: Date,
-  actual_end_time: Date,
-  status: String,
-  created_at: { type: Date, default: Date.now },
-});
-
-// Add new schema for approval requirements
-const ApprovalRequirementSchema = new mongoose.Schema({
-  team_leader_id: String,
-  user_id: String, // null means whole team
-  start_time: Date,
-  end_time: Date,
-  reason: String,
-  created_at: { type: Date, default: Date.now },
-});
-
-// Create models
-const User = mongoose.model("User", UserSchema);
-const Absence = mongoose.model("Absence", AbsenceSchema);
-const ApprovalRequirement = mongoose.model(
-  "ApprovalRequirement",
-  ApprovalRequirementSchema
-);
 
 // Add these roles to the top of the file with other constants
 const ROLES = {
@@ -1142,8 +1107,6 @@ bot.on("callback_query", async (callbackQuery) => {
       await handleLateNotification(chatId, selectedTime);
     }
   }
-
-  // ... rest of your existing callback handlers ...
 });
 
 // Add this helper function to handle late notifications
@@ -3820,56 +3783,72 @@ bot.on("message", async (msg) => {
           start_date: global.vacationState.start_date,
           end_date: global.vacationState.end_date,
           reason: reason,
+          status: "pending", // Make sure status is set
         });
         await vacation.save();
 
         // Notify team leaders
         const user = await User.findOne({ telegram_id: chatId.toString() });
-        if (user.team_leaders && user.team_leaders.length > 0) {
-          const userName = await getUserDisplayName(chatId);
-          const startDate = moment(global.vacationState.start_date).format(
-            "DD/MM/YYYY"
-          );
-          const endDate = moment(global.vacationState.end_date).format(
-            "DD/MM/YYYY"
-          );
-          const days =
-            moment(global.vacationState.end_date).diff(
-              moment(global.vacationState.start_date),
-              "days"
-            ) + 1;
 
-          const notificationMessage =
-            `🏖 *Vacation Request*\n\n` +
-            `From: ${userName}\n` +
-            `📅 Period: ${startDate} - ${endDate}\n` +
-            `📊 Duration: ${days} days\n` +
-            `📝 Reason: ${reason}\n\n` +
-            `Please approve or reject this request:`;
+        // Get user's team leader(s)
+        const teamLeader = await User.findOne({
+          telegram_id: user.team_leader_id,
+          role: ROLES.TEAM_LEADER,
+        });
 
-          for (const leaderId of user.team_leaders) {
-            try {
-              await bot.sendMessage(leaderId, notificationMessage, {
-                parse_mode: "Markdown",
-                reply_markup: {
-                  inline_keyboard: [
-                    [
-                      {
-                        text: "✅ Approve",
-                        callback_data: `vacation_approve_${vacation._id}`,
-                      },
-                      {
-                        text: "❌ Reject",
-                        callback_data: `vacation_reject_${vacation._id}`,
-                      },
-                    ],
+        if (teamLeader) {
+          try {
+            const userName = await getUserDisplayName(chatId);
+            const startDate = moment(global.vacationState.start_date).format(
+              "DD/MM/YYYY"
+            );
+            const endDate = moment(global.vacationState.end_date).format(
+              "DD/MM/YYYY"
+            );
+            const days =
+              moment(global.vacationState.end_date).diff(
+                moment(global.vacationState.start_date),
+                "days"
+              ) + 1;
+
+            const notificationMessage =
+              `🏖 *Vacation Request*\n\n` +
+              `From: ${userName}\n` +
+              `📅 Period: ${startDate} - ${endDate}\n` +
+              `📊 Duration: ${days} days\n` +
+              `📝 Reason: ${reason}\n\n` +
+              `Please approve or reject this request:`;
+
+            await bot.sendMessage(teamLeader.telegram_id, notificationMessage, {
+              parse_mode: "Markdown",
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: "✅ Approve",
+                      callback_data: `vacation_approve_${vacation._id}`,
+                    },
+                    {
+                      text: "❌ Reject",
+                      callback_data: `vacation_reject_${vacation._id}`,
+                    },
                   ],
-                },
-              });
-            } catch (err) {
-              console.error(`Failed to notify team leader ${leaderId}:`, err);
-            }
+                ],
+              },
+            });
+          } catch (err) {
+            console.error(`Failed to notify team leader:`, err);
+            bot.sendMessage(
+              chatId,
+              "Your vacation request was submitted but there was an error notifying your team leader. They will still be able to see it in their dashboard."
+            );
           }
+        } else {
+          console.error("No team leader found for user:", chatId);
+          bot.sendMessage(
+            chatId,
+            "Your vacation request was submitted but no team leader was found. Please contact your supervisor."
+          );
         }
 
         bot.sendMessage(
@@ -3899,30 +3878,51 @@ bot.on("callback_query", async (callbackQuery) => {
     try {
       const vacation = await Vacation.findById(vacationId);
       if (!vacation) {
-        bot.answerCallbackQuery(
+        await bot.answerCallbackQuery(
           callbackQuery.id,
           "Vacation request not found."
         );
         return;
       }
 
-      // Handle approval or rejection
-      if (action === "approve") {
-        vacation.status = "approved";
-        await vacation.save();
-        bot.answerCallbackQuery(callbackQuery.id, "Vacation request approved!");
-      } else if (action === "reject") {
-        vacation.status = "rejected";
-        await vacation.save();
-        bot.answerCallbackQuery(callbackQuery.id, "Vacation request rejected.");
-      } else {
-        bot.answerCallbackQuery(callbackQuery.id, "Invalid action.");
-      }
-    } catch (err) {
-      console.error(`Error handling vacation callback:`, err);
-      bot.answerCallbackQuery(
+      // Update vacation status
+      vacation.status = status === "approve" ? "approved" : "rejected";
+      await vacation.save();
+
+      // Get reviewer name
+      const reviewerName = await getUserDisplayName(chatId);
+
+      // Update the original message to remove buttons and show status
+      const updatedMessage =
+        msg.text +
+        `\n\n${status === "approve" ? "✅" : "❌"} ${vacation.status.toUpperCase()} by ${reviewerName}`;
+
+      await bot.editMessageText(updatedMessage, {
+        chat_id: chatId,
+        message_id: msg.message_id,
+        parse_mode: "Markdown",
+        reply_markup: {}, // Remove the inline keyboard
+      });
+
+      // Notify the employee
+      const emoji = status === "approve" ? "✅" : "❌";
+      await bot.sendMessage(
+        vacation.user_id,
+        `${emoji} Your vacation request has been ${vacation.status}\n\n` +
+          `📅 Period: ${moment(vacation.start_date).format("DD/MM/YYYY")} - ${moment(vacation.end_date).format("DD/MM/YYYY")}\n` +
+          `📝 Reason: ${vacation.reason}\n` +
+          `👤 Reviewed by: ${reviewerName}`
+      );
+
+      await bot.answerCallbackQuery(
         callbackQuery.id,
-        "Error processing vacation request."
+        `Vacation request ${vacation.status}`
+      );
+    } catch (err) {
+      console.error("Error processing vacation response:", err);
+      await bot.answerCallbackQuery(
+        callbackQuery.id,
+        "Error processing your response."
       );
     }
   }
@@ -4164,7 +4164,16 @@ bot.on("message", async (msg) => {
 
       // Notify team leaders
       const user = await User.findOne({ telegram_id: chatId.toString() });
-      if (user.team_leaders && user.team_leaders.length > 0) {
+
+      // Get user's team leader(s)
+      const teamLeader = await User.findOne({
+        telegram_id: user.team_leader_id,
+        role: ROLES.TEAM_LEADER,
+      });
+
+      console.log(teamLeader, "teaaam leader");
+
+      if (teamLeader) {
         const userName = await getUserDisplayName(chatId);
         const notificationMessage =
           `🌟 *Day Off Request*\n\n` +
@@ -4175,28 +4184,26 @@ bot.on("message", async (msg) => {
           `📝 Reason: ${reason}\n\n` +
           `Please approve or reject this request:`;
 
-        for (const leaderId of user.team_leaders) {
-          try {
-            await bot.sendMessage(leaderId, notificationMessage, {
-              parse_mode: "Markdown",
-              reply_markup: {
-                inline_keyboard: [
-                  [
-                    {
-                      text: "✅ Approve",
-                      callback_data: `dayoff_approve_${dayOff._id}`,
-                    },
-                    {
-                      text: "❌ Reject",
-                      callback_data: `dayoff_reject_${dayOff._id}`,
-                    },
-                  ],
+        try {
+          await bot.sendMessage(teamLeader.telegram_id, notificationMessage, {
+            parse_mode: "Markdown",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "✅ Approve",
+                    callback_data: `dayoff_approve_${dayOff._id}`,
+                  },
+                  {
+                    text: "❌ Reject",
+                    callback_data: `dayoff_reject_${dayOff._id}`,
+                  },
                 ],
-              },
-            });
-          } catch (err) {
-            console.error(`Failed to notify team leader ${leaderId}:`, err);
-          }
+              ],
+            },
+          });
+        } catch (err) {
+          console.error(`Failed to notify team leader ${teamLeader.id}:`, err);
         }
       }
 
@@ -4326,11 +4333,12 @@ bot.on("callback_query", async (callbackQuery) => {
         return;
       }
 
-      dayOff.status = status;
+      const statusText = status === "approve" ? "approved" : "rejected";
+
+      dayOff.status = statusText;
       await dayOff.save();
 
       // Notify the employee
-      const statusText = status === "approve" ? "approved" : "rejected";
       const emoji = status === "approve" ? "✅" : "❌";
       const teamLeader = await getUserDisplayName(chatId);
 
@@ -5305,60 +5313,234 @@ bot.on("callback_query", async (callbackQuery) => {
 });
 
 // Handle /feedback command
-bot.onText(/\/feedback/, (msg) => {
+bot.onText(/\/feedback/, async (msg) => {
   const chatId = msg.chat.id;
+  try {
+    const user = await User.findOne({ telegram_id: chatId.toString() });
+    if (!user) {
+      bot.sendMessage(chatId, "Please register first using /register");
+      return;
+    }
 
-  // Ask for the audience
-  bot.sendMessage(chatId, "Who is the audience for your feedback?", {
-    reply_markup: {
+    // Store user state for feedback process
+    global.userStates = global.userStates || {};
+    global.userStates[chatId] = {
+      action: "feedback",
+      step: "select_audience",
+    };
+
+    // Ask for the audience with improved keyboard
+    const keyboard = {
       inline_keyboard: [
         [
-          { text: "Team Leader", callback_data: "audience_team_leader" },
-          { text: "HR", callback_data: "audience_hr" },
+          { text: "👥 Team Leader", callback_data: "audience_team_leader" },
+          { text: "👤 HR", callback_data: "audience_hr" },
+        ],
+        [
+          { text: "👨‍💼 Department Head", callback_data: "audience_department" },
+          { text: "📢 General", callback_data: "audience_general" },
         ],
       ],
-    },
-  });
-});
+    };
 
-// Handle callback queries for audience selection
-bot.on("callback_query", (callbackQuery) => {
-  const message = callbackQuery.message;
-  const chatId = message.chat.id;
-  const data = callbackQuery.data;
+    // Escape special characters and ensure proper markdown
+    const message =
+      "*Submit Feedback*\n\n" +
+      "Who would you like to send feedback to?\n\n" +
+      "• Team Leader: for team\\-related feedback\n" +
+      "• HR: for HR\\-related concerns\n" +
+      "• Department Head: for department\\-wide issues\n" +
+      "• General: for general suggestions";
 
-  if (data === "audience_team_leader" || data === "audience_hr") {
-    const audience = data === "audience_team_leader" ? "Team Leader" : "HR";
-
-    // Ask if the feedback is anonymous
-    bot.sendMessage(chatId, "Do you want to send the feedback anonymously?", {
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: "Yes", callback_data: `anonymous_yes_${audience}` },
-            { text: "No", callback_data: `anonymous_no_${audience}` },
-          ],
-        ],
-      },
+    await bot.sendMessage(chatId, message, {
+      parse_mode: "Markdown",
+      reply_markup: keyboard,
     });
-  } else if (data.startsWith("anonymous_yes_") || data.startsWith("anonymous_no_")) {
-    const isAnonymous = data.startsWith("anonymous_yes_");
-    const audience = data.split("_").pop();
-
-    // Ask for the feedback message
-    bot.sendMessage(chatId, `Please type your feedback for the ${audience}:`);
-
-    // Listen for the feedback message
-    bot.once("message", (feedbackMsg) => {
-      const feedback = feedbackMsg.text;
-      const sender = isAnonymous ? "Anonymous" : feedbackMsg.from.username;
-
-      // Process the feedback (e.g., save to database, send to audience, etc.)
-      console.log(`Feedback from ${sender} to ${audience}: ${feedback}`);
-
-      // Acknowledge the feedback
-      bot.sendMessage(chatId, "Thank you for your feedback!");
-    });
+  } catch (err) {
+    console.error("Error in feedback command:", err);
+    bot.sendMessage(
+      chatId,
+      "Error processing feedback command. Please try again."
+    );
   }
 });
-   
+
+// Handle audience selection and anonymity
+bot.on("callback_query", async (callbackQuery) => {
+  const msg = callbackQuery.message;
+  const chatId = msg.chat.id;
+  const data = callbackQuery.data;
+
+  if (data.startsWith("audience_")) {
+    try {
+      const audience = data.replace("audience_", "");
+      global.userStates[chatId].audience = audience;
+      global.userStates[chatId].step = "select_anonymity";
+
+      // Ask if the feedback should be anonymous
+      const keyboard = {
+        inline_keyboard: [
+          [
+            {
+              text: "✅ Send with my name",
+              callback_data: `anonymous_no_${audience}`,
+            },
+          ],
+          [
+            {
+              text: "🕵️ Send anonymously",
+              callback_data: `anonymous_yes_${audience}`,
+            },
+          ],
+          [{ text: "❌ Cancel", callback_data: "feedback_cancel" }],
+        ],
+      };
+
+      const message =
+        "*Submit Feedback*\n\n" +
+        "Would you like to submit this feedback anonymously?\n\n" +
+        "• With name: Your name will be visible\n" +
+        "• Anonymous: Your identity will be hidden\n\n" +
+        "_Note: All feedback is treated confidentially_";
+
+      await bot.editMessageText(message, {
+        chat_id: chatId,
+        message_id: msg.message_id,
+        parse_mode: "Markdown",
+        reply_markup: keyboard,
+      });
+
+      await bot.answerCallbackQuery(callbackQuery.id);
+    } catch (err) {
+      console.error("Error handling audience selection:", err);
+      bot.answerCallbackQuery(callbackQuery.id, "Error processing selection");
+    }
+  } else if (data.startsWith("anonymous_")) {
+    try {
+      const [_, isAnonymous, audience] = data.split("_");
+      global.userStates[chatId].isAnonymous = isAnonymous === "yes";
+      global.userStates[chatId].step = "enter_feedback";
+
+      const keyboard = {
+        inline_keyboard: [
+          [{ text: "❌ Cancel", callback_data: "feedback_cancel" }],
+        ],
+      };
+
+      const message =
+        "*Submit Feedback*\n\n" +
+        "Please type your feedback message below\n\n" +
+        "Guidelines for effective feedback:\n" +
+        "• Be specific and constructive\n" +
+        "• Focus on situations and behaviors\n" +
+        "• Suggest improvements when possible\n\n" +
+        "_Type your message or click Cancel to abort_";
+
+      await bot.editMessageText(message, {
+        chat_id: chatId,
+        message_id: msg.message_id,
+        parse_mode: "Markdown",
+        reply_markup: keyboard,
+      });
+
+      await bot.answerCallbackQuery(callbackQuery.id);
+    } catch (err) {
+      console.error("Error handling anonymity selection:", err);
+      bot.answerCallbackQuery(callbackQuery.id, "Error processing selection");
+    }
+  } else if (data === "feedback_cancel") {
+    try {
+      delete global.userStates[chatId];
+      await bot.editMessageText("❌ Feedback submission cancelled.", {
+        chat_id: chatId,
+        message_id: msg.message_id,
+      });
+      await bot.answerCallbackQuery(callbackQuery.id);
+    } catch (err) {
+      console.error("Error cancelling feedback:", err);
+      bot.answerCallbackQuery(callbackQuery.id, "Error cancelling feedback");
+    }
+  }
+});
+
+// Handle feedback message
+bot.on("message", async (msg) => {
+  const chatId = msg.chat.id;
+
+  if (
+    global.userStates?.[chatId]?.action === "feedback" &&
+    global.userStates[chatId].step === "enter_feedback"
+  ) {
+    try {
+      const userState = global.userStates[chatId];
+      const user = await User.findOne({ telegram_id: chatId.toString() });
+
+      // Create new feedback
+      const feedback = new Feedback({
+        sender_id: chatId.toString(),
+        sender_name: userState.isAnonymous
+          ? "Anonymous"
+          : await getUserDisplayName(chatId.toString()),
+        audience: userState.audience,
+        message: msg.text,
+        is_anonymous: userState.isAnonymous,
+        status: "pending",
+        created_at: new Date(),
+      });
+
+      await feedback.save();
+
+      // Notify relevant managers/HR
+      let notifyIds = [];
+      if (userState.audience === "team_leader" && user.team_leader_id) {
+        notifyIds.push(user.team_leader_id);
+      } else if (userState.audience === "hr") {
+        const hrUsers = await User.find({ role: "HR" });
+        notifyIds = hrUsers.map((u) => u.telegram_id);
+      }
+
+      console.log(notifyIds, ",notifyIds");
+
+      // Send notifications
+      for (const notifyId of notifyIds) {
+        // Escape special characters in the message text
+        const escapedMessage = msg.text.replace(
+          /[_*[\]()~`>#+\-=|{}.!]/g,
+          "\\$&"
+        );
+        const displayName = userState.isAnonymous
+          ? "Anonymous"
+          : (await getUserDisplayName(chatId.toString())).replace(
+              /[_*[\]()~`>#+\-=|{}.!]/g,
+              "\\$&"
+            );
+
+        bot.sendMessage(
+          notifyId,
+          `🔔 *New Feedback Received*\n\n` +
+            `From: ${displayName}\n` +
+            `Message: ${escapedMessage}\n\n` +
+            `Use /view\\_feedbacks to review`,
+          { parse_mode: "Markdown" }
+        );
+      }
+
+      // Confirm submission to user
+      bot.sendMessage(
+        chatId,
+        "✅ *Feedback Submitted Successfully*\n\n" +
+          "Thank you for your feedback! It has been recorded and will be reviewed.\n\n" +
+          `Submitted as: ${userState.isAnonymous ? "Anonymous" : "Named"}\n` +
+          `To: ${userState.audience.replace("_", " ").toUpperCase()}`,
+        { parse_mode: "Markdown" }
+      );
+
+      // Clear user state
+      delete global.userStates[chatId];
+    } catch (err) {
+      console.error("Error saving feedback:", err);
+      bot.sendMessage(chatId, "Error saving your feedback. Please try again.");
+      delete global.userStates[chatId];
+    }
+  }
+});
