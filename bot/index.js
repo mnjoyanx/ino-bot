@@ -5303,3 +5303,62 @@ bot.on("callback_query", async (callbackQuery) => {
     }
   }
 });
+
+// Handle /feedback command
+bot.onText(/\/feedback/, (msg) => {
+  const chatId = msg.chat.id;
+
+  // Ask for the audience
+  bot.sendMessage(chatId, "Who is the audience for your feedback?", {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: "Team Leader", callback_data: "audience_team_leader" },
+          { text: "HR", callback_data: "audience_hr" },
+        ],
+      ],
+    },
+  });
+});
+
+// Handle callback queries for audience selection
+bot.on("callback_query", (callbackQuery) => {
+  const message = callbackQuery.message;
+  const chatId = message.chat.id;
+  const data = callbackQuery.data;
+
+  if (data === "audience_team_leader" || data === "audience_hr") {
+    const audience = data === "audience_team_leader" ? "Team Leader" : "HR";
+
+    // Ask if the feedback is anonymous
+    bot.sendMessage(chatId, "Do you want to send the feedback anonymously?", {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "Yes", callback_data: `anonymous_yes_${audience}` },
+            { text: "No", callback_data: `anonymous_no_${audience}` },
+          ],
+        ],
+      },
+    });
+  } else if (data.startsWith("anonymous_yes_") || data.startsWith("anonymous_no_")) {
+    const isAnonymous = data.startsWith("anonymous_yes_");
+    const audience = data.split("_").pop();
+
+    // Ask for the feedback message
+    bot.sendMessage(chatId, `Please type your feedback for the ${audience}:`);
+
+    // Listen for the feedback message
+    bot.once("message", (feedbackMsg) => {
+      const feedback = feedbackMsg.text;
+      const sender = isAnonymous ? "Anonymous" : feedbackMsg.from.username;
+
+      // Process the feedback (e.g., save to database, send to audience, etc.)
+      console.log(`Feedback from ${sender} to ${audience}: ${feedback}`);
+
+      // Acknowledge the feedback
+      bot.sendMessage(chatId, "Thank you for your feedback!");
+    });
+  }
+});
+   
