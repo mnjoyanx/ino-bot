@@ -434,6 +434,22 @@ export default memo(function LiveControls({
     },
   });
 
+  const onBackHandler = () => {
+    const currentIndex = findCurrentIndex();
+    dispatch(setLastActiveIndex(currentIndex));
+
+    if (number) {
+      if (timeOutNumber.current) {
+        clearTimeout(timeOutNumber.current);
+      }
+      setNumber("");
+      return;
+    }
+    dispatch(setIsCategoriesOpen(true));
+    setPipMode(true);
+    window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
+  };
+
   useKeydown({
     isActive:
       playerType === "live" &&
@@ -506,19 +522,7 @@ export default memo(function LiveControls({
     },
 
     back: () => {
-      const currentIndex = findCurrentIndex();
-      dispatch(setLastActiveIndex(currentIndex));
-
-      if (number) {
-        if (timeOutNumber.current) {
-          clearTimeout(timeOutNumber.current);
-        }
-        setNumber("");
-        return;
-      }
-      dispatch(setIsCategoriesOpen(true));
-      setPipMode(true);
-      window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
+      onBackHandler();
     },
 
     ok: () => {
@@ -797,6 +801,7 @@ export default memo(function LiveControls({
           )}
 
           <ArchiveButtons
+            onBackHandler={onBackHandler}
             play={play}
             pause={pause}
             type={playerType}
@@ -859,7 +864,11 @@ export default memo(function LiveControls({
               classNames="timeshift-btn"
               isActive={active === 2 && ctrl !== "archiveBtns"}
             >
-              <SvgBackward />
+              {playerType === "archive" || playerType === "timeshift" ? (
+                <p>Live</p>
+              ) : (
+                <SvgBackward />
+              )}
             </InoButton>
           ) : null}
         </div>

@@ -18,6 +18,7 @@ export default memo(function ArchiveButtons({
   showControl,
   hideControls,
   hasArchive,
+  onBackHandler,
 }) {
   const { t } = useTranslation();
   const isPaused = useSelector(selectIsPaused);
@@ -63,6 +64,10 @@ export default memo(function ArchiveButtons({
       } else {
         actionHandler(activeIndex);
       }
+    },
+
+    back: () => {
+      onBackHandler();
     },
   });
 
