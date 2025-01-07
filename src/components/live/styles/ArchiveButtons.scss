@@ -9,12 +9,11 @@
   transform: translateX(-50%);
   top: 4rem;
 
-  .btn-group-live {
-    // margin: 0 1rem;
-  }
   .rewind,
   .forward {
     border: 1px solid transparent;
+    border-radius: 3rem;
+    padding: 0.5rem 1rem;
     @include flex(center, center);
     flex-wrap: nowrap;
     margin: 0 1rem;
@@ -42,10 +41,8 @@
     }
 
     &.active {
-      transform: scale(1.1);
+      border-color: $active-color;
     }
-  }
-  .forward {
   }
 }
 
@@ -63,6 +60,15 @@
 .ino-element-wrapper.active {
   border-color: #fff;
   border-radius: 3rem;
+
+  .play-pause {
+    // background-color: $active-color;
+    border-color: $active-color;
+
+    // svg {
+    //   fill: #fff;
+    // }
+  }
 }
 
 .archive-buttons_wrapper {

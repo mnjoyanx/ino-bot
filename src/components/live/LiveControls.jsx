@@ -21,6 +21,7 @@ import { channelInfo } from "@server/requests";
 import { formatDate, formatTime } from "@utils/util";
 import {
   selectCtrl,
+  setCtrl,
   setIsCategoriesOpen,
   setLastActiveIndex,
 } from "@app/global";
@@ -269,6 +270,12 @@ export default memo(function LiveControls({
   };
 
   const handleArchiveAction = (index) => {
+    if (playerType === "live") {
+      setUrlTimeshift();
+      dispatch(setPlayerType("timeshift"));
+      return;
+    }
+
     switch (index) {
       case 0:
         seekToHandler("rewind", 300);
@@ -316,7 +323,7 @@ export default memo(function LiveControls({
     clearTimeout(hideControlsTimer);
 
     hideControlsTimer = setTimeout(() => {
-      setHideControls(true);
+      // setHideControls(true);
     }, 5000);
   };
 
@@ -390,7 +397,8 @@ export default memo(function LiveControls({
   }, [categoryChannels, selectedCategory, currentChannel]);
 
   useKeydown({
-    isActive: showPreviewImages && ctrl !== "protected",
+    isActive:
+      showPreviewImages && ctrl !== "protected" && ctrl !== "archiveBtns",
 
     back: () => {
       if (!window.Android) {
@@ -428,7 +436,10 @@ export default memo(function LiveControls({
 
   useKeydown({
     isActive:
-      playerType === "live" && !showPreviewImages && ctrl !== "protected",
+      playerType === "live" &&
+      !showPreviewImages &&
+      ctrl !== "protected" &&
+      ctrl !== "archiveBtns",
 
     number: (e) => {
       showControl();
@@ -441,7 +452,11 @@ export default memo(function LiveControls({
       if (hideControls) return;
       if (currentChannel?.has_archive) {
         if (active < 1) return;
-        setActive(active - 1);
+        if (active === 1) {
+          setActive(0);
+        } else {
+          dispatch(setCtrl("archiveBtns"));
+        }
       } else {
         setActive(0);
       }
@@ -450,17 +465,17 @@ export default memo(function LiveControls({
     right: () => {
       showControl();
       if (hideControls) return;
-      if (currentChannel?.has_archive) {
-        if (active < 2) {
-          setActive(active + 1);
-        } else {
-          if (active < 1) {
-            setActive(active + 1);
-          }
-        }
-      } else {
-        setActive(2);
+      // if (currentChannel?.has_archive) {
+      if (active === 0) {
+        setActive(1);
+      } else if (active === 2) return;
+      else {
+        dispatch(setCtrl("archiveBtns"));
       }
+      // }
+      // else {
+      //   dispatch(setCtrl("archiveBtns"));
+      // }
     },
 
     up: () => {
@@ -521,6 +536,11 @@ export default memo(function LiveControls({
         window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
       } else if (active === 1) {
         // Store current channel info before switching to timeshift
+
+        toggleFavorite(!currentChannel.favorite);
+      } else if (active === 2) {
+        // toggleFavorite(!currentChannel.favorite);
+
         if (playerType === "live") {
           refUrlLive.current = {
             url: url,
@@ -528,10 +548,7 @@ export default memo(function LiveControls({
           };
         }
         setUrlTimeshift();
-        setActive(2);
         dispatch(setPlayerType("timeshift"));
-      } else if (active === 2) {
-        toggleFavorite(!currentChannel.favorite);
       } else if (active === 4) {
         setActive(0);
         if (currentChannel) {
@@ -555,7 +572,8 @@ export default memo(function LiveControls({
     isActive:
       (playerType === "timeshift" || playerType === "archive") &&
       !showPreviewImages &&
-      ctrl !== "protected",
+      ctrl !== "protected" &&
+      ctrl !== "archiveBtns",
 
     number: (e) => {
       showControl();
@@ -602,22 +620,37 @@ export default memo(function LiveControls({
     left: () => {
       showControl();
       if (hideControls) return;
-      // if (active === 0) return;
-
-      // setActive(active - 1);
+      if (currentChannel?.has_archive) {
+        if (active < 1) return;
+        if (active === 1) {
+          setActive(0);
+        } else {
+          dispatch(setCtrl("archiveBtns"));
+        }
+      } else {
+        setActive(0);
+      }
     },
 
     right: () => {
       showControl();
       if (hideControls) return;
-      setActive(1);
-      // if (active === 1) return;
-      // setActive(active + 1);
+      if (currentChannel?.has_archive) {
+        if (active === 0) {
+          setActive(1);
+        } else if (active === 2) return;
+        else {
+          dispatch(setCtrl("archiveBtns"));
+        }
+      } else {
+        dispatch(setCtrl("archiveBtns"));
+      }
     },
 
     up: () => {
       showControl();
       if (hideControls) return;
+      alert("up");
       if (refNextChannel.current && active === 0) {
         dispatch(setPlayerType("live"));
         getChannelInfo(refNextChannel.current.id);
@@ -649,29 +682,14 @@ export default memo(function LiveControls({
         dispatch(setIsCategoriesOpen(true));
         setPipMode(true);
         window.PLAYER.setPositionPlayer(720, 403, 1061, 224);
+      } else if (active === 1) {
+        toggleFavorite(!currentChannel.favorite);
       } else if (active === 2) {
-        secCurrentTime.current = 0;
-        if (isPaused) play();
-        else pause();
+        if (currentChannel) {
+          getChannelInfo(currentChannel.id);
+        }
+        dispatch(setPlayerType("live"));
       } else if (active === 1 || active === 3) {
-        // if (active === 1) {
-        //   if (window.Android) {
-        //     const currentTime = window.Android.getCurrentTime();
-        //     const duration = window.Android.getVideoDuration();
-        //     imitateTimeUpdate(currentTime, duration);
-        //     seekToHandler("rewind");
-        //   } else {
-        //     seekToHandler("rewind");
-        //   }
-        // } else if (active === 3) {
-        //   if (window.Android) {
-        //     const currentTime = window.Android.getCurrentTime();
-        //     const duration = window.Android.getVideoDuration();
-        //     imitateTimeUpdate(currentTime, duration);
-        //   }
-        //   seekToHandler("forward");
-        // }
-
         return;
       } else if (active === 4) {
         setActive(0);
@@ -778,93 +796,73 @@ export default memo(function LiveControls({
             </>
           )}
 
-          {playerType === "live" ? (
-            <>
-              <LiveIcon type={playerType} />
-            </>
-          ) : playerType === "timeshift" ? (
-            <>
-              <ArchiveButtons
-                play={play}
-                pause={pause}
-                type={playerType}
-                active={active}
-                setActive={() => setActive(0)}
-                actionHandler={(index) => {
-                  handleArchiveAction(index);
-                }}
-                showControl={showControl}
-                hideControls={hideControls}
-                onLiveHandler={() => {
-                  dispatch(setPlayerType("live"));
-                  setUrl(refUrlLive.current?.url);
-                }}
-              />
-            </>
-          ) : (
-            <>
-              <ArchiveButtons
-                play={play}
-                pause={pause}
-                type={playerType}
-                active={active}
-                setActive={() => setActive(0)}
-                actionHandler={(index) => {
-                  handleArchiveAction(index);
-                }}
-                showControl={showControl}
-                hideControls={hideControls}
-                onLiveHandler={() => {
-                  dispatch(setPlayerType("live"));
-                  // setUrl(refUrlLive.current?.url);
-                  // setUrl(currentChannel?.share_url);
-                  const lastChannelId = LOCAL_STORAGE.LAST_CHANNEL_ID.GET();
-                  getChannelInfo(lastChannelId);
-                }}
-              />
-              <LiveIcon type={playerType} isActive={active === 4} />
-            </>
-          )}
+          <ArchiveButtons
+            play={play}
+            pause={pause}
+            type={playerType}
+            active={ctrl === "archiveBtns"}
+            setActive={(isLeft) => {
+              if (isLeft) {
+                setActive(1);
+              } else {
+                setActive(2);
+              }
+              dispatch(setCtrl("live"));
+            }}
+            actionHandler={(index) => {
+              handleArchiveAction(index);
+            }}
+            hasArchive={currentChannel?.has_archive}
+            showControl={showControl}
+            hideControls={hideControls}
+            onLiveHandler={() => {
+              dispatch(setPlayerType("live"));
+              if (playerType === "timeshift") {
+                setUrl(refUrlLive.current?.url);
+              } else {
+                const lastChannelId = LOCAL_STORAGE.LAST_CHANNEL_ID.GET();
+                getChannelInfo(lastChannelId);
+              }
+            }}
+          />
+          <LiveIcon type={playerType} isActive={active === 4} />
         </div>
-        {playerType === "live" ? (
-          <div className="live-control_actions_wrapper">
-            {currentChannel?.has_archive ? (
+        <div className="live-control_actions_wrapper">
+          <div className={"live-fav_wrapper"}>
+            {currentChannel?.favorite ? (
               <InoButton
+                classNames="rounded-btn"
                 size="small"
-                classNames="timeshift-btn"
-                isActive={active === 1}
+                isActive={active == 1 && ctrl !== "archiveBtns"}
               >
-                <SvgBackward />
+                <FavActiveSvg
+                  onClick={() => toggleFavorite(false)}
+                  isFill={true}
+                />
               </InoButton>
-            ) : null}
-            {/* </div> */}
-            <div className={"live-fav_wrapper"}>
-              {currentChannel?.favorite ? (
-                <InoButton
-                  classNames="rounded-btn"
-                  size="small"
-                  isActive={active == 2}
-                >
-                  <FavActiveSvg
-                    onClick={() => toggleFavorite(false)}
-                    isFill={true}
-                  />
-                </InoButton>
-              ) : (
-                <InoButton
-                  classNames="rounded-btn"
-                  size="small"
-                  isActive={active == 2}
-                >
-                  <FavActiveSvg
-                    onClick={() => toggleFavorite(true)}
-                    isFill={false}
-                  />
-                </InoButton>
-              )}
-            </div>
+            ) : (
+              <InoButton
+                classNames="rounded-btn"
+                size="small"
+                isActive={active == 1 && ctrl !== "archiveBtns"}
+              >
+                <FavActiveSvg
+                  onClick={() => toggleFavorite(true)}
+                  isFill={false}
+                />
+              </InoButton>
+            )}
           </div>
-        ) : null}
+          {currentChannel?.has_archive ? (
+            <InoButton
+              size="small"
+              classNames="timeshift-btn"
+              isActive={active === 2 && ctrl !== "archiveBtns"}
+            >
+              <SvgBackward />
+            </InoButton>
+          ) : null}
+        </div>
       </div>
     </>
   );

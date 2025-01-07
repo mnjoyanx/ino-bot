@@ -5,10 +5,9 @@ import SvgPlay from "@assets/images/player/SvgPlay.jsx";
 import SvgRewind from "@assets/images/player/SvgRewind";
 import SvgForward from "@assets/images/player/SvgForward";
 import SvgPause from "@assets/images/player/SvgPause";
-import { InoRow } from "@ino-ui/tv";
 import { useTranslation } from "react-i18next";
 import "../styles/ArchiveButtons.scss";
-import LiveIcon from "./LiveIcon";
+import useKeydown from "@hooks/useKeydown";
 
 export default memo(function ArchiveButtons({
   play,
@@ -16,14 +15,13 @@ export default memo(function ArchiveButtons({
   active,
   setActive,
   actionHandler,
-  onLiveHandler,
   showControl,
   hideControls,
+  hasArchive,
 }) {
   const { t } = useTranslation();
   const isPaused = useSelector(selectIsPaused);
-
-  const [isOnLive, setIsOnLive] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(3);
 
   const handleClick = (e) => {
     if (hideControls) {
@@ -34,80 +32,97 @@ export default memo(function ArchiveButtons({
     else pause();
   };
 
+  useKeydown({
+    isActive: active,
+    left: () => {
+      if (hideControls) {
+        showControl();
+        return;
+      }
+      if (activeIndex === 0) {
+        setActive(true);
+        return;
+      }
+      setActiveIndex(activeIndex - 1);
+    },
+    right: () => {
+      if (hideControls) {
+        showControl();
+        return;
+      }
+      if (activeIndex === 6) {
+        setActive();
+        return;
+      }
+      setActiveIndex(activeIndex + 1);
+    },
+
+    ok: () => {
+      if (activeIndex === 3) {
+        handleClick();
+      } else {
+        actionHandler(activeIndex);
+      }
+    },
+  });
+
   return (
     <div className="archive-buttons_wrapper">
-      <InoRow
-        isActive={isOnLive}
-        classNames="first-row_archive"
-        onDown={() => {
-          if (hideControls) {
-            showControl();
-            return;
-          }
-          setIsOnLive(false);
-        }}
-        onOk={() => {
-          if (hideControls) {
-            showControl();
-            return;
-          }
-
-          onLiveHandler();
-        }}
-      >
-        <LiveIcon type={"archive"} isActive={isOnLive} />
-      </InoRow>
-
       <div className="buttons-group-live">
-        <InoRow
-          isActive={active && !isOnLive}
-          onLeft={setActive}
-          initialActiveIndex={3}
-          onOk={(_e, index) => {
-            if (hideControls) {
-              showControl();
-              return;
-            }
-            showControl();
-
-            actionHandler(index);
-          }}
-          onUp={() => {
-            if (hideControls) {
-              showControl();
-              return;
-            }
-            setIsOnLive(true);
-          }}
-        >
-          <div className={`rewind btn-group-live`}>
+        {hasArchive ? (
+          <div
+            className={`rewind btn-group-live ${activeIndex === 0 && active ? "active" : ""}`}
+          >
             <p className="archive-btn_text">-5 {t("MIN")}</p>
             <SvgRewind />
           </div>
-          <div className={`rewind btn-group-live`}>
+        ) : null}
+        {hasArchive ? (
+          <div
+            className={`rewind btn-group-live ${activeIndex === 1 && active ? "active" : ""}`}
+          >
             <p className="archive-btn_text">-1 {t("MIN")}</p>
             <SvgRewind />
           </div>
-          <div className={`rewind btn-group-live`}>
+        ) : null}
+        {hasArchive ? (
+          <div
+            className={`rewind btn-group-live ${activeIndex === 2 && active ? "active" : ""}`}
+          >
             <p className="archive-btn_text">-30 {t("SEC")}</p>
             <SvgRewind />
           </div>
-          <div className={`play-pause btn-group-live`} onClick={handleClick}>
-            {isPaused ? <SvgPlay /> : <SvgPause />}
-          </div>
-          <div className={`forward btn-group-live`}>
+        ) : null}
+        <div
+          className={`play-pause btn-group-live ${activeIndex === 3 && active ? "active" : ""}`}
+          onClick={handleClick}
+        >
+          {isPaused ? <SvgPlay /> : <SvgPause />}
+        </div>
+        {hasArchive ? (
+          <div
+            className={`forward btn-group-live ${activeIndex === 4 && active ? "active" : ""}`}
+          >
             <SvgForward />
             <p className="archive-btn_text">+30 {t("SEC")}</p>
           </div>
-          <div className={`forward btn-group-live`}>
+        ) : null}
+        {hasArchive ? (
+          <div
+            className={`forward btn-group-live ${activeIndex === 5 && active ? "active" : ""}`}
+          >
             <SvgForward />
             <p className="archive-btn_text">+1 {t("MIN")}</p>
           </div>
-          <div className={`forward btn-group-live`}>
+        ) : null}
+        {hasArchive ? (
+          <div
+            className={`forward btn-group-live ${activeIndex === 6 && active ? "active" : ""}`}
+          >
             <SvgForward />
             <p className="archive-btn_text">+5 {t("MIN")}</p>
           </div>
-        </InoRow>
+        ) : null}
       </div>
     </div>
   );
